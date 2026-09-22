@@ -28,6 +28,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # =====================================================================
 if ! python3 -c "import torch, pandas, numpy" >/dev/null 2>&1; then
     echo "Installing required Python dependencies..."
+    if ! python3 -m pip --version >/dev/null 2>&1; then
+        echo "pip module not found; bootstrapping with ensurepip..."
+        python3 -m ensurepip --upgrade
+    fi
     python3 -m pip install -r "$SCRIPT_DIR/requirements.txt"
 fi
 
