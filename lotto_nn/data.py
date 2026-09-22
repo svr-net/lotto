@@ -92,6 +92,14 @@ def load_draws(csv_path: str) -> pd.DataFrame:
             f"CSV is missing required columns: {missing}. "
             f"Columns found in {csv_path}: {list(df.columns)}"
         )
+    # Some feeds (e.g. merseyworld.com with multiple draw days) repeat the
+    # header row partway through the data (once per section/table). Coerce
+    # the draw number columns to numeric and drop any rows that fail to
+    # parse (repeated headers, blank separator rows, etc.) instead of
+    # raising on the first non-numeric value encountered.
+    for col in DRAW_COLUMNS:
+        df[col] = pd.to_numeric(df[col], errors="coerce")
+    df = df.dropna(subset=DRAW_COLUMNS).reset_index(drop=True)
     return df
 
 
