@@ -16,6 +16,10 @@ draws against historical draws.
 - `lotto_nn/backtest.py` — frequency, pairing, sum, odd/even, spacing, positional bias,
   and simulation backtests
 - `lotto_nn/pipeline.py` — orchestrates the full pipeline end-to-end and exposes a CLI
+- `lotto_nn/grammar.py` — fits a simple statistical n-gram "grammar" (start distribution +
+  positional transition table) over historical draws and samples draws from it
+- `lotto_nn/grammar_pipeline.py` — orchestrates the grammar-discovery pipeline end-to-end
+  (extraction, sampling, backtesting) and exposes a CLI
 
 ### Setup
 
@@ -47,6 +51,25 @@ historical feed to `uk_lotto.csv`, runs the pipeline (writing `actual.txt`,
 
 Environment variables `EPOCHS`, `NUM_SAMPLES`, `NUM_PREDICTIONS`, and `LOTTO_CSV_URL` can
 be set to override the defaults.
+
+### Grammar-discovery pipeline
+
+As an alternative to the neural pipeline, `lotto_nn.grammar_pipeline` fits a simple
+statistical n-gram "grammar" (a start-number distribution plus a positional
+number-to-number transition table) over historical draws, instead of training a neural
+network:
+
+```bash
+python -m lotto_nn.grammar_pipeline --csv sample_data/uk_lotto_sample.csv --num-samples 5000
+```
+
+`run_lotto_grammar_pipeline.sh` automates the same workflow as `run_lotto_pipeline.sh`
+(download `uk_lotto.csv`, run the grammar pipeline, print the PREDICTED | ACTUAL | MATCHES
+matrix), but without requiring PyTorch:
+
+```bash
+./run_lotto_grammar_pipeline.sh
+```
 
 ### Tests
 
