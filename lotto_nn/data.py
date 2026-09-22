@@ -12,21 +12,16 @@ DRAW_COLUMNS = ["n1", "n2", "n3", "n4", "n5", "n6"]
 _COLUMN_ALIASES = {
     "date": "date",
     "drawdate": "date",
-    "ball1": "n1",
-    "ball2": "n2",
-    "ball3": "n3",
-    "ball4": "n4",
-    "ball5": "n5",
-    "ball6": "n6",
-    "n1": "n1",
-    "n2": "n2",
-    "n3": "n3",
-    "n4": "n4",
-    "n5": "n5",
-    "n6": "n6",
     "bonus": "bonus",
     "bonusball": "bonus",
 }
+# Common prefixes used by various UK National Lottery CSV exports to label the
+# six main numbers (e.g. "Ball 1", "Number 1", "No. 1", "N1").
+_BALL_COLUMN_PREFIXES = ["ball", "number", "num", "no", "n"]
+for _i in range(1, 7):
+    for _prefix in _BALL_COLUMN_PREFIXES:
+        _COLUMN_ALIASES[f"{_prefix}{_i}"] = f"n{_i}"
+del _i, _prefix
 
 
 def _normalize_column_name(name: str) -> str:
@@ -58,7 +53,10 @@ def load_draws(csv_path: str) -> pd.DataFrame:
     df = _rename_known_columns(df)
     missing = [c for c in DRAW_COLUMNS if c not in df.columns]
     if missing:
-        raise ValueError(f"CSV is missing required columns: {missing}")
+        raise ValueError(
+            f"CSV is missing required columns: {missing}. "
+            f"Columns found in {csv_path}: {list(df.columns)}"
+        )
     return df
 
 
