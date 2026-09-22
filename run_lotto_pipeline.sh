@@ -20,7 +20,7 @@ BACKTEST_FILE="backtest.txt"
 NUM_PREDICTIONS="${NUM_PREDICTIONS:-5}"
 EPOCHS="${EPOCHS:-50}"
 NUM_SAMPLES="${NUM_SAMPLES:-1000}"
-LOTTO_CSV_URL="${LOTTO_CSV_URL:-https://www.national-lottery.co.uk/results/lotto/draw-history/csv}"
+LOTTO_CSV_URL="${LOTTO_CSV_URL:-http://lottery.merseyworld.com/cgi-bin/lottery?days=2&Machine=Z&Ballset=0&order=0&show=1&year=0&display=CSV}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # =====================================================================
