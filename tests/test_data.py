@@ -94,6 +94,29 @@ def test_load_draws_skips_preamble_lines(tmp_path):
     assert len(df) == 3
 
 
+def test_load_draws_skips_repeated_header_rows(tmp_path):
+    """Some feeds (e.g. merseyworld.com with multiple draw days) repeat the
+    header row partway through the data, once per section/table. These
+    repeated header rows have the same field count as the data rows, so
+    they survive CSV parsing and must be filtered out afterwards.
+    """
+    csv_path = tmp_path / "draws.csv"
+    csv_path.write_text(
+        textwrap.dedent(
+            """\
+            Draw Date, N1,N2,N3,N4,N5,N6,Bonus
+            01-Jan-2022,1,2,3,4,5,6,7
+            01-Jun-2022,10,11,12,13,14,15,16
+            Draw Date, N1,N2,N3,N4,N5,N6,Bonus
+            01-Jan-2023,20,21,22,23,24,25,26
+            """
+        )
+    )
+    df = load_draws(str(csv_path))
+    assert list(df["n1"]) == [1, 10, 20]
+    assert len(df) == 3
+
+
 def test_load_draws_missing_columns_error_lists_found_columns(tmp_path):
     csv_path = tmp_path / "bad.csv"
     csv_path.write_text("date,n1\n2022-01-01,1\n")
