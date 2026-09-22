@@ -1,6 +1,8 @@
 """Data ingestion and tokenization utilities for UK Lotto draws."""
 from __future__ import annotations
 
+from collections import Counter
+
 import numpy as np
 import pandas as pd
 import torch
@@ -40,6 +42,29 @@ def _rename_known_columns(df: pd.DataFrame) -> pd.DataFrame:
     return df.rename(columns=rename_map)
 
 
+def _find_header_row(csv_path: str) -> int:
+    """Find the index of the real header row in a CSV that may be preceded by
+    metadata/preamble lines with a different number of fields.
+
+    Some UK National Lottery CSV feeds (e.g. the merseyworld.com export)
+    prepend a few lines of free-text metadata before the actual
+    comma-separated header and data rows. This inspects the comma count of
+    each non-blank line and returns the index of the first line whose field
+    count matches the most common field count in the file (i.e. the shape
+    the real header/data rows share).
+    """
+    with open(csv_path, newline="") as f:
+        lines = f.readlines()
+    field_counts = [line.count(",") + 1 for line in lines if line.strip()]
+    if not field_counts:
+        return 0
+    mode_count = Counter(field_counts).most_common(1)[0][0]
+    for i, line in enumerate(lines):
+        if line.strip() and line.count(",") + 1 == mode_count:
+            return i
+    return 0
+
+
 def load_draws(csv_path: str) -> pd.DataFrame:
     """Load historical UK Lotto draws from a CSV file.
 
@@ -48,8 +73,18 @@ def load_draws(csv_path: str) -> pd.DataFrame:
     Common alternate headers (as used by some UK National Lottery CSV
     exports), such as "Draw Date" and "Ball 1".."Ball 6", are automatically
     recognized and renamed to the expected column names.
+
+    Some feeds prepend a few lines of metadata/preamble before the real
+    header row, which would otherwise cause pandas to raise a
+    ``ParserError`` ("Expected N fields ... saw M"). If the initial parse
+    fails this way, the real header row is located automatically and parsing
+    is retried starting from it.
     """
-    df = pd.read_csv(csv_path)
+    try:
+        df = pd.read_csv(csv_path)
+    except pd.errors.ParserError:
+        header_row = _find_header_row(csv_path)
+        df = pd.read_csv(csv_path, skiprows=header_row)
     df = _rename_known_columns(df)
     missing = [c for c in DRAW_COLUMNS if c not in df.columns]
     if missing:
