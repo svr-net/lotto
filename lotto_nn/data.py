@@ -7,13 +7,55 @@ import torch
 
 DRAW_COLUMNS = ["n1", "n2", "n3", "n4", "n5", "n6"]
 
+# Maps normalized (lowercased, non-alphanumeric-stripped) header names from
+# common UK National Lottery CSV exports to the column names used internally.
+_COLUMN_ALIASES = {
+    "date": "date",
+    "drawdate": "date",
+    "ball1": "n1",
+    "ball2": "n2",
+    "ball3": "n3",
+    "ball4": "n4",
+    "ball5": "n5",
+    "ball6": "n6",
+    "n1": "n1",
+    "n2": "n2",
+    "n3": "n3",
+    "n4": "n4",
+    "n5": "n5",
+    "n6": "n6",
+    "bonus": "bonus",
+    "bonusball": "bonus",
+}
+
+
+def _normalize_column_name(name: str) -> str:
+    return "".join(ch for ch in str(name).lower() if ch.isalnum())
+
+
+def _rename_known_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """Rename recognized alternate headers (e.g. "Ball 1", "Draw Date") to the
+    internal column names ("n1", "date"), leaving unrecognized columns as-is.
+    """
+    rename_map = {}
+    for col in df.columns:
+        normalized = _normalize_column_name(col)
+        if normalized in _COLUMN_ALIASES:
+            rename_map[col] = _COLUMN_ALIASES[normalized]
+    return df.rename(columns=rename_map)
+
 
 def load_draws(csv_path: str) -> pd.DataFrame:
     """Load historical UK Lotto draws from a CSV file.
 
     Expected columns: date, n1, n2, n3, n4, n5, n6, bonus
+
+    Common alternate headers (as used by some UK National Lottery CSV
+    exports), such as "Draw Date" and "Ball 1".."Ball 6", are automatically
+    recognized and renamed to the expected column names.
     """
     df = pd.read_csv(csv_path)
+    df = _rename_known_columns(df)
     missing = [c for c in DRAW_COLUMNS if c not in df.columns]
     if missing:
         raise ValueError(f"CSV is missing required columns: {missing}")

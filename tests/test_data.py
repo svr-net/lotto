@@ -34,6 +34,23 @@ def test_load_draws_missing_columns_raises(tmp_path):
         pass
 
 
+def test_load_draws_accepts_national_lottery_headers(tmp_path):
+    csv_path = tmp_path / "draws.csv"
+    csv_path.write_text(
+        textwrap.dedent(
+            """\
+            DrawDate,Ball 1,Ball 2,Ball 3,Ball 4,Ball 5,Ball 6,Bonus Ball
+            01-Jan-2022,1,2,3,4,5,6,7
+            01-Jun-2022,10,11,12,13,14,15,16
+            """
+        )
+    )
+    df = load_draws(str(csv_path))
+    assert list(df["n1"]) == [1, 10]
+    assert list(df["bonus"]) == [7, 16]
+    assert "date" in df.columns
+
+
 def test_draws_to_numpy_shape(tmp_path):
     csv_path = tmp_path / "draws.csv"
     csv_path.write_text(SAMPLE_CSV)
