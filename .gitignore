@@ -216,3 +216,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# run_lotto_pipeline.sh generated artifacts
+/uk_lotto.csv
+/actual.txt
+/predictions.txt
+/backtest.txt

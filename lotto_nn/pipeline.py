@@ -25,10 +25,18 @@ def run_pipeline(
     lr: float = 1e-3,
     split_date: str = "2022-12-31",
     verbose: bool = True,
+    num_predictions: int = 0,
+    actual_out: str | None = None,
+    predictions_out: str | None = None,
+    backtest_out: str | None = None,
 ) -> dict:
     """Run the full ingestion -> training -> sampling -> backtesting pipeline.
 
     Returns a dictionary of computed backtest results.
+
+    If ``actual_out``/``predictions_out``/``backtest_out`` are provided, the latest
+    historical draw, ``num_predictions`` freshly sampled draws, and a text summary of
+    the backtest results are written to those files respectively.
     """
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -85,6 +93,36 @@ def run_pipeline(
 
     results["generated_np"] = generated_np
 
+    if actual_out:
+        latest_draw = draws_np[-1]
+        with open(actual_out, "w") as f:
+            f.write(" ".join(str(n) for n in latest_draw) + "\n")
+
+    if predictions_out:
+        n_pred = num_predictions or 5
+        prediction_draws = generate_batch(model, num_samples=n_pred, temperature=temperature)
+        results["prediction_draws"] = prediction_draws
+        with open(predictions_out, "w") as f:
+            for draw in prediction_draws:
+                f.write(" ".join(str(n) for n in sorted(draw)) + "\n")
+
+    if backtest_out:
+        with open(backtest_out, "w") as f:
+            f.write(f"Chi-square frequency statistic: {results['chi_square']}\n")
+            f.write(f"Top 20 historical pairs: {results['top_hist_pairs']}\n")
+            f.write(f"Top 20 generated pairs: {results['top_gen_pairs']}\n")
+            f.write(f"Historical sum mean/std: {results['hist_sum']}\n")
+            f.write(f"Generated sum mean/std: {results['gen_sum']}\n")
+            f.write(f"Historical odd count mean/std: {results['hist_odd_even']}\n")
+            f.write(f"Generated odd count mean/std: {results['gen_odd_even']}\n")
+            f.write(f"Historical spacing mean/std: {results['hist_spacing']}\n")
+            f.write(f"Generated spacing mean/std: {results['gen_spacing']}\n")
+            f.write(
+                "Simulation hits - mean: {} std: {} max: {}\n".format(
+                    results["sim_hits_mean"], results["sim_hits_std"], results["sim_hits_max"]
+                )
+            )
+
     if verbose:
         print("Chi-square frequency statistic:", results["chi_square"])
         print("Top 20 historical pairs:", results["top_hist_pairs"])
@@ -116,6 +154,17 @@ def main():
     parser.add_argument("--temperature", type=float, default=0.9)
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--split-date", type=str, default="2022-12-31")
+    parser.add_argument(
+        "--num-predictions",
+        type=int,
+        default=5,
+        help="Number of prediction draws to write to --predictions-out.",
+    )
+    parser.add_argument("--actual-out", type=str, default=None, help="Path to write the latest actual draw.")
+    parser.add_argument(
+        "--predictions-out", type=str, default=None, help="Path to write generated prediction draws."
+    )
+    parser.add_argument("--backtest-out", type=str, default=None, help="Path to write backtest results summary.")
     args = parser.parse_args()
 
     run_pipeline(
@@ -127,6 +176,10 @@ def main():
         lr=args.lr,
         split_date=args.split_date,
         verbose=True,
+        num_predictions=args.num_predictions,
+        actual_out=args.actual_out,
+        predictions_out=args.predictions_out,
+        backtest_out=args.backtest_out,
     )
 
 

@@ -35,6 +35,19 @@ A small synthetic sample dataset is provided at `sample_data/uk_lotto_sample.csv
 demonstration and testing purposes; replace it with real historical UK Lotto draws for
 meaningful backtest results.
 
+### Full automated run
+
+`run_lotto_pipeline.sh` automates the entire workflow: it downloads the latest UK Lotto
+historical feed to `uk_lotto.csv`, runs the pipeline (writing `actual.txt`,
+`predictions.txt`, and `backtest.txt`), and prints a PREDICTED | ACTUAL | MATCHES matrix:
+
+```bash
+./run_lotto_pipeline.sh
+```
+
+Environment variables `EPOCHS`, `NUM_SAMPLES`, `NUM_PREDICTIONS`, and `LOTTO_CSV_URL` can
+be set to override the defaults.
+
 ### Tests
 
 ```bash
