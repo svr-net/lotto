@@ -21,6 +21,15 @@ NUM_PREDICTIONS="${NUM_PREDICTIONS:-5}"
 EPOCHS="${EPOCHS:-50}"
 NUM_SAMPLES="${NUM_SAMPLES:-1000}"
 LOTTO_CSV_URL="${LOTTO_CSV_URL:-https://www.national-lottery.co.uk/results/lotto/draw-history/csv}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# =====================================================================
+# SECTION 0 — ENSURE PYTHON DEPENDENCIES ARE INSTALLED
+# =====================================================================
+if ! python3 -c "import torch, pandas, numpy" >/dev/null 2>&1; then
+    echo "Installing required Python dependencies..."
+    python3 -m pip install -r "$SCRIPT_DIR/requirements.txt"
+fi
 
 # =====================================================================
 # SECTION 1 — DOWNLOAD LATEST HISTORICAL FEED
