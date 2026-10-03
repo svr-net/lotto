@@ -21,6 +21,11 @@ draws against historical draws.
 - `lotto_nn/grammar_pipeline.py` — orchestrates the grammar-discovery pipeline end-to-end
   (extraction, sampling, backtesting) and exposes a CLI
 
+- `lotto_nn/prime_pipeline.py` — re-encodes draws as fixed-width digits in each of the first 10
+  prime radix bases (2, 3, 5, 7, 11, 13, 17, 19, 23, 29), trains the same transformer per base,
+  decodes samples back to decimal, and reports backtest outcomes per base
+  (`python -m lotto_nn.prime_pipeline --csv uk_lotto.csv --epochs 50 --out prime.txt`)
+
 ### Setup
 
 ```bash
