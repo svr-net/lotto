@@ -161,6 +161,17 @@ td.flag { font-weight: 600; }
   <div class="table-wrap"><table id="sp-bt"></table></div>
 </section>
 
+<section id="ml-section">
+  <div class="eyebrow">Machine learning</div>
+  <h2>Can gradient boosting and friends learn the draws?</h2>
+  <p id="ml-lede"></p>
+  <div class="verdict" id="ml-verdict"></div>
+  <div class="table-wrap"><table id="ml-table"></table></div>
+  <p class="note" id="ml-note"></p>
+  <h3 class="h3">What the gradient-boosting model leaned on</h3>
+  <p class="note" id="ml-imp"></p>
+</section>
+
 <section>
   <div class="eyebrow">Fairness check</div>
   <h2>How often each ball came up since October 2015</h2>
@@ -452,6 +463,27 @@ new MutationObserver(drawHeatmaps).observe(document.documentElement, { attribute
   $("#sp-verdict").innerHTML = found
     ? `<strong>Something rhythmic stands out.</strong><span>${esc("At least one test or strategy clears the multiple-testing threshold. It needs to replicate before it means anything.")}</span>`
     : `<strong>No rhythms, no bursts.</strong><span>${esc(`The draw sequence is white noise at every frequency and every time scale. No ball returns on a schedule, no summary of the draw cycles, the variance splits across time scales exactly as fair noise does, and no Morlet or Haar burst exceeds what fair histories produce. Projecting cycles forward or riding wavelet-smoothed hot streaks does no better than random tickets.`)}</span>`;
+})();
+
+(function () {
+  const M = D.ml;
+  if (!M) { document.getElementById("ml-section").hidden = true; return; }
+  const E = M.eras, zf = (z) => (z >= 0 ? "+" : "") + z.toFixed(2), avg = (a) => a.reduce((x, y) => x + y, 0) / a.length;
+  const names = Object.keys(E[0].models);
+  $("#ml-lede").textContent = `Every round and number becomes one training example: will this number be drawn in this round? The ${M.features.length} features use only earlier rounds: recent frequency over several windows, rounds since last seen and the usual gap, whether it came up in the last round or two or was the last bonus, its usual position in the drawing order, its rate on the last machine used, its parity, decade and residues, and the previous draw's sum. Gradient boosting, a random forest and logistic regression are retrained every ${M.block} rounds on everything before, and a soft-voting ensemble averages them. Each era is tested on its own: the 59-ball era from ${E[0].split} (${E[0].test_rounds} rounds) and the 49-ball era from ${E[1].split} (${E[1].test_rounds} rounds).`;
+  $("#ml-table").innerHTML = `<thead><tr><th>Model</th><th>Era</th><th>Bits vs fair (z)</th><th>AUC (z)</th><th>Top-6 ticket z</th><th>Sampled tickets z</th></tr></thead><tbody>` +
+    names.flatMap((n) => E.map((e, i) => { const r = e.models[n]; return `<tr class="${n.startsWith("ensemble") ? "ens" : ""}"><td style="white-space:normal;min-width:11rem">${esc(n)}</td><td>${e.pool}-ball</td><td class="${r.excess_bits_z <= -3 ? "flag" : ""}">${(r.excess_bits >= 0 ? "+" : "") + r.excess_bits.toFixed(4)} (${zf(r.excess_bits_z)})</td><td class="${r.auc_z >= 3 ? "flag" : ""}">${r.auc.toFixed(4)} (${zf(r.auc_z)})</td><td>${zf(avg(r.top6_z))}</td><td>${zf(avg(r.sampled_z))}</td></tr>`; })).join("") + "</tbody>";
+  const all = names.flatMap((n) => E.map((e) => ({ n, e: e.pool, r: e.models[n] })));
+  const bestAuc = all.reduce((a, b) => (b.r.auc_z > a.r.auc_z ? b : a));
+  const bestBits = all.reduce((a, b) => (b.r.excess_bits < a.r.excess_bits ? b : a));
+  const learned = all.filter((x) => x.r.auc_z >= 3 && x.r.excess_bits_z <= -3);
+  $("#ml-note").textContent = `"Bits vs fair" is how many more bits per round the model needs than the fair rate of 6/${E[0].pool} (or 6/${E[1].pool}) to encode which numbers came up; below zero would mean it knows something. AUC is how well each round's ranking puts the drawn numbers first; 0.5 is chance. The best AUC is ${bestAuc.r.auc.toFixed(4)} (${bestAuc.n}, ${bestAuc.e}-ball era, z ${zf(bestAuc.r.auc_z)}), and the closest to the fair rate is ${(bestBits.r.excess_bits >= 0 ? "+" : "") + bestBits.r.excess_bits.toFixed(4)} bits (z ${zf(bestBits.r.excess_bits_z)}) (${bestBits.n}, ${bestBits.e}-ball era). Ticket z-scores average ${M.seeds.length} seeds against the 36/N chance rate. Positive bits with a large z mean the model is reliably worse than the fair rate: it learned patterns from the training years that were noise and didn't recur, which is what overfitting looks like. ${(() => { const low = all.reduce((a, b) => (b.r.auc_z < a.r.auc_z ? b : a)); if (low.r.auc_z > -2) return ""; const other = E.find((e) => e.pool !== low.e).models[low.n]; return `The lowest AUC, ${low.r.auc.toFixed(4)} (${low.n}, ${low.e}-ball era, z ${zf(low.r.auc_z)}), would mean the model ranks drawn numbers below chance, but in the other era the same model scores ${other.auc.toFixed(4)} (z ${zf(other.auc_z)}), so it does not replicate.`; })()} With ${all.length} model-era rows and four measures each, z-scores within about ±3 in the useful direction are chance.`;
+  const imp = E[0].importance.slice(0, 6);
+  const nonzero = E[0].importance.filter((r) => r.mean > 2 * r.sd && r.mean > 0);
+  $("#ml-imp").textContent = `Permutation importance on the last test block of the 59-ball era (how much worse log-loss gets when one feature is shuffled): ${imp.map((r) => `${r.feature} ${r.mean >= 0 ? "+" : ""}${r.mean.toExponential(1)}`).join(", ")}. ${nonzero.length ? `${nonzero.length} of ${E[0].importance.length} features (${nonzero.map((r) => r.feature).join(", ")}) ${nonzero.length === 1 ? "clears" : "clear"} twice ${nonzero.length === 1 ? "its" : "their"} own noise, about what chance gives when ${E[0].importance.length} features are shuffled. Every gain is a few ten-thousandths of a bit, against the roughly 0.47 bits per number the model needs either way.` : "None clears twice its own noise: shuffling any feature barely changes the model, because none of them carries information about the next draw."}${E[0].picks ? ` Trained on every round, the ensemble's probabilities for the next draw run from ${E[0].picks.min_prob.toFixed(4)} to ${E[0].picks.max_prob.toFixed(4)}, around the fair ${(6 / 59).toFixed(4)}. Its top-6 ticket is ${E[0].picks.top6.join(" ")}.` : ""}`;
+  $("#ml-verdict").innerHTML = learned.length
+    ? `<strong>A model found something.</strong><span>${esc(`${learned.map((x) => `${x.n} (${x.e}-ball)`).join(", ")} beats the fair rate on both log-loss and AUC. Check it replicates in the other era before trusting it.`)}</span>`
+    : `<strong>Nothing to learn.</strong><span>${esc(`Gradient boosting, the random forest, logistic regression and their ensemble all end up predicting close to the fair rate for every number, in both eras. None predicts held-out draws better than chance, ranks the drawn numbers better than chance, or picks tickets that match more often. The same pipeline catches a rigged "sticky" machine in the tests, so it can find a pattern when one exists.`)}</span>`;
 })();
 
 $("#method").textContent = `Data: the full UK Lotto history from lottery.merseyworld.com (${D.era.last_draw.toLocaleString()} draws since 1994). The most recent rounds match the official National Lottery results exactly. Only draws since ${D.era.first_date} are used, when the pool grew from 49 to 59 balls. Each round in the test period was predicted using only draws from earlier dates, and both rounds of a two-round draw count as separate targets. The transformer was retrained every 26 rounds. Performance weights use a softmax over each strategy's mean hits in its last ${D.window} rounds (τ = ${D.tau}). z-scores compare mean hits with the exact hypergeometric expectation of 36/59. Seeds used: ${D.seeds.join(", ")}. This page is a statistics exercise. Lotto draws are independent and random, and no method here changes the odds of any ticket.`;

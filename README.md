@@ -104,6 +104,7 @@ python scripts/walk_forward_backtest.py --seeds 2026 1 2 3 4 --out results
 python scripts/grammar_discovery.py   # results/grammar.json
 python scripts/prime_radix_study.py   # results/prime_radix.json
 python scripts/spectral_study.py      # results/spectral.json
+python scripts/ml_ensemble_study.py   # results/ml_ensemble.json (needs scikit-learn)
 python scripts/build_report.py        # results/report.html
 ```
 
@@ -144,3 +145,11 @@ variance splits across time scales and looks for localized bursts, and a Morlet 
 the draw sum looks for rhythms that switch on and off. Every statistic is compared with 1,000
 simulated fair histories. It also backtests Fourier extrapolation (least-squares sinusoids at
 zero-padded periodogram peaks, projected one round ahead) and wavelet-smoothed hotness.
+
+`scripts/ml_ensemble_study.py` frames each round x number as "will this number be drawn?",
+with 20 features computed only from earlier rounds (windowed frequencies, gaps, last-round
+and bonus flags, usual drawing position, last machine's rate, parity/decade/residues, previous
+sum). Gradient boosting (scikit-learn HistGradientBoosting), a random forest, logistic
+regression and their soft-voting average are retrained walk-forward every 26 rounds in each
+era. They are scored by held-out log-loss against the fair rate, per-round AUC, matches for
+top-6 and probability-sampled tickets, and permutation importance.
