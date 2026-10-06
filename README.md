@@ -76,6 +76,28 @@ matrix), but without requiring PyTorch:
 ./run_lotto_grammar_pipeline.sh
 ```
 
+### Full-history feed, walk-forward backtest and ensemble
+
+`scripts/fetch_merseyworld.py` downloads every UK Lotto draw since 1994 from
+lottery.merseyworld.com (no API key) into `data/uk_lotto_full.csv`
+(`draw_no,date,round,n1..n6,bonus,...`, chronological, main numbers sorted; two-round
+draws since June 2026 appear as rounds 1 and 2). `data/uk_lotto_59.csv` is the 1-59 era
+subset (draw 2066, 2015-10-10, onward).
+
+`scripts/walk_forward_backtest.py` replays nine strategies (random baseline, hot/cold
+weighted, hot/cold/overdue top-6, repeat-last, the repo n-gram grammar and transformer)
+over every round after `--split-date`, each seeing only earlier draws, and scores matches
+against the exact hypergeometric chance distribution. It also correlates the strategies
+(round-by-round hits and number picks), combines all nine into equal-weight and
+trailing-performance-weighted ensembles, repeats everything over several seeds, and
+writes next-draw picks to `results/walk_forward.json`:
+
+```bash
+python scripts/fetch_merseyworld.py
+python scripts/walk_forward_backtest.py --seeds 2026 1 2 3 4 --out results
+python scripts/build_report.py   # results/report.html
+```
+
 ### Tests
 
 ```bash
