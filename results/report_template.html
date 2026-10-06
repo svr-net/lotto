@@ -172,6 +172,24 @@ td.flag { font-weight: 600; }
   <p class="note" id="ml-imp"></p>
 </section>
 
+<section id="bayes-section">
+  <div class="eyebrow">Bayesian inference</div>
+  <h2>How strongly do the draws say "fair"?</h2>
+  <p id="by-lede"></p>
+  <div class="verdict" id="by-verdict"></div>
+  <div class="table-wrap"><table id="by-table"></table></div>
+  <p class="note" id="by-table-note"></p>
+  <h3 class="h3">How biased could each ball be? (59-ball era, 95% credible intervals)</h3>
+  <div class="chart" id="by-forest"></div>
+  <p class="note" id="by-forest-note"></p>
+  <h3 class="h3">Evidence for a fair machine, draw by draw</h3>
+  <div class="legend"><span style="--c:var(--s1)">59-ball era</span><span style="--c:var(--s2)">49-ball era</span></div>
+  <div class="chart" id="by-path"></div>
+  <h3 class="h3">Bayesian strategies</h3>
+  <div class="table-wrap"><table id="by-bt"></table></div>
+  <p class="note" id="by-bt-note"></p>
+</section>
+
 <section>
   <div class="eyebrow">Fairness check</div>
   <h2>How often each ball came up since October 2015</h2>
@@ -484,6 +502,75 @@ new MutationObserver(drawHeatmaps).observe(document.documentElement, { attribute
   $("#ml-verdict").innerHTML = learned.length
     ? `<strong>A model found something.</strong><span>${esc(`${learned.map((x) => `${x.n} (${x.e}-ball)`).join(", ")} beats the fair rate on both log-loss and AUC. Check it replicates in the other era before trusting it.`)}</span>`
     : `<strong>Nothing to learn.</strong><span>${esc(`Gradient boosting, the random forest, logistic regression and their ensemble all end up predicting close to the fair rate for every number, in both eras. None predicts held-out draws better than chance, ranks the drawn numbers better than chance, or picks tickets that match more often. The same pipeline catches a rigged "sticky" machine in the tests, so it can find a pattern when one exists.`)}</span>`;
+})();
+
+(function () {
+  const B = D.bayes;
+  if (!B) { document.getElementById("bayes-section").hidden = true; return; }
+  const E = B.eras, zf = (z) => (z >= 0 ? "+" : "") + z.toFixed(2);
+  const odds = (l10) => { const r = Math.pow(10, Math.abs(l10)); const s = r >= 100 ? Math.round(r).toLocaleString() : r.toFixed(1); return `${s} to 1 ${l10 >= 0 ? "for" : "against"}`; };
+  $("#by-lede").textContent = `Bayesian inference weighs two stories against each other and reports how much the draws should shift belief between them. The fair story: every ball equally likely. The biased story: each ball has its own probability, off fair by anything from about 3% to 100%, with the size of the biases itself unknown and averaged over. The Bayes factor is how much more likely the observed counts are under one story than the other. With even prior odds it converts directly into a posterior probability. The same comparison asks whether machines, ball sets or calendar years each favour different balls by 3% or more.`;
+  const rows = E.flatMap((e) => [
+    { era: e.pool, q: "Is the machine fair?", l10: e.log10_bf_fair, v: e.verdict, sims: e.fair_sims_median, extra: `P(fair) = ${(e.p_fair_posterior * 100).toFixed(1)}%` },
+    ...e.groups.map((g) => ({ era: e.pool, q: g.question.replace(/^do /, "Do ").replace(/\?$/, "?"), l10: g.log10_bf_same, v: g.verdict, sims: g.fair_median, extra: `${g.groups.length} groups` })),
+  ]);
+  $("#by-table").innerHTML = `<thead><tr><th>Era</th><th>Question</th><th>Bayes factor</th><th>Evidence</th><th>Typical fair history</th><th></th></tr></thead><tbody>` +
+    rows.map((r) => `<tr><td>${r.era}-ball</td><td style="white-space:normal;min-width:14rem;text-align:left">${esc(r.q)}</td><td>${odds(r.l10)} ${r.q.startsWith("Is") ? "fair" : "no difference"}</td><td style="text-align:left">${esc(r.v)}</td><td>${odds(r.sims)}</td><td>${esc(r.extra)}</td></tr>`).join("") + "</tbody>";
+  const fairRows = rows.filter((r) => r.q.startsWith("Is"));
+  const against = rows.filter((r) => r.l10 < -0.5);
+  $("#by-table-note").textContent = `Evidence labels follow Kass and Raftery: odds of 3 to 1 or more are substantial, 10 to 1 strong, 100 to 1 decisive. "Typical fair history" is the median Bayes factor when the same analysis is run on simulated fair draws of the same length; it calibrates the approximation of treating each ball as a separate draw. ${against.length ? `${against.length} comparison(s) lean towards bias or a difference.` : `Every comparison favours the fair or no-difference story, or is inconclusive${B.eras.every((e) => e.p_low > 0.05 && e.groups.every((g) => g.p_low > 0.05)) ? ", and each sits where fair histories typically land" : ""}.`} Small biases can't be ruled out completely: with a few thousand draws the data can only say that any bias is small.`;
+  // forest plot
+  (function () {
+    const e = E[0], R = e.ball_rel, K = R.mid.length;
+    const W = 900, H = 260, L = 46, Rm = 10, T = 14, Bm = 30;
+    const lo = Math.min(0.8, ...R.lo) - 0.01, hi = Math.max(1.2, ...R.hi) + 0.01;
+    const x = (i) => L + (i + 0.5) * (W - L - Rm) / K, y = (v) => T + (hi - v) / (hi - lo) * (H - T - Bm);
+    let g = "";
+    for (let v = Math.ceil(lo * 20) / 20; v <= hi + 1e-9; v += 0.05) g += `<line x1="${L}" x2="${W - Rm}" y1="${y(v)}" y2="${y(v)}" stroke="var(--grid)"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${Math.round((v - 1) * 100)}%</text>`;
+    g += `<line x1="${L}" x2="${W - Rm}" y1="${y(1)}" y2="${y(1)}" stroke="var(--fg)" stroke-width="1.5" stroke-dasharray="4 3"/>`;
+    for (let i = 0; i < K; i++) {
+      g += `<line x1="${x(i)}" x2="${x(i)}" y1="${y(R.lo[i])}" y2="${y(R.hi[i])}" stroke="var(--s1)" stroke-width="2" stroke-linecap="round"/><circle cx="${x(i)}" cy="${y(R.mid[i])}" r="3.5" fill="var(--s1)" stroke="var(--surface)" stroke-width="1.5"/>`;
+      g += `<rect x="${x(i) - 7}" y="${T}" width="14" height="${H - T - Bm}" fill="transparent" data-tip="Ball ${i + 1}: drawn ${R.count[i]} times; ${Math.round((R.mid[i] - 1) * 100)}% vs fair (95%: ${Math.round((R.lo[i] - 1) * 100)}% to ${Math.round((R.hi[i] - 1) * 100)}%)"/>`;
+      if ((i + 1) % 5 === 0 || i === 0) g += `<text x="${x(i)}" y="${H - 10}" text-anchor="middle">${i + 1}</text>`;
+    }
+    $("#by-forest").innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="min-width:640px" role="img" aria-label="Posterior 95% credible interval of each ball's probability relative to fair">${g}</svg>`;
+    attachTip($("#by-forest"));
+    const widest = Math.max(...R.hi.map((h, i) => Math.max(h - 1, 1 - R.lo[i])));
+    const outside = E.map((ee) => ee.ball_rel.lo.map((l, i) => (l > 1 || ee.ball_rel.hi[i] < 1 ? i + 1 : 0)).filter(Boolean));
+    $("#by-forest-note").textContent = `Each line is a ball's 95% credible interval for how much more or less often it comes out than fair; the dot is the posterior median. ${(() => { const cp = e.concentration_posterior, m = cp.p.indexOf(Math.max(...cp.p)), top = m === cp.p.length - 1; return `The posterior pulls every ball strongly towards fair: the data ${top ? `push the Dirichlet concentration to the top of the range considered (${Math.round(Math.pow(10, cp.log10_a[m])).toLocaleString()}), which means no detectable spread between balls at all` : `prefer a Dirichlet concentration around ${Math.round(Math.pow(10, cp.log10_a[m])).toLocaleString()}`}.`; })()} ${outside[0].length ? `${outside[0].length} ball(s) have intervals that exclude fair (${outside[0].join(", ")}).` : "Even the hottest and coldest balls get intervals that include zero."} The widest interval reaches ${Math.round(widest * 100)}% from fair. The posterior probability that any ball is more than 10% off fair is ${(e.p_any_off_10pct * 100).toFixed(1)}% in the 59-ball era and ${(E[1].p_any_off_10pct * 100).toFixed(1)}% in the 49-ball era.`;
+  })();
+  // evidence path
+  (function () {
+    const W = 900, H = 240, L = 46, Rm = 70, T = 14, Bm = 30;
+    const maxR = Math.max(...E.map((e) => e.rounds));
+    const all = E.flatMap((e) => e.evidence_path.map((p) => p.log10_bf));
+    const lo = Math.min(-0.5, ...all) - 0.1, hi = Math.max(2.2, ...all) + 0.1;
+    const x = (r) => L + r / maxR * (W - L - Rm), y = (v) => T + (hi - v) / (hi - lo) * (H - T - Bm);
+    let g = "";
+    [[0, "even"], [1, "strong for fair"], [2, "decisive"]].forEach(([v, lab]) => { if (v <= hi) g += `<line x1="${L}" x2="${W - Rm}" y1="${y(v)}" y2="${y(v)}" stroke="var(--grid)" ${v === 0 ? 'stroke-width="1.5"' : 'stroke-dasharray="3 3"'}/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${v === 0 ? "1:1" : Math.pow(10, v) + ":1"}</text><text x="${L + 6}" y="${y(v) - 5}">${lab}</text>`; });
+    for (let r = 0; r <= maxR; r += 500) g += `<text x="${x(r)}" y="${H - 10}" text-anchor="middle">${r}</text>`;
+    E.forEach((e, i) => {
+      const col = i === 0 ? "var(--s1)" : "var(--s2)";
+      const pts = e.evidence_path.map((p) => `${x(p.round).toFixed(1)},${y(p.log10_bf).toFixed(1)}`).join(" ");
+      const last = e.evidence_path[e.evidence_path.length - 1];
+      g += `<polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round"/><circle cx="${x(last.round)}" cy="${y(last.log10_bf)}" r="4" fill="${col}" stroke="var(--surface)" stroke-width="2"/><text x="${x(last.round) + 8}" y="${y(last.log10_bf) + 4}" style="fill:var(--fg)">${e.pool}-ball</text>`;
+      e.evidence_path.forEach((p) => { g += `<circle cx="${x(p.round)}" cy="${y(p.log10_bf)}" r="6" fill="transparent" data-tip="${e.pool}-ball era, after ${p.round} rounds: ${odds(p.log10_bf)} fair"/>`; });
+    });
+    g += `<text x="${(W - Rm + L) / 2}" y="${H}" text-anchor="middle">rounds drawn</text>`;
+    $("#by-path").innerHTML = `<svg viewBox="0 0 ${W} ${H + 6}" style="min-width:640px" role="img" aria-label="Bayes factor for a fair machine as rounds accumulate">${g}</svg>`;
+    attachTip($("#by-path"));
+  })();
+  const S = B.backtest.strategies;
+  $("#by-bt").innerHTML = `<thead><tr><th>Strategy</th><th>Average z</th><th>Seed range</th><th>Picks for the next draw</th></tr></thead><tbody>` +
+    Object.entries(S).map(([k, r]) => `<tr class="${k.startsWith("random") ? "base-row" : ""}"><td style="white-space:normal;min-width:14rem">${esc(k)}</td><td>${zf(r.z_mean)}</td><td>${zf(r.z_min)} to ${zf(r.z_max)}</td><td style="text-align:left">${B.backtest.picks[k] ? esc(B.backtest.picks[k][0].join(" ")) : "–"}</td></tr>`).join("") + "</tbody>";
+  const strat = Object.entries(S).filter(([k]) => !k.startsWith("random"));
+  const best = strat.reduce((a, b) => (b[1].z_mean > a[1].z_mean ? b : a));
+  $("#by-bt-note").textContent = `Walk-forward over ${B.backtest.test_rounds} rounds since ${B.split}, ${B.backtest.tickets_per_round} tickets per round, ${B.backtest.seeds.length} seeds. Posterior-mean top 6 plays the six balls with the highest posterior probability. Thompson sampling draws one plausible set of ball probabilities from the posterior per ticket and plays its top six, so it explores in proportion to the remaining uncertainty. Because the posterior is so close to fair, all of them behave like random tickets. The best average is "${best[0]}" at ${zf(best[1].z_mean)}.`;
+  const minFair = Math.min(...fairRows.map((r) => r.l10));
+  const allIn = E.every((ee) => ee.ball_rel.lo.every((l, i) => l <= 1 && ee.ball_rel.hi[i] >= 1));
+  $("#by-verdict").innerHTML = against.length
+    ? `<strong>Some evidence against a fair machine.</strong><span>${esc(`${against.length} comparison(s) lean towards bias or a difference; see the table.`)}</span>`
+    : `<strong>The evidence favours a fair machine.</strong><span>${esc(`In both eras the draws are at least ${Math.pow(10, minFair).toFixed(0)} times more likely under a fair machine than under one with biases of 3% or more (posterior probability of fairness ${E.map((e) => (e.p_fair_posterior * 100).toFixed(1) + "%").join(" and ")}). Machines, ball sets and calendar years show no material differences, ${allIn ? "every ball's credible interval includes fair" : "almost every ball's credible interval includes fair"}, and Bayesian strategies do no better than random tickets.`)}</span>`;
 })();
 
 $("#method").textContent = `Data: the full UK Lotto history from lottery.merseyworld.com (${D.era.last_draw.toLocaleString()} draws since 1994). The most recent rounds match the official National Lottery results exactly. Only draws since ${D.era.first_date} are used, when the pool grew from 49 to 59 balls. Each round in the test period was predicted using only draws from earlier dates, and both rounds of a two-round draw count as separate targets. The transformer was retrained every 26 rounds. Performance weights use a softmax over each strategy's mean hits in its last ${D.window} rounds (τ = ${D.tau}). z-scores compare mean hits with the exact hypergeometric expectation of 36/59. Seeds used: ${D.seeds.join(", ")}. This page is a statistics exercise. Lotto draws are independent and random, and no method here changes the odds of any ticket.`;
