@@ -33,3 +33,30 @@ def test_train_model_runs_and_returns_finite_loss():
     history = train_model(model, tokens, optimizer, epochs=2, batch_size=8, verbose=False)
     assert len(history) == 2
     assert all(torch.isfinite(torch.tensor(loss)) for loss in history)
+
+
+def test_model_is_causal():
+    # Logits at position i must not depend on tokens after i, otherwise the
+    # model can learn to copy its input instead of predicting the next number.
+    model = _tiny_model().eval()
+    a = torch.tensor([[0, 5, 10, 20, 30, 40]])
+    b = torch.tensor([[0, 5, 10, 55, 56, 57]])
+    with torch.no_grad():
+        assert torch.allclose(model(a)[0, :3], model(b)[0, :3], atol=1e-6)
+
+
+def test_trained_model_does_not_copy_input():
+    # Uniformly random sorted draws carry no learnable signal beyond ordering, so
+    # a next-number model cannot drive the loss near zero; a copying model can.
+    torch.manual_seed(0)
+    draws = torch.stack([torch.randperm(59)[:6].sort().values + 1 for _ in range(300)])
+    model = _tiny_model()
+    optimizer = torch.optim.AdamW(model.parameters(), lr=3e-3)
+    history = train_model(model, draws, optimizer, epochs=30, batch_size=64, verbose=False)
+    assert history[-1] > 2.0
+
+
+def test_sampled_draws_are_sorted():
+    model = _tiny_model()
+    batch = generate_batch(model, num_samples=20, temperature=1.0, device=torch.device("cpu"))
+    assert all(row.tolist() == sorted(row.tolist()) for row in batch)

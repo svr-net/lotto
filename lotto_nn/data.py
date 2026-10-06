@@ -109,8 +109,12 @@ def draws_to_numpy(df: pd.DataFrame) -> np.ndarray:
 
 
 def tokenize(draws_np: np.ndarray) -> torch.Tensor:
-    """Convert a [N, 6] int array of lotto numbers into an integer token tensor."""
-    return torch.tensor(draws_np, dtype=torch.long)
+    """Convert a [N, 6] int array of lotto numbers into an integer token tensor.
+
+    Each draw is sorted ascending: a draw is a set, so a canonical order lets the
+    autoregressive model learn one sequence per draw.
+    """
+    return torch.tensor(np.sort(np.asarray(draws_np), axis=1), dtype=torch.long)
 
 
 def temporal_split(df: pd.DataFrame, split_date: str = "2022-12-31"):

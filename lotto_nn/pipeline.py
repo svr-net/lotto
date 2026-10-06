@@ -34,6 +34,11 @@ def run_pipeline(
 
     Returns a dictionary of computed backtest results.
 
+    The distribution backtests use a model trained on every draw. The hold-out
+    test trains a separate model only on draws up to ``split_date`` and scores
+    its tickets against the later draws it never saw (``results["holdout"]``,
+    None when either side of the split is empty).
+
     If ``actual_out``/``predictions_out``/``backtest_out`` are provided, the latest
     historical draw, ``num_predictions`` freshly sampled draws, and a text summary of
     the backtest results are written to those files respectively.
@@ -46,9 +51,13 @@ def run_pipeline(
     tokens = tokenize(draws_np).to(device)
 
     # 3-4. Model + training
-    model = LottoTransformer().to(device)
-    optimizer = torch.optim.AdamW(model.parameters(), lr=lr)
-    train_model(model, tokens, optimizer, epochs=epochs, batch_size=batch_size, verbose=verbose)
+    def fit(train_tokens):
+        model = LottoTransformer().to(device)
+        optimizer = torch.optim.AdamW(model.parameters(), lr=lr)
+        train_model(model, train_tokens, optimizer, epochs=epochs, batch_size=batch_size, verbose=verbose)
+        return model
+
+    model = fit(tokens)
 
     # 5. Sampling
     generated_np = generate_batch(model, num_samples=num_samples, temperature=temperature)
@@ -58,7 +67,10 @@ def run_pipeline(
 
     hist_freq = bt.frequency_distribution(draws_np)
     gen_freq = bt.frequency_distribution(generated_np)
-    results["chi_square"] = bt.chi_square_stat(hist_freq, gen_freq)
+    chi = bt.chi_square_test(hist_freq, gen_freq)
+    results["chi_square"] = chi["chi2"]
+    results["chi_square_dof"] = chi["dof"]
+    results["chi_square_p"] = chi["p"]
     results["hist_freq"] = hist_freq
     results["gen_freq"] = gen_freq
 
@@ -76,20 +88,20 @@ def run_pipeline(
     results["hist_spacing"] = bt.spacing_stats(draws_np)
     results["gen_spacing"] = bt.spacing_stats(generated_np)
 
+    results["holdout"] = None
     if "date" in df.columns:
         train_draws_np, test_draws_np = temporal_split(df, split_date=split_date)
         results["walk_forward_train_size"] = len(train_draws_np)
         results["walk_forward_test_size"] = len(test_draws_np)
+        if len(train_draws_np) and len(test_draws_np):
+            holdout_model = fit(tokenize(train_draws_np).to(device))
+            holdout_tickets = generate_batch(holdout_model, num_samples=num_samples, temperature=temperature)
+            results["holdout"] = bt.holdout_hits(holdout_tickets, test_draws_np)
 
     hist_pos_freq = bt.positional_frequency(draws_np)
     gen_pos_freq = bt.positional_frequency(generated_np)
     results["hist_pos_freq"] = hist_pos_freq
     results["gen_pos_freq"] = gen_pos_freq
-
-    sim_hits = bt.simulate_hits(generated_np, draws_np)
-    results["sim_hits_mean"] = float(sim_hits.mean())
-    results["sim_hits_std"] = float(sim_hits.std())
-    results["sim_hits_max"] = int(sim_hits.max())
 
     results["generated_np"] = generated_np
 
@@ -108,7 +120,7 @@ def run_pipeline(
 
     if backtest_out:
         with open(backtest_out, "w") as f:
-            f.write(f"Chi-square frequency statistic: {results['chi_square']}\n")
+            f.write(bt.format_chi_square(chi) + "\n")
             f.write(f"Top 20 historical pairs: {results['top_hist_pairs']}\n")
             f.write(f"Top 20 generated pairs: {results['top_gen_pairs']}\n")
             f.write(f"Historical sum mean/std: {results['hist_sum']}\n")
@@ -117,14 +129,10 @@ def run_pipeline(
             f.write(f"Generated odd count mean/std: {results['gen_odd_even']}\n")
             f.write(f"Historical spacing mean/std: {results['hist_spacing']}\n")
             f.write(f"Generated spacing mean/std: {results['gen_spacing']}\n")
-            f.write(
-                "Simulation hits - mean: {} std: {} max: {}\n".format(
-                    results["sim_hits_mean"], results["sim_hits_std"], results["sim_hits_max"]
-                )
-            )
+            f.write(bt.format_holdout(results["holdout"], split_date) + "\n")
 
     if verbose:
-        print("Chi-square frequency statistic:", results["chi_square"])
+        print(bt.format_chi_square(chi))
         print("Top 20 historical pairs:", results["top_hist_pairs"])
         print("Top 20 generated pairs:", results["top_gen_pairs"])
         print("Historical sum mean/std:", results["hist_sum"])
@@ -133,14 +141,7 @@ def run_pipeline(
         print("Generated odd count mean/std:", results["gen_odd_even"])
         print("Historical spacing mean/std:", results["hist_spacing"])
         print("Generated spacing mean/std:", results["gen_spacing"])
-        print(
-            "Simulation hits - mean:",
-            results["sim_hits_mean"],
-            "std:",
-            results["sim_hits_std"],
-            "max:",
-            results["sim_hits_max"],
-        )
+        print(bt.format_holdout(results["holdout"], split_date))
 
     return results
 

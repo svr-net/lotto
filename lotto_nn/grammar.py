@@ -3,7 +3,8 @@
 This module treats each historical draw as a short "sentence" of six sorted
 number "tokens" and fits a simple, well-understood statistical n-gram model
 (a first-order Markov chain / bigram "grammar") over the position-to-position
-transitions between consecutive sorted numbers. This is a legitimate way to
+transitions between consecutive sorted numbers. Transitions are counted per
+position, so the chain knows how many numbers are still to come. This is a legitimate way to
 summarize co-occurrence structure in the historical data, but it is purely
 descriptive: UK Lotto draws are independent random events, so no grammar,
 pattern, or model can predict future outcomes.
@@ -31,10 +32,14 @@ def extract_grammar(draws_np: np.ndarray) -> dict:
         - "start_counts": Counter of first numbers in each draw
         - "transition_counts": dict[int, Counter] mapping a number to counts
           of numbers that followed it (in sorted order) in some draw
+        - "positional_transition_counts": dict[(position, int), Counter], the
+          same counts keyed by the position of the current number in the
+          sorted draw (used for sampling)
         - "vocab": sorted list of numbers observed in the data
     """
     start_counts: Counter = Counter()
     transition_counts: dict = defaultdict(Counter)
+    positional_counts: dict = defaultdict(Counter)
     vocab: set = set()
 
     for row in draws_np:
@@ -43,12 +48,14 @@ def extract_grammar(draws_np: np.ndarray) -> dict:
             continue
         start_counts[seq[0]] += 1
         vocab.update(seq)
-        for a, b in zip(seq, seq[1:]):
+        for pos, (a, b) in enumerate(zip(seq, seq[1:])):
             transition_counts[a][b] += 1
+            positional_counts[(pos, a)][b] += 1
 
     return {
         "start_counts": start_counts,
         "transition_counts": dict(transition_counts),
+        "positional_transition_counts": dict(positional_counts),
         "vocab": sorted(vocab),
     }
 
@@ -88,44 +95,37 @@ def sample_draw(
     max_num: int = MAX_NUM,
     rng: np.random.Generator | None = None,
 ) -> list:
-    """Sample a single draw of `seq_len` unique numbers using the fitted
-    grammar's start distribution and transition table.
+    """Sample a single sorted draw of `seq_len` unique numbers using the fitted
+    grammar's start distribution and per-position transition table.
 
-    Falls back to uniform-random choices whenever the grammar has no learned
-    signal for the current state (e.g. an unseen number or an exhausted
-    transition table), so the sampler always terminates with a valid draw.
+    Each pick must be above the previous one and leave room for the numbers
+    still to come, so chains cannot run into the top of the range early and
+    pile up on `max_num`. Falls back to a uniform choice over the valid range
+    whenever the grammar has no learned signal for the current state (e.g. an
+    unseen number/position pair), so the sampler always terminates with a
+    valid draw.
     """
     if rng is None:
         rng = np.random.default_rng()
 
     start_counts: Counter = grammar["start_counts"]
-    transition_counts: dict = grammar["transition_counts"]
-    full_range = list(range(min_num, max_num + 1))
+    positional_counts: dict = grammar.get("positional_transition_counts", {})
 
     seq: list[int] = []
-
-    if start_counts:
-        options, weights = zip(*start_counts.items())
-        first = _weighted_choice(rng, list(options), list(weights))
-    else:
-        first = int(rng.choice(full_range))
-    seq.append(first)
-
     while len(seq) < seq_len:
-        current = seq[-1]
-        counter = transition_counts.get(current, Counter())
-        candidates = [(n, c) for n, c in counter.items() if n not in seq]
+        pos = len(seq)
+        lowest = seq[-1] + 1 if seq else min_num
+        highest = max_num - (seq_len - pos - 1)
+        counter = start_counts if pos == 0 else positional_counts.get((pos - 1, seq[-1]), Counter())
+        candidates = [(n, c) for n, c in counter.items() if lowest <= n <= highest]
         if candidates:
             options, weights = zip(*candidates)
             nxt = _weighted_choice(rng, list(options), list(weights))
         else:
-            remaining = [n for n in full_range if n not in seq]
-            if not remaining:
-                break
-            nxt = int(rng.choice(remaining))
+            nxt = int(rng.integers(lowest, highest + 1))
         seq.append(nxt)
 
-    return sorted(seq)
+    return seq
 
 
 def generate_batch(

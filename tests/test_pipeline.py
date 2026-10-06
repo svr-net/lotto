@@ -30,7 +30,7 @@ def test_run_pipeline_end_to_end(tmp_path):
 
     assert "chi_square" in results
     assert results["generated_np"].shape == (10, 6)
-    assert results["sim_hits_max"] >= 0
+    assert results["holdout"] is None  # all sample draws fall before the default split date
 
 
 def test_run_pipeline_writes_output_files(tmp_path):
@@ -79,3 +79,23 @@ def test_run_pipeline_writes_output_files(tmp_path):
 
     assert results["prediction_draws"].shape == (5, 6)
     assert "Chi-square frequency statistic" in backtest_out.read_text()
+
+
+def test_run_pipeline_holdout_scores_later_draws(tmp_path):
+    rows = ["date,n1,n2,n3,n4,n5,n6,bonus"]
+    for i in range(20):
+        nums = sorted({(n + 3 * i) % 59 + 1 for n in (0, 9, 18, 27, 36, 45)})
+        rows.append(f"20{22 + i // 10}-{i % 10 + 1:02d}-01,{','.join(map(str, nums))},7")
+    csv_path = tmp_path / "draws.csv"
+    csv_path.write_text("\n".join(rows) + "\n")
+    backtest_out = tmp_path / "backtest.txt"
+
+    results = run_pipeline(
+        csv_path=str(csv_path), epochs=1, batch_size=4, num_samples=10, verbose=False,
+        backtest_out=str(backtest_out),
+    )
+
+    h = results["holdout"]
+    assert h["test_draws"] == 10
+    assert sum(h["dist"]) == 10 * 10
+    assert "Hold-out hits (fitted on draws up to 2022-12-31, scored on 10 later draws)" in backtest_out.read_text()

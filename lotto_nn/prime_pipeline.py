@@ -18,7 +18,7 @@ import torch
 import torch.nn.functional as F
 
 from . import backtest as bt
-from .data import draws_to_numpy, load_draws
+from .data import draws_to_numpy, load_draws, temporal_split
 from .model import LottoTransformer
 from .sample import MAX_NUM, MIN_NUM
 from .train import train_model
@@ -86,7 +86,7 @@ def sample_draw_base(model: LottoTransformer, base: int, temperature: float = 0.
             candidates = [n for n in digits_of if n not in chosen]
             for k in range(width):
                 pos = len(seq)
-                padded = seq + [0] * (model.seq_len - len(seq))
+                padded = ([0] + seq + [0] * model.seq_len)[: model.seq_len]
                 inp = torch.tensor([padded], dtype=torch.long, device=device)
                 logits = model(inp)[0, pos].clone()
                 allowed = {digits_of[n][k] for n in candidates}
@@ -110,8 +110,13 @@ def run_base(
     temperature: float = 0.9,
     lr: float = 1e-3,
     verbose: bool = True,
+    test_draws_np: np.ndarray | None = None,
 ) -> dict:
-    """Train the NN on draws re-encoded in ``base`` and return backtest results."""
+    """Train the NN on draws re-encoded in ``base`` and return backtest results.
+
+    If ``test_draws_np`` (later draws not in ``draws_np``) is given, the sampled
+    draws are also scored against it (``result["holdout"]``).
+    """
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     width = digit_width(base)
     tokens = encode_draws(draws_np, base).to(device)
@@ -123,36 +128,32 @@ def run_base(
         [sample_draw_base(model, base, temperature) for _ in range(num_samples)], dtype=int
     ).reshape(num_samples, NUMS_PER_DRAW)
 
-    sim_hits = bt.simulate_hits(generated, draws_np)
+    chi = bt.chi_square_test(bt.frequency_distribution(draws_np), bt.frequency_distribution(generated))
+    holdout = bt.holdout_hits(generated, test_draws_np) if test_draws_np is not None and len(test_draws_np) else None
     result = {
         "base": base,
         "digit_width": width,
         "final_loss": history[-1] if history else float("nan"),
-        "chi_square": bt.chi_square_stat(
-            bt.frequency_distribution(draws_np), bt.frequency_distribution(generated)
-        ),
+        "chi_square": chi["chi2"],
+        "chi_square_p": chi["p"],
         "hist_sum": bt.sum_stats(draws_np),
         "gen_sum": bt.sum_stats(generated),
         "hist_odd_even": bt.odd_even_stats(draws_np),
         "gen_odd_even": bt.odd_even_stats(generated),
         "hist_spacing": bt.spacing_stats(draws_np),
         "gen_spacing": bt.spacing_stats(generated),
-        "sim_hits_mean": float(sim_hits.mean()),
-        "sim_hits_std": float(sim_hits.std()),
-        "sim_hits_max": int(sim_hits.max()),
+        "holdout": holdout,
         "generated_np": generated,
     }
     if verbose:
         print(f"=== Base {base} (digits per number: {width}) ===")
         print("Final training loss:", result["final_loss"])
-        print("Chi-square frequency statistic:", result["chi_square"])
+        print(bt.format_chi_square(chi))
         print("Historical/Generated sum mean/std:", result["hist_sum"], result["gen_sum"])
         print("Historical/Generated odd mean/std:", result["hist_odd_even"], result["gen_odd_even"])
         print("Historical/Generated spacing mean/std:", result["hist_spacing"], result["gen_spacing"])
-        print(
-            "Simulation hits - mean:", result["sim_hits_mean"],
-            "std:", result["sim_hits_std"], "max:", result["sim_hits_max"],
-        )
+        if holdout is not None:
+            print(bt.format_holdout(holdout, "the split date"))
     return result
 
 
@@ -166,13 +167,24 @@ def run_prime_pipeline(
     lr: float = 1e-3,
     verbose: bool = True,
     out: str | None = None,
+    split_date: str = "2022-12-31",
 ) -> dict:
-    """Run the NN once per prime base. Returns ``{base: result_dict}``."""
-    draws_np = draws_to_numpy(load_draws(csv_path))
+    """Run the NN once per prime base. Returns ``{base: result_dict}``.
+
+    When the CSV has draws on both sides of ``split_date``, each base is trained
+    only on the earlier draws and scored against the later ones (hold-out);
+    otherwise it is trained on every draw and no hold-out is reported.
+    """
+    df = load_draws(csv_path)
+    draws_np, test_np = draws_to_numpy(df), None
+    if "date" in df.columns:
+        train_np, later_np = temporal_split(df, split_date=split_date)
+        if len(train_np) and len(later_np):
+            draws_np, test_np = train_np, later_np
     results = {}
     for base in bases or FIRST_10_PRIMES:
         results[base] = run_base(
-            draws_np, base, epochs, batch_size, num_samples, temperature, lr, verbose
+            draws_np, base, epochs, batch_size, num_samples, temperature, lr, verbose, test_np
         )
     if out:
         with open(out, "w") as f:
@@ -180,8 +192,10 @@ def run_prime_pipeline(
                 f.write(
                     f"base={base} width={r['digit_width']} final_loss={r['final_loss']:.4f} "
                     f"chi_square={r['chi_square']} gen_sum={r['gen_sum']} "
-                    f"hist_sum={r['hist_sum']} sim_hits_mean={r['sim_hits_mean']:.4f} "
-                    f"sim_hits_max={r['sim_hits_max']}\n"
+                    f"hist_sum={r['hist_sum']} "
+                    + (f"holdout_mean={r['holdout']['mean']:.4f} holdout_z={r['holdout']['z']:+.2f}"
+                       if r["holdout"] else "holdout=skipped")
+                    + "\n"
                 )
     return results
 
@@ -195,10 +209,11 @@ def main():
     parser.add_argument("--temperature", type=float, default=0.9)
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--out", type=str, default=None, help="Path to write per-base summary.")
+    parser.add_argument("--split-date", type=str, default="2022-12-31")
     args = parser.parse_args()
     run_prime_pipeline(
         args.csv, epochs=args.epochs, batch_size=args.batch_size, num_samples=args.num_samples,
-        temperature=args.temperature, lr=args.lr, out=args.out,
+        temperature=args.temperature, lr=args.lr, out=args.out, split_date=args.split_date,
     )
 
 

@@ -1,0 +1,273 @@
+<title>UK Lotto Strategy Backtest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,750&family=Source+Sans+3:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one reading column of ruled sections; tickets shown as rows of numbered balls, charts full-column */
+:root {
+  --bg: #f6f7f9; --surface: #fcfcfb; --fg: #14171c; --fg2: #4d535c; --muted: #7b828c;
+  --rule: #dde1e6; --grid: #e8ebef;
+  --s1: #2a78d6; --s2: #eb6834; --s1-soft: #e3eefb; --s2-soft: #fde9e0;
+  --neg: #2a78d6; --mid: #f0efec; --pos: #e34948;
+  --good: #0ca30c; --critical: #d03b3b;
+  --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121417; --surface: #1a1a19; --fg: #f2f3f5; --fg2: #c3c7cd; --muted: #8d939c;
+  --rule: #2c3036; --grid: #25292e;
+  --s1: #3987e5; --s2: #d95926; --s1-soft: #1b2a3d; --s2-soft: #3a2219;
+  --neg: #3987e5; --mid: #383835; --pos: #e66767; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #121417; --surface: #1a1a19; --fg: #f2f3f5; --fg2: #c3c7cd; --muted: #8d939c;
+  --rule: #2c3036; --grid: #25292e;
+  --s1: #3987e5; --s2: #d95926; --s1-soft: #1b2a3d; --s2-soft: #3a2219;
+  --neg: #3987e5; --mid: #383835; --pos: #e66767; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font: 16px/1.55 var(--body); }
+.wrap { max-width: 960px; margin: 0 auto; padding-inline: 16px; padding-block: 40px 64px; display: grid; gap: 48px; }
+h1, h2 { font-family: var(--display); text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 750; line-height: 1.05; }
+h2 { font-size: 1.5rem; font-weight: 600; }
+p { margin: 0; max-width: 65ch; color: var(--fg2); }
+.eyebrow { font: 600 0.75rem/1 var(--mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+section { display: grid; gap: 16px; border-top: 1px solid var(--rule); padding-top: 24px; min-width: 0; }
+header { display: grid; gap: 16px; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px 24px; font: 0.85rem var(--mono); color: var(--fg2); }
+.facts b { color: var(--fg); font-weight: 600; }
+.verdict { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 16px 20px; display: grid; gap: 6px; }
+.verdict strong { font-family: var(--display); font-size: 1.15rem; }
+.balls { display: flex; flex-wrap: wrap; gap: 6px; }
+.ball { width: 2.1rem; height: 2.1rem; border-radius: 50%; display: grid; place-items: center; font: 600 0.9rem var(--mono);
+  background: var(--surface); border: 2px solid var(--fg2); font-variant-numeric: tabular-nums; }
+.ball.bonus { border-style: dashed; color: var(--fg2); }
+.ball.hit { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.ticket-grid { display: grid; align-items: start; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 16px; }
+.ticket { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 16px; display: grid; gap: 10px; min-width: 0; }
+.ticket h3 { margin: 0; font: 600 1rem var(--body); }
+.ticket .line { display: flex; align-items: center; gap: 10px; }
+.ticket .ln { font: 0.75rem var(--mono); color: var(--muted); width: 1.5rem; }
+.ticket.primary { border-color: var(--s2); box-shadow: inset 0 0 0 1px var(--s2); }
+.chart { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 16px; overflow-x: auto; position: relative; }
+.chart svg { display: block; width: 100%; height: auto; }
+.chart text { fill: var(--fg2); font-family: var(--mono); font-size: 11px; }
+.legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 0.85rem; color: var(--fg2); }
+.legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; background: var(--c); vertical-align: -1px; }
+.tip { position: absolute; pointer-events: none; background: var(--fg); color: var(--bg); font: 0.8rem/1.4 var(--mono); padding: 6px 8px; border-radius: 6px; white-space: nowrap; z-index: 2; }
+.table-wrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+th, td { padding: 8px 12px; text-align: right; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { font: 600 0.72rem var(--mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+tr.ens td:first-child { font-weight: 600; }
+tr.base-row td { color: var(--muted); }
+.pill { font: 600 0.72rem var(--mono); padding: 2px 8px; border-radius: 99px; background: var(--grid); color: var(--fg2); }
+.two { display: grid; gap: 16px; }
+.two > * { min-width: 0; }
+details summary { cursor: pointer; color: var(--fg2); font-weight: 600; }
+details summary:focus-visible, button:focus-visible { outline: 2px solid var(--s1); outline-offset: 2px; }
+.note { font-size: 0.9rem; }
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">UK National Lottery · Lotto 6/59</div>
+  <h1>Strategy backtest &amp; picks for <span id="nd"></span></h1>
+  <p id="lede"></p>
+  <div class="facts" id="facts"></div>
+  <div class="verdict" id="verdict"></div>
+</header>
+
+<section>
+  <div class="eyebrow">Next draw</div>
+  <h2>Ensemble picks</h2>
+  <p>These tickets combine all nine strategies. Each strategy votes with the numbers it would play. The equal-weight ensemble counts every vote the same. The performance-weighted ensemble trusts strategies more when they matched more numbers over the last 52 rounds. Every line has the same 1 in 45,057,474 chance of a jackpot.</p>
+  <div class="ticket-grid" id="ens-tickets"></div>
+  <details><summary>Picks from each individual strategy</summary><div class="ticket-grid" id="base-tickets" style="margin-top:16px"></div></details>
+</section>
+
+<section>
+  <div class="eyebrow">Walk-forward backtest</div>
+  <h2>Matches per ticket against real draws</h2>
+  <p id="bt-lede"></p>
+  <div class="legend"><span style="--c:var(--s1)">Single strategy</span><span style="--c:var(--s2)">Ensemble of all nine</span><span style="--c:var(--fg2)">Bar ends: lowest and highest result across seeds</span></div>
+  <div class="chart" id="bt-chart"></div>
+  <div class="table-wrap"><table id="bt-table"></table></div>
+</section>
+
+<section>
+  <div class="eyebrow">Correlation</div>
+  <h2>How the strategies relate</h2>
+  <p>The left map compares how many numbers each strategy matched, round by round. If one method had real skill, the rounds it did well would differ from the rounds a random ticket did well. The right map compares which numbers each strategy picked. High values mean two strategies kept choosing the same numbers.</p>
+  <div class="two">
+    <div class="chart" id="perf-corr"></div>
+    <div class="chart" id="pick-corr"></div>
+  </div>
+  <div class="legend"><span style="--c:var(--neg)">Negative correlation</span><span style="--c:var(--mid)">None</span><span style="--c:var(--pos)">Positive correlation</span></div>
+  <p class="note" id="corr-note"></p>
+</section>
+
+<section>
+  <div class="eyebrow">Fairness check</div>
+  <h2>How often each ball came up since October 2015</h2>
+  <p id="fair-lede"></p>
+  <div class="chart" id="freq-chart"></div>
+</section>
+
+<section>
+  <div class="eyebrow">Method &amp; source</div>
+  <p class="note" id="method"></p>
+</section>
+</div>
+
+<script>
+const DATA = /*DATA*/null;
+const $ = (s) => document.querySelector(s);
+const fmt = (x, d = 3) => Number(x).toFixed(d);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const D = DATA, S = D.strategies, isEns = (s) => s.startsWith("ENSEMBLE");
+const pretty = (s) => s.replace("ENSEMBLE ", "Ensemble: ");
+const ndDate = new Date(D.next_draw_date + "T12:00:00Z");
+$("#nd").textContent = ndDate.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+
+const exp = D.expected.mean;
+const A = D.across_seeds;
+const best = S.slice().sort((a, b) => A[b].z_mean - A[a].z_mean)[0];
+$("#lede").textContent = `Every UK Lotto draw from ${D.era.first_date} (the first 59-ball draw) to ${D.era.last_date}: ${D.era.rounds.toLocaleString()} rounds, including the two-round draws held since June 2026. Nine prediction strategies and two ensembles were each replayed against the ${D.test_rounds} rounds drawn since ${D.split_date}, seeing only draws that came before each one.`;
+$("#facts").innerHTML = [
+  ["Rounds tested", D.test_rounds], ["Seeds", D.seeds.length], ["Tickets/round", D.tickets_per_round],
+  ["Chance mean", fmt(exp)], ["Chance 3+ hits", fmt(D.expected.pct_3plus, 2) + "%"],
+].map(([k, v]) => `<span>${k} <b>${v}</b></span>`).join("");
+const wide = S.slice().sort((a, b) => (A[b].z_max - A[b].z_min) - (A[a].z_max - A[a].z_min))[0];
+const ensBest = Math.max(...S.filter(isEns).map((s) => A[s].z_mean));
+$("#verdict").innerHTML = `<strong>No strategy beat random chance.</strong><span>${esc(
+  `Random tickets average ${fmt(exp)} matching numbers. Averaged over ${D.seeds.length} seeds, every strategy and both ensembles land within normal chance variation of that (z-scores between ${fmt(Math.min(...S.map((s) => A[s].z_mean)), 2)} and ${fmt(Math.max(...S.map((s) => A[s].z_mean)), 2)}; best ensemble ${fmt(ensBest, 2)}). Single runs that looked promising reversed under another seed: the widest swing was ${pretty(wide)}, from z = ${fmt(A[wide].z_min, 2)} to ${fmt(A[wide].z_max, 2)} across seeds. The lowest average, repeating the last draw, is one fixed ticket per round. With 13 methods tested, a z of ${fmt(Math.min(...S.map((s) => A[s].z_mean)), 2)} is within what chance alone produces. The ball counts are consistent with a fair draw (p = ${fmt(D.fairness.p, 2)}).`)}</span>`;
+
+// ---------- tickets
+const latest = D.latest;
+function ballsHTML(nums) { return `<div class="balls">${nums.map((n) => `<span class="ball">${n}</span>`).join("")}</div>`; }
+function ticketCard(name, lines, primary) {
+  return `<div class="ticket${primary ? " primary" : ""}"><h3>${esc(pretty(name))}</h3>${lines.map((l, i) =>
+    `<div class="line"><span class="ln">${String.fromCharCode(65 + i)}</span>${ballsHTML(l)}</div>`).join("")}</div>`;
+}
+$("#ens-tickets").innerHTML = S.filter(isEns).map((s) => ticketCard(s, D.predictions[s], s.includes("perf-weighted sampled"))).join("");
+$("#base-tickets").innerHTML = S.filter((s) => !isEns(s)).map((s) => ticketCard(s, D.predictions[s].slice(0, 5), false)).join("");
+
+// ---------- tooltip helper
+function attachTip(container) {
+  const tip = document.createElement("div"); tip.className = "tip"; tip.hidden = true; container.appendChild(tip);
+  container.addEventListener("pointermove", (e) => {
+    const t = e.target.closest("[data-tip]");
+    if (!t) { tip.hidden = true; return; }
+    tip.textContent = t.getAttribute("data-tip"); tip.hidden = false;
+    const r = container.getBoundingClientRect();
+    let x = e.clientX - r.left + container.scrollLeft + 12, y = e.clientY - r.top + 12;
+    if (x + tip.offsetWidth > container.scrollWidth - 4) x -= tip.offsetWidth + 24;
+    tip.style.left = x + "px"; tip.style.top = y + "px";
+  });
+  container.addEventListener("pointerleave", () => (tip.hidden = true));
+}
+
+// ---------- backtest chart: horizontal bars of mean matches with seed range whiskers
+(function () {
+  const rows = S.slice();
+  const W = 900, rowH = 30, L = 250, R = 70, T = 24, H = T + rows.length * rowH + 30;
+  const seMean = (s) => Math.sqrt(D.expected.dist.reduce((a, p, k) => a + p * (k - exp) ** 2, 0) / D.backtest[s].tickets);
+  const allM = rows.flatMap((s) => [exp + A[s].z_min * seMean(s), exp + A[s].z_max * seMean(s)]);
+  const lo = Math.floor(Math.min(0.56, ...allM) * 50) / 50, hi = Math.ceil(Math.max(0.66, ...allM) * 50) / 50, x = (v) => L + (v - lo) / (hi - lo) * (W - L - R);
+  let g = "";
+  for (let v = lo; v <= hi + 1e-9; v += 0.02) g += `<line x1="${x(v)}" x2="${x(v)}" y1="${T - 6}" y2="${H - 26}" stroke="var(--grid)"/><text x="${x(v)}" y="${H - 10}" text-anchor="middle">${v.toFixed(2)}</text>`;
+  rows.forEach((s, i) => {
+    const y = T + i * rowH, a = A[s], col = isEns(s) ? "var(--s2)" : "var(--s1)";
+    const mlo = exp + a.z_min * seMean(s), mhi = exp + a.z_max * seMean(s), m = exp + a.z_mean * seMean(s);
+    const x0 = x(Math.min(m, exp)), x1 = x(Math.max(m, exp));
+    g += `<text x="${L - 10}" y="${y + rowH / 2 + 4}" text-anchor="end" style="fill:var(--fg);font-family:var(--body);font-size:13px">${esc(pretty(s))}</text>`;
+    g += `<rect x="${x0}" y="${y + 7}" width="${Math.max(2, x1 - x0)}" height="${rowH - 14}" rx="3" fill="${col}"/>`;
+    g += `<line x1="${x(mlo)}" x2="${x(mhi)}" y1="${y + rowH / 2}" y2="${y + rowH / 2}" stroke="var(--fg2)" stroke-width="1.5"/>`;
+    g += `<line x1="${x(mlo)}" x2="${x(mlo)}" y1="${y + 9}" y2="${y + rowH - 9}" stroke="var(--fg2)" stroke-width="1.5"/><line x1="${x(mhi)}" x2="${x(mhi)}" y1="${y + 9}" y2="${y + rowH - 9}" stroke="var(--fg2)" stroke-width="1.5"/>`;
+    g += `<text x="${W - R + 8}" y="${y + rowH / 2 + 4}">${m.toFixed(3)}</text>`;
+    g += `<rect x="0" y="${y}" width="${W}" height="${rowH}" fill="transparent" data-tip="${esc(pretty(s))}: mean ${m.toFixed(4)} · z ${a.z_mean.toFixed(2)} (seed range ${a.z_min.toFixed(2)} to ${a.z_max.toFixed(2)}) · 3+ hits ${a.pct_3plus.toFixed(2)}%"/>`;
+  });
+  g += `<line x1="${x(exp)}" x2="${x(exp)}" y1="${T - 10}" y2="${H - 26}" stroke="var(--fg)" stroke-width="2" stroke-dasharray="4 3"/><text x="${x(exp)}" y="${T - 12}" text-anchor="middle" style="fill:var(--fg)">chance ${exp.toFixed(3)}</text>`;
+  $("#bt-chart").innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="min-width:640px" role="img" aria-label="Mean matched numbers per ticket by strategy, compared with the random-chance expectation">${g}</svg>`;
+  attachTip($("#bt-chart"));
+})();
+$("#bt-lede").textContent = `Each bar runs from the chance line (${fmt(exp)} matching numbers per ticket) to the strategy's average across ${D.seeds.length} seeds. The whiskers show the lowest and highest seed. Seeded strategies played ${D.tickets_per_round} tickets per round. "Top-6" strategies and "repeat last draw" play one fixed ticket per round.`;
+
+// ---------- backtest table
+(function () {
+  const head = `<tr><th>Strategy</th><th>Tickets</th><th>Mean hits</th><th>z (avg)</th><th>z range</th><th>3+ hits</th>${[0, 1, 2, 3, 4, 5, 6].map((k) => `<th>${k}</th>`).join("")}</tr>`;
+  const expRow = `<tr class="base-row"><td>Random chance (exact)</td><td>–</td><td>${fmt(exp, 4)}</td><td>0</td><td>–</td><td>${fmt(D.expected.pct_3plus, 2)}%</td>${D.expected.dist.map((p) => `<td>${(p * 100).toFixed(p < 0.001 ? 4 : 2)}%</td>`).join("")}</tr>`;
+  const body = S.map((s) => {
+    const r = D.backtest[s], a = A[s];
+    return `<tr class="${isEns(s) ? "ens" : ""}"><td>${esc(pretty(s))}</td><td>${r.tickets.toLocaleString()}</td><td>${fmt(a.mean_matches, 4)}</td><td>${a.z_mean >= 0 ? "+" : ""}${fmt(a.z_mean, 2)}</td><td>${fmt(a.z_min, 1)} to ${fmt(a.z_max, 1)}</td><td>${fmt(a.pct_3plus, 2)}%</td>${r.dist.map((c) => `<td>${c}</td>`).join("")}</tr>`;
+  }).join("");
+  $("#bt-table").innerHTML = `<thead>${head}</thead><tbody>${expRow}${body}</tbody><caption style="caption-side:bottom;text-align:left;padding:8px 12px;color:var(--muted);font-size:0.8rem">Columns 0–6 count tickets by numbers matched, from the first seed (${D.seeds[0]}). Mean, z and 3+ are averaged over all seeds.</caption>`;
+})();
+
+// ---------- heatmaps
+function divColor(v) {
+  const cs = getComputedStyle(document.documentElement);
+  const hex = (h) => { h = h.trim().replace("#", ""); return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16)); };
+  const mid = hex(cs.getPropertyValue("--mid")), end = hex(cs.getPropertyValue(v < 0 ? "--neg" : "--pos"));
+  const t = Math.min(1, Math.abs(v));
+  return `rgb(${mid.map((m, i) => Math.round(m + (end[i] - m) * t)).join(",")})`;
+}
+function heatmap(el, names, M, title) {
+  const n = names.length, cell = Math.max(30, Math.min(44, 520 / n)), L = 210, T = 34;
+  const W = L + n * cell + 8, H = T + n * cell + 8;
+  let g = `<text x="0" y="16" style="fill:var(--fg);font-family:var(--body);font-size:14px;font-weight:600">${esc(title)}</text>`;
+  names.forEach((s, i) => {
+    g += `<text x="${L - 8}" y="${T + i * cell + cell / 2 + 4}" text-anchor="end">${esc(pretty(s).replace("Ensemble: ", "Ens: "))}</text>`;
+    names.forEach((s2, j) => {
+      const v = M[i][j];
+      g += `<rect x="${L + j * cell + 1}" y="${T + i * cell + 1}" width="${cell - 2}" height="${cell - 2}" rx="3" fill="${divColor(v)}" data-tip="${esc(pretty(s))} × ${esc(pretty(s2))}: r = ${v.toFixed(2)}"/>`;
+      g += `<text x="${L + j * cell + cell / 2}" y="${T + i * cell + cell / 2 + 4}" text-anchor="middle" style="pointer-events:none;font-size:${cell < 36 ? 9 : 10}px;fill:${Math.abs(v) > 0.6 ? "#ffffff" : "var(--fg)"}">${i === j ? "" : v.toFixed(2).replace("0.", ".")}</text>`;
+    });
+  });
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="min-width:${Math.min(W, 560)}px" role="img" aria-label="${esc(title)}">${g}</svg>`;
+  attachTip(el);
+}
+function drawHeatmaps() {
+  heatmap($("#perf-corr"), S, D.perf_corr, "Round-by-round hits (all 13)");
+  heatmap($("#pick-corr"), D.pick_corr_names, D.pick_corr, "Numbers picked (the nine strategies)");
+}
+drawHeatmaps();
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", drawHeatmaps);
+new MutationObserver(drawHeatmaps).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+(function () {
+  const base = S.filter((s) => !isEns(s)), idx = (s) => S.indexOf(s), P = D.perf_corr;
+  const pairs = [];
+  base.forEach((a, i) => base.forEach((b, j) => { if (j > i) pairs.push(P[idx(a)][idx(b)]); }));
+  const avg = pairs.reduce((x, y) => x + y, 0) / pairs.length;
+  const pc = D.pick_corr, pp = [];
+  pc.forEach((r, i) => r.forEach((v, j) => { if (j > i) pp.push([v, D.pick_corr_names[i], D.pick_corr_names[j]]); }));
+  pp.sort((a, b) => b[0] - a[0]);
+  const ensAvg = (e) => base.reduce((t, b) => t + P[idx(e)][idx(b)], 0) / base.length;
+  const eNames = S.filter(isEns), eMax = Math.max(...eNames.map(ensAvg));
+  const link = Math.abs(avg) < 0.1
+    ? `Between single strategies, round-by-round hits correlate at only r = ${avg.toFixed(2)} on average, so each method's good and bad rounds fall at different times, the way independent random tickets would.`
+    : `Between single strategies, round-by-round hits correlate at r = ${avg.toFixed(2)} on average. Every ticket is scored against the same six balls, so some rounds favour every method at once.`;
+  $("#corr-note").textContent = `${link} The pick map shows the most similar pair is ${pretty(pp[0][1])} and ${pretty(pp[0][2])} (r = ${pp[0][0].toFixed(2)}). Each ensemble's hits correlate with its nine members at r ≤ ${eMax.toFixed(2)} on average. Blending the strategies averages away their individual quirks, but none of them carried a real signal to begin with, so the blend has no edge either.`;
+})();
+
+// ---------- frequency chart
+(function () {
+  const c = D.fairness.counts, mean = c.reduce((a, b) => a + b, 0) / c.length;
+  const W = 900, H = 250, L = 40, R = 10, T = 30, B = 30, max = Math.ceil(Math.max(...c) / 20) * 20;
+  const bw = (W - L - R) / 59, y = (v) => T + (1 - v / max) * (H - T - B);
+  let g = "";
+  for (let v = 0; v <= max; v += 40) g += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--grid)"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${v}</text>`;
+  c.forEach((v, i) => {
+    const x = L + i * bw;
+    g += `<path d="M${x + 1},${y(0)} V${y(v) + 3} q0,-3 3,-3 H${x + bw - 4} q3,0 3,3 V${y(0)} Z" fill="var(--s1)" data-tip="Ball ${i + 1}: drawn ${v} times (${((v - mean) / mean * 100).toFixed(1)}% vs average)"/>`;
+    if ((i + 1) % 5 === 0 || i === 0) g += `<text x="${x + bw / 2}" y="${H - 10}" text-anchor="middle">${i + 1}</text>`;
+  });
+  g += `<line x1="${L}" x2="${W - R}" y1="${y(mean)}" y2="${y(mean)}" stroke="var(--fg)" stroke-width="2" stroke-dasharray="4 3"/><text x="${W - R}" y="14" text-anchor="end" style="fill:var(--fg)">dashed line: average ${mean.toFixed(1)}</text>`;
+  $("#freq-chart").innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="min-width:640px" role="img" aria-label="Times each ball 1 to 59 was drawn since October 2015">${g}</svg>`;
+  attachTip($("#freq-chart"));
+  const lo = c.indexOf(Math.min(...c)) + 1, hi = c.indexOf(Math.max(...c)) + 1;
+  $("#fair-lede").textContent = `Ball ${hi} came up most (${Math.max(...c)} times) and ball ${lo} least (${Math.min(...c)}), against an average of ${mean.toFixed(1)}. A chi-square test gives χ² = ${D.fairness.chi2.toFixed(1)} on ${D.fairness.dof} degrees of freedom, p = ${D.fairness.p.toFixed(2)}. The spread is, if anything, slightly smaller than random draws would usually produce, so the "hot" and "cold" numbers come from noise.`;
+})();
+
+$("#method").textContent = `Data: the full UK Lotto history from lottery.merseyworld.com (${D.era.last_draw.toLocaleString()} draws since 1994). The most recent rounds match the official National Lottery results exactly. Only draws since ${D.era.first_date} are used, when the pool grew from 49 to 59 balls. Each round in the test period was predicted using only draws from earlier dates, and both rounds of a two-round draw count as separate targets. The transformer was retrained every 26 rounds. Performance weights use a softmax over each strategy's mean hits in its last ${D.window} rounds (τ = ${D.tau}). z-scores compare mean hits with the exact hypergeometric expectation of 36/59. Seeds used: ${D.seeds.join(", ")}. This page is a statistics exercise. Lotto draws are independent and random, and no method here changes the odds of any ticket.`;
+</script>
