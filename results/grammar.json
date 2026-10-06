@@ -1,0 +1,719 @@
+{
+ "eras": [
+  {
+   "label": "59-ball era (Oct 2015 - now)",
+   "pool": 59,
+   "rounds": 1181,
+   "first_date": "2015-10-10",
+   "last_date": "2026-10-03",
+   "split": "2022-12-31",
+   "train": 755,
+   "test": 426,
+   "order_limit_bits": 34.91711619639989,
+   "set_limit_bits": 25.42526310007021,
+   "order_models": [
+    {
+     "model": "fair machine (uniform)",
+     "bits": 34.91711619639989,
+     "excess": 0.0,
+     "z": 0.0,
+     "p_better": 0.5,
+     "setting": "-"
+    },
+    {
+     "model": "number frequency",
+     "bits": 34.91712377895608,
+     "excess": 7.582556196182464e-06,
+     "z": 0.6442457144616822,
+     "p_better": 0.7402919443493365,
+     "setting": "alpha=100000"
+    },
+    {
+     "model": "frequency by draw position",
+     "bits": 34.9171291363694,
+     "excess": 1.2939969502764476e-05,
+     "z": 2.3557281852935326,
+     "p_better": 0.9907567803986375,
+     "setting": "alpha=100000"
+    },
+    {
+     "model": "drawn-order bigram (next ball given previous ball)",
+     "bits": 34.92559375087589,
+     "excess": 0.008477554476002687,
+     "z": 1.8293796720046411,
+     "p_better": 0.9663286246426409,
+     "setting": "alpha=50"
+    },
+    {
+     "model": "drawn-order trigram (next ball given previous two)",
+     "bits": 34.925531005676014,
+     "excess": 0.008414809276124717,
+     "z": 1.7990881761253419,
+     "p_better": 0.9639976331486173,
+     "setting": "alpha=50"
+    },
+    {
+     "model": "echo of the previous round (repeat or avoid its numbers)",
+     "bits": 34.93856249912727,
+     "excess": 0.02144630272737866,
+     "z": 3.149833549657176,
+     "p_better": 0.9991831824599495,
+     "setting": "boost=0.15"
+    },
+    {
+     "model": "number frequency on the machine used",
+     "bits": 34.91711887158366,
+     "excess": 2.6751837673622827e-06,
+     "z": 0.18421981771747878,
+     "p_better": 0.5730794933763439,
+     "setting": "alpha=100000"
+    },
+    {
+     "model": "transformer on drawn order",
+     "bits": 35.10178606498969,
+     "excess": 0.18466986858980153,
+     "z": 5.819836604292186,
+     "p_better": 0.9999999970547409,
+     "setting": "epochs=5"
+    }
+   ],
+   "set_models": [
+    {
+     "model": "fair machine (uniform)",
+     "bits": 25.425263100070204,
+     "excess": 0.0,
+     "z": 0.0,
+     "p_better": 0.5,
+     "setting": "-"
+    },
+    {
+     "model": "sorted positional grammar (repo-style)",
+     "bits": 25.42498222738816,
+     "excess": -0.0002808726820525848,
+     "z": -0.9659164313622489,
+     "p_better": 0.16704299977782122,
+     "setting": "alpha=1000"
+    },
+    {
+     "model": "transformer on sorted draws (repo model)",
+     "bits": 26.514925390621865,
+     "excess": 1.0896622905516549,
+     "z": 11.746738884080289,
+     "p_better": 1.0,
+     "setting": "epochs=30"
+    }
+   ],
+   "compression": [
+    {
+     "stream": "drawn order",
+     "compressor": "lzma",
+     "bytes_raw": 7086,
+     "bytes": 5436,
+     "fair_mean": 5438.093333333333,
+     "fair_min": 5428,
+     "p_more_compressible": 0.5016611295681063
+    },
+    {
+     "stream": "drawn order",
+     "compressor": "bz2",
+     "bytes_raw": 7086,
+     "bytes": 5365,
+     "fair_mean": 5371.883333333333,
+     "fair_min": 5361,
+     "p_more_compressible": 0.0664451827242525
+    },
+    {
+     "stream": "drawn order",
+     "compressor": "zlib",
+     "bytes_raw": 7086,
+     "bytes": 5297,
+     "fair_mean": 5292.293333333333,
+     "fair_min": 5287,
+     "p_more_compressible": 0.9966777408637874
+    },
+    {
+     "stream": "sorted",
+     "compressor": "lzma",
+     "bytes_raw": 7086,
+     "bytes": 5132,
+     "fair_mean": 5131.506666666667,
+     "fair_min": 5104,
+     "p_more_compressible": 0.6146179401993356
+    },
+    {
+     "stream": "sorted",
+     "compressor": "bz2",
+     "bytes_raw": 7086,
+     "bytes": 4653,
+     "fair_mean": 4638.03,
+     "fair_min": 4609,
+     "p_more_compressible": 0.9269102990033222
+    },
+    {
+     "stream": "sorted",
+     "compressor": "zlib",
+     "bytes_raw": 7086,
+     "bytes": 5191,
+     "fair_mean": 5192.506666666667,
+     "fair_min": 5177,
+     "p_more_compressible": 0.3953488372093023
+    }
+   ],
+   "rules": {
+    "pair": {
+     "expected_each": 10.353594389246055,
+     "top": [
+      {
+       "rule": "2 & 54",
+       "count": 24
+      },
+      {
+       "rule": "42 & 59",
+       "count": 23
+      },
+      {
+       "rule": "37 & 42",
+       "count": 22
+      },
+      {
+       "rule": "49 & 56",
+       "count": 22
+      },
+      {
+       "rule": "38 & 47",
+       "count": 22
+      },
+      {
+       "rule": "13 & 14",
+       "count": 21
+      },
+      {
+       "rule": "8 & 33",
+       "count": 21
+      },
+      {
+       "rule": "37 & 39",
+       "count": 21
+      }
+     ],
+     "observed_max": 24,
+     "fair_max_median": 23.0,
+     "fair_max_95": 25.0,
+     "p": 0.26245847176079734
+    },
+    "triple": {
+     "expected_each": 0.7265680273155126,
+     "top": [
+      {
+       "rule": "2 & 32 & 54",
+       "count": 6
+      },
+      {
+       "rule": "10 & 12 & 29",
+       "count": 6
+      },
+      {
+       "rule": "10 & 11 & 54",
+       "count": 6
+      },
+      {
+       "rule": "14 & 19 & 38",
+       "count": 6
+      },
+      {
+       "rule": "39 & 46 & 52",
+       "count": 6
+      },
+      {
+       "rule": "1 & 20 & 24",
+       "count": 6
+      },
+      {
+       "rule": "33 & 50 & 56",
+       "count": 6
+      },
+      {
+       "rule": "48 & 57 & 59",
+       "count": 5
+      }
+     ],
+     "observed_max": 6,
+     "fair_max_median": 6.0,
+     "fair_max_95": 7.0,
+     "p": 0.9634551495016611
+    },
+    "digram": {
+     "expected_each": 1.7255990648743424,
+     "top": [
+      {
+       "rule": "57 then 27",
+       "count": 9
+      },
+      {
+       "rule": "2 then 59",
+       "count": 9
+      },
+      {
+       "rule": "38 then 31",
+       "count": 8
+      },
+      {
+       "rule": "10 then 56",
+       "count": 8
+      },
+      {
+       "rule": "39 then 31",
+       "count": 7
+      },
+      {
+       "rule": "28 then 58",
+       "count": 7
+      },
+      {
+       "rule": "31 then 15",
+       "count": 7
+      },
+      {
+       "rule": "26 then 39",
+       "count": 7
+      }
+     ],
+     "observed_max": 9,
+     "fair_max_median": 8.0,
+     "fair_max_95": 9.0,
+     "p": 0.2159468438538206
+    }
+   },
+   "lags": [
+    {
+     "lag": 1,
+     "mean_overlap": 0.5822033898305085,
+     "expected": 0.6101694915254238,
+     "z": -1.3574124390640778,
+     "p": 0.17465019801271764
+    },
+    {
+     "lag": 2,
+     "mean_overlap": 0.6132315521628499,
+     "expected": 0.6101694915254238,
+     "z": 0.1485626295161723,
+     "p": 0.8818987630223544
+    },
+    {
+     "lag": 3,
+     "mean_overlap": 0.6146010186757216,
+     "expected": 0.6101694915254238,
+     "z": 0.2149141191132489,
+     "p": 0.8298342766345749
+    },
+    {
+     "lag": 4,
+     "mean_overlap": 0.610875106202209,
+     "expected": 0.6101694915254238,
+     "z": 0.034205404091452334,
+     "p": 0.9727133572224487
+    },
+    {
+     "lag": 5,
+     "mean_overlap": 0.6130952380952381,
+     "expected": 0.6101694915254238,
+     "z": 0.1417683399054381,
+     "p": 0.8872629925330747
+    },
+    {
+     "lag": 6,
+     "mean_overlap": 0.6068085106382979,
+     "expected": 0.6101694915254238,
+     "z": -0.16278855363865474,
+     "p": 0.8706849209218052
+    },
+    {
+     "lag": 7,
+     "mean_overlap": 0.6098807495741057,
+     "expected": 0.6101694915254238,
+     "z": -0.013979216275621308,
+     "p": 0.9888465624273912
+    },
+    {
+     "lag": 8,
+     "mean_overlap": 0.6104006820119352,
+     "expected": 0.6101694915254238,
+     "z": 0.011188139001115888,
+     "p": 0.9910733428588545
+    },
+    {
+     "lag": 9,
+     "mean_overlap": 0.6476109215017065,
+     "expected": 0.6101694915254238,
+     "z": 1.8111529241719253,
+     "p": 0.07011718300758267
+    },
+    {
+     "lag": 10,
+     "mean_overlap": 0.6353543979504697,
+     "expected": 0.6101694915254238,
+     "z": 1.2177487082093315,
+     "p": 0.22331948116913491
+    }
+   ]
+  },
+  {
+   "label": "49-ball era (1994 - Oct 2015)",
+   "pool": 49,
+   "rounds": 2065,
+   "first_date": "1994-11-19",
+   "last_date": "2015-10-07",
+   "split": "2010-12-31",
+   "train": 1567,
+   "test": 498,
+   "order_limit_bits": 33.229107867537984,
+   "set_limit_bits": 23.737254771208313,
+   "order_models": [
+    {
+     "model": "fair machine (uniform)",
+     "bits": 33.229107867537984,
+     "excess": 0.0,
+     "z": 0.0,
+     "p_better": 0.5,
+     "setting": "-"
+    },
+    {
+     "model": "number frequency",
+     "bits": 33.23785466820879,
+     "excess": 0.008746800670804739,
+     "z": 1.111667215104766,
+     "p_better": 0.8668593695144535,
+     "setting": "alpha=100"
+    },
+    {
+     "model": "frequency by draw position",
+     "bits": 33.229106978348156,
+     "excess": -8.891898215111554e-07,
+     "z": -0.10627256820763094,
+     "p_better": 0.45768304785746644,
+     "setting": "alpha=100000"
+    },
+    {
+     "model": "drawn-order bigram (next ball given previous ball)",
+     "bits": 33.23179786084593,
+     "excess": 0.0026899933079511467,
+     "z": 0.7480902973336409,
+     "p_better": 0.7727971529801927,
+     "setting": "alpha=100"
+    },
+    {
+     "model": "drawn-order trigram (next ball given previous two)",
+     "bits": 33.23192757969127,
+     "excess": 0.0028197121532895428,
+     "z": 0.7776513744962712,
+     "p_better": 0.7816127172394272,
+     "setting": "alpha=100"
+    },
+    {
+     "model": "echo of the previous round (repeat or avoid its numbers)",
+     "bits": 33.23746841121988,
+     "excess": 0.00836054368190344,
+     "z": 1.1677917159933493,
+     "p_better": 0.87855460478321,
+     "setting": "boost=0.15"
+    },
+    {
+     "model": "number frequency on the machine used",
+     "bits": 33.23011726441887,
+     "excess": 0.0010093968808880728,
+     "z": 0.43894079931361346,
+     "p_better": 0.6696477834993572,
+     "setting": "alpha=1000"
+    },
+    {
+     "model": "transformer on drawn order",
+     "bits": 33.291747446519786,
+     "excess": 0.06263957898179912,
+     "z": 3.690033345651276,
+     "p_better": 0.999887887670859,
+     "setting": "epochs=5"
+    }
+   ],
+   "set_models": [
+    {
+     "model": "fair machine (uniform)",
+     "bits": 23.737254771208313,
+     "excess": 0.0,
+     "z": 0.0,
+     "p_better": 0.5,
+     "setting": "-"
+    },
+    {
+     "model": "sorted positional grammar (repo-style)",
+     "bits": 23.737250412618764,
+     "excess": -4.358589549959877e-06,
+     "z": -1.1279298196049288,
+     "p_better": 0.129674779576686,
+     "setting": "alpha=100000"
+    },
+    {
+     "model": "transformer on sorted draws (repo model)",
+     "bits": 24.498635059200137,
+     "excess": 0.7613802879918242,
+     "z": 10.644645527456353,
+     "p_better": 1.0,
+     "setting": "epochs=30"
+    }
+   ],
+   "compression": [
+    {
+     "stream": "drawn order",
+     "compressor": "lzma",
+     "bytes_raw": 12390,
+     "bytes": 9032,
+     "fair_mean": 9033.426666666666,
+     "fair_min": 9024,
+     "p_more_compressible": 0.5448504983388704
+    },
+    {
+     "stream": "drawn order",
+     "compressor": "bz2",
+     "bytes_raw": 12390,
+     "bytes": 8886,
+     "fair_mean": 8887.123333333333,
+     "fair_min": 8871,
+     "p_more_compressible": 0.4485049833887043
+    },
+    {
+     "stream": "drawn order",
+     "compressor": "zlib",
+     "bytes_raw": 12390,
+     "bytes": 8907,
+     "fair_mean": 8913.33,
+     "fair_min": 8901,
+     "p_more_compressible": 0.06976744186046512
+    },
+    {
+     "stream": "sorted",
+     "compressor": "lzma",
+     "bytes_raw": 12390,
+     "bytes": 8520,
+     "fair_mean": 8523.373333333333,
+     "fair_min": 8488,
+     "p_more_compressible": 0.4318936877076412
+    },
+    {
+     "stream": "sorted",
+     "compressor": "bz2",
+     "bytes_raw": 12390,
+     "bytes": 7504,
+     "fair_mean": 7499.416666666667,
+     "fair_min": 7457,
+     "p_more_compressible": 0.6245847176079734
+    },
+    {
+     "stream": "sorted",
+     "compressor": "zlib",
+     "bytes_raw": 12390,
+     "bytes": 8568,
+     "fair_mean": 8576.526666666667,
+     "fair_min": 8551,
+     "p_more_compressible": 0.2059800664451827
+    }
+   ],
+   "rules": {
+    "pair": {
+     "expected_each": 26.339285714285715,
+     "top": [
+      {
+       "rule": "35 & 39",
+       "count": 45
+      },
+      {
+       "rule": "33 & 40",
+       "count": 45
+      },
+      {
+       "rule": "17 & 40",
+       "count": 42
+      },
+      {
+       "rule": "7 & 44",
+       "count": 41
+      },
+      {
+       "rule": "8 & 10",
+       "count": 40
+      },
+      {
+       "rule": "25 & 32",
+       "count": 40
+      },
+      {
+       "rule": "2 & 23",
+       "count": 40
+      },
+      {
+       "rule": "19 & 44",
+       "count": 40
+      }
+     ],
+     "observed_max": 45,
+     "fair_max_median": 44.0,
+     "fair_max_95": 49.0,
+     "p": 0.46179401993355484
+    },
+    "triple": {
+     "expected_each": 2.2416413373860182,
+     "top": [
+      {
+       "rule": "10 & 34 & 48",
+       "count": 10
+      },
+      {
+       "rule": "19 & 44 & 45",
+       "count": 10
+      },
+      {
+       "rule": "2 & 23 & 40",
+       "count": 10
+      },
+      {
+       "rule": "14 & 46 & 49",
+       "count": 9
+      },
+      {
+       "rule": "17 & 22 & 38",
+       "count": 9
+      },
+      {
+       "rule": "9 & 27 & 42",
+       "count": 9
+      },
+      {
+       "rule": "6 & 30 & 45",
+       "count": 8
+      },
+      {
+       "rule": "46 & 47 & 49",
+       "count": 8
+      }
+     ],
+     "observed_max": 10,
+     "fair_max_median": 10.0,
+     "fair_max_95": 11.0,
+     "p": 0.8637873754152824
+    },
+    "digram": {
+     "expected_each": 4.3898809523809526,
+     "top": [
+      {
+       "rule": "40 then 33",
+       "count": 13
+      },
+      {
+       "rule": "31 then 7",
+       "count": 12
+      },
+      {
+       "rule": "10 then 31",
+       "count": 12
+      },
+      {
+       "rule": "27 then 9",
+       "count": 11
+      },
+      {
+       "rule": "13 then 22",
+       "count": 11
+      },
+      {
+       "rule": "31 then 12",
+       "count": 11
+      },
+      {
+       "rule": "7 then 4",
+       "count": 11
+      },
+      {
+       "rule": "38 then 45",
+       "count": 11
+      }
+     ],
+     "observed_max": 13,
+     "fair_max_median": 13.0,
+     "fair_max_95": 15.0,
+     "p": 0.7774086378737541
+    }
+   },
+   "lags": [
+    {
+     "lag": 1,
+     "mean_overlap": 0.752906976744186,
+     "expected": 0.7346938775510204,
+     "z": 1.088768862607199,
+     "p": 0.2762558258780523
+    },
+    {
+     "lag": 2,
+     "mean_overlap": 0.6825012118274357,
+     "expected": 0.7346938775510204,
+     "z": -3.1192923894136175,
+     "p": 0.0018128596633281496
+    },
+    {
+     "lag": 3,
+     "mean_overlap": 0.7667313288069835,
+     "expected": 0.7346938775510204,
+     "z": 1.9142527587406448,
+     "p": 0.055587867475041935
+    },
+    {
+     "lag": 4,
+     "mean_overlap": 0.7379912663755459,
+     "expected": 0.7346938775510204,
+     "z": 0.19697275093612485,
+     "p": 0.8438488616287884
+    },
+    {
+     "lag": 5,
+     "mean_overlap": 0.7383495145631068,
+     "expected": 0.7346938775510204,
+     "z": 0.2183200734129708,
+     "p": 0.8271797353434729
+    },
+    {
+     "lag": 6,
+     "mean_overlap": 0.7212238950947062,
+     "expected": 0.7346938775510204,
+     "z": -0.804252086253408,
+     "p": 0.42125140303964226
+    },
+    {
+     "lag": 7,
+     "mean_overlap": 0.6982507288629738,
+     "expected": 0.7346938775510204,
+     "z": -2.1753822016127575,
+     "p": 0.029601487139899286
+    },
+    {
+     "lag": 8,
+     "mean_overlap": 0.7335926105979582,
+     "expected": 0.7346938775510204,
+     "z": -0.06572139083598773,
+     "p": 0.9475996418050812
+    },
+    {
+     "lag": 9,
+     "mean_overlap": 0.7271400778210116,
+     "expected": 0.7346938775510204,
+     "z": -0.45068594486564784,
+     "p": 0.6522159137049819
+    },
+    {
+     "lag": 10,
+     "mean_overlap": 0.7464720194647202,
+     "expected": 0.7346938775510204,
+     "z": 0.7025539641879294,
+     "p": 0.48233376032612735
+    }
+   ]
+  }
+ ],
+ "sims": 300
+}
