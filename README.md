@@ -81,16 +81,21 @@ matrix), but without requiring PyTorch:
 
 `scripts/fetch_merseyworld.py` downloads every UK Lotto draw since 1994 from
 lottery.merseyworld.com (no API key) into `data/uk_lotto_full.csv`
-(`draw_no,date,round,n1..n6,bonus,...`, chronological, main numbers sorted; two-round
+(`draw_no,date,round,n1..n6,bonus,...,d1..d6`, chronological; `n1..n6` are the main
+numbers sorted and `d1..d6` the same balls in the order the machine drew them; two-round
 draws since June 2026 appear as rounds 1 and 2). `data/uk_lotto_59.csv` is the 1-59 era
 subset (draw 2066, 2015-10-10, onward).
 
-`scripts/walk_forward_backtest.py` replays nine strategies (random baseline, hot/cold
-weighted, hot/cold/overdue top-6, repeat-last, the repo n-gram grammar and transformer)
+`scripts/walk_forward_backtest.py` replays fourteen strategies (random baseline, hot/cold
+weighted, hot/cold/overdue top-6, repeat-last, the repo n-gram grammar and transformer, plus
+five built on draw order and machines: early-ball frequency, a drawn-order Markov chain, the
+transformer trained on drawn order, machine-matched hot numbers and recent bonus balls)
 over every round after `--split-date`, each seeing only earlier draws, and scores matches
 against the exact hypergeometric chance distribution. It also correlates the strategies
 (round-by-round hits and number picks), combines all nine into equal-weight and
-trailing-performance-weighted ensembles, repeats everything over several seeds, and
+trailing-performance-weighted ensembles, tests the drawn order for structure (per-position
+uniformity, serial correlation, rises/falls, carry-over, machine and ball-set effects, with
+p-values from simulated fair histories), repeats everything over several seeds, and
 writes next-draw picks to `results/walk_forward.json`:
 
 ```bash

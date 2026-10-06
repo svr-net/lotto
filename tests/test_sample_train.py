@@ -60,3 +60,13 @@ def test_sampled_draws_are_sorted():
     model = _tiny_model()
     batch = generate_batch(model, num_samples=20, temperature=1.0, device=torch.device("cpu"))
     assert all(row.tolist() == sorted(row.tolist()) for row in batch)
+
+
+def test_unordered_sampling_allows_any_order():
+    torch.manual_seed(0)
+    model = _tiny_model()
+    batch = generate_batch(model, num_samples=30, temperature=1.0, device=torch.device("cpu"), ascending=False)
+    for row in batch:
+        assert len(set(row.tolist())) == 6
+        assert all(MIN_NUM <= n <= MAX_NUM for n in row)
+    assert any(row.tolist() != sorted(row.tolist()) for row in batch)
