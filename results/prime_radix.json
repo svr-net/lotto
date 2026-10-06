@@ -360,7 +360,209 @@
    1,
    2
   ],
-  "tickets_per_round": 20
+  "tickets_per_round": 20,
+  "picks": {
+   "conditional probability, base 2": [
+    [
+     11,
+     22,
+     23,
+     29,
+     39,
+     47
+    ]
+   ],
+   "conditional copula, base 2": [
+    [
+     12,
+     46,
+     48,
+     54,
+     55,
+     59
+    ]
+   ],
+   "conditional probability, base 3": [
+    [
+     19,
+     31,
+     33,
+     44,
+     49,
+     53
+    ]
+   ],
+   "conditional copula, base 3": [
+    [
+     9,
+     21,
+     31,
+     35,
+     37,
+     43
+    ]
+   ],
+   "conditional probability, base 5": [
+    [
+     15,
+     22,
+     37,
+     44,
+     52,
+     53
+    ]
+   ],
+   "conditional copula, base 5": [
+    [
+     1,
+     24,
+     30,
+     34,
+     45,
+     57
+    ]
+   ],
+   "conditional probability, base 7": [
+    [
+     4,
+     23,
+     31,
+     35,
+     39,
+     52
+    ]
+   ],
+   "conditional copula, base 7": [
+    [
+     1,
+     16,
+     28,
+     35,
+     38,
+     59
+    ]
+   ],
+   "conditional probability, base 11": [
+    [
+     9,
+     12,
+     24,
+     39,
+     50,
+     54
+    ]
+   ],
+   "conditional copula, base 11": [
+    [
+     1,
+     9,
+     22,
+     36,
+     42,
+     55
+    ]
+   ],
+   "conditional probability, base 13": [
+    [
+     5,
+     32,
+     34,
+     42,
+     43,
+     44
+    ]
+   ],
+   "conditional copula, base 13": [
+    [
+     2,
+     19,
+     27,
+     29,
+     48,
+     55
+    ]
+   ],
+   "conditional probability, base 17": [
+    [
+     18,
+     19,
+     25,
+     26,
+     36,
+     40
+    ]
+   ],
+   "conditional copula, base 17": [
+    [
+     1,
+     6,
+     16,
+     26,
+     43,
+     50
+    ]
+   ],
+   "conditional probability, base 19": [
+    [
+     10,
+     11,
+     17,
+     39,
+     48,
+     50
+    ]
+   ],
+   "conditional copula, base 19": [
+    [
+     1,
+     26,
+     33,
+     35,
+     42,
+     46
+    ]
+   ],
+   "conditional probability, base 23": [
+    [
+     14,
+     19,
+     21,
+     23,
+     32,
+     35
+    ]
+   ],
+   "conditional copula, base 23": [
+    [
+     27,
+     29,
+     31,
+     34,
+     39,
+     52
+    ]
+   ],
+   "conditional probability, base 29": [
+    [
+     22,
+     26,
+     32,
+     33,
+     49,
+     58
+    ]
+   ],
+   "conditional copula, base 29": [
+    [
+     8,
+     14,
+     16,
+     29,
+     35,
+     39
+    ]
+   ]
+  }
  },
  "prime_nn": [
   {

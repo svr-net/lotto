@@ -161,3 +161,8 @@ Dirichlet-multinomial marginal likelihoods. The Bayes factor and posterior proba
 fairness are calibrated against simulated fair histories. It also asks whether machines, ball
 sets or calendar years favour different balls, gives each ball's 95% credible interval, tracks
 the Bayes factor draw by draw, and backtests posterior-mean and Thompson-sampling strategies.
+
+`scripts/build_report.py` also combines every investigation's next-draw picks into five lines
+(written to `results/combined_picks.json` and shown at the top of the report). Each
+investigation gets one equal vote, spread over its own lines; line 1 is the six numbers with the
+most combined support, and lines 2-5 are drawn in proportion to that support.

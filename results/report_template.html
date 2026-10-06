@@ -66,6 +66,14 @@ tr.base-row td { color: var(--muted); }
 details summary { cursor: pointer; color: var(--fg2); font-weight: 600; }
 details summary:focus-visible, button:focus-visible { outline: 2px solid var(--s1); outline-offset: 2px; }
 .note { font-size: 0.9rem; }
+.picks5 { background: var(--surface); border: 2px solid var(--s2); border-radius: 12px; padding: 18px 20px; display: grid; gap: 12px; }
+.picks5-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.picks5-head strong { font-family: var(--display); font-size: 1.2rem; }
+.picks5-lines { display: grid; gap: 8px; }
+.picks5-lines .line { display: flex; align-items: center; gap: 10px; }
+.picks5-lines .ln { font: 600 0.8rem var(--mono); color: var(--muted); width: 1.2rem; }
+.picks5-lines .tag { font: 0.75rem var(--mono); color: var(--muted); }
+.ball.lead { border-color: var(--s2); }
 .h3 { margin: 8px 0 0; font: 600 1.05rem/1.3 var(--body); }
 td.good { color: var(--good); font-weight: 600; }
 td.flag { font-weight: 600; }
@@ -75,6 +83,11 @@ td.flag { font-weight: 600; }
 <header>
   <div class="eyebrow">UK National Lottery · Lotto 6/59</div>
   <h1>Strategy backtest &amp; picks for <span id="nd"></span></h1>
+  <div class="picks5" id="picks5" hidden>
+    <div class="picks5-head"><strong>Five lines for <span id="nd5"></span></strong><span class="note" id="picks5-sub"></span></div>
+    <div class="picks5-lines" id="picks5-lines"></div>
+    <p class="note" id="picks5-note"></p>
+  </div>
   <p id="lede"></p>
   <div class="facts" id="facts"></div>
   <div class="verdict" id="verdict"></div>
@@ -230,6 +243,18 @@ const zCut = 2.9; // about p < 0.05 after allowing for ~20 one-sided tests
 const standout = S.filter((s) => A[s].z_mean > zCut && A[s].z_min > 0);
 $("#verdict").innerHTML = `<strong>${standout.length ? esc(`${pretty(standout[0])} beat chance in every seed. Treat it with caution.`) : "No strategy beat random chance."}</strong><span>${esc(
   `Random tickets average ${fmt(exp)} matching numbers. Averaged over ${D.seeds.length} seeds, every strategy and both ensembles land within normal chance variation of that (z-scores between ${fmt(Math.min(...S.map((s) => A[s].z_mean)), 2)} and ${fmt(Math.max(...S.map((s) => A[s].z_mean)), 2)}; best ensemble ${fmt(ensBest, 2)}). Single runs that looked promising reversed under another seed: the widest swing was ${pretty(wide)}, from z = ${fmt(A[wide].z_min, 2)} to ${fmt(A[wide].z_max, 2)} across seeds. The lowest average, repeating the last draw, is one fixed ticket per round. With ${S.length} methods tested, a z of ${fmt(Math.min(...S.map((s) => A[s].z_mean)), 2)} is within what chance alone produces. The ball counts are consistent with a fair draw (p = ${fmt(D.fairness.p, 2)}).`)}</span>`;
+
+// ---------- five combined lines at the top
+(function () {
+  const C = D.combined;
+  if (!C) return;
+  $("#picks5").hidden = false;
+  $("#nd5").textContent = ndDate.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
+  const n = C.sources.length;
+  $("#picks5-sub").textContent = `combining ${n} investigations`;
+  $("#picks5-lines").innerHTML = C.lines.map((line, i) => `<div class="line"><span class="ln">${i + 1}</span><div class="balls">${line.map((b) => `<span class="ball${i === 0 ? " lead" : ""}" title="Ball ${b}: picked by ${C.support[b - 1]} of ${n} investigations">${b}</span>`).join("")}</div>${i === 0 ? '<span class="tag">most support</span>' : ""}</div>`).join("");
+  $("#picks5-note").textContent = `Each investigation gets one equal vote, spread over its own next-draw lines: ${C.sources.map((s) => `${s.investigation} (${s.lines} lines)`).join(", ")}. The grammar search builds probability models rather than tickets, so it takes part through the n-gram grammar strategy in the backtest. Line 1 is the six numbers with the most combined support; lines 2 to 5 are drawn in proportion to that support. None of the investigations found any pattern in the draws, so these lines are exactly as likely to win as any others: 1 in 45,057,474 for the jackpot.`;
+})();
 
 // ---------- tickets
 const latest = D.latest;

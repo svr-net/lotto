@@ -1,0 +1,31 @@
+import importlib.util
+import os
+
+spec = importlib.util.spec_from_file_location(
+    "build_report", os.path.join(os.path.dirname(__file__), "..", "scripts", "build_report.py"))
+br = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(br)
+
+
+def test_combined_picks_are_five_distinct_valid_lines_led_by_the_consensus():
+    sources = [
+        ("A", [[1, 2, 3, 4, 5, 6], [1, 2, 3, 4, 5, 7]]),
+        ("B", [[1, 2, 3, 4, 5, 8]]),
+        ("C", [[1, 2, 3, 4, 50, 51], [1, 2, 3, 40, 41, 42], [1, 2, 3, 4, 5, 9]]),
+    ]
+    res = br.combine(sources, seed=20261007)
+    lines = res["lines"]
+    assert len(lines) == 5 and len({tuple(l) for l in lines}) == 5
+    assert all(len(set(l)) == 6 and min(l) >= 1 and max(l) <= 59 and l == sorted(l) for l in lines)
+    assert lines[0][:5] == [1, 2, 3, 4, 5]  # the numbers every investigation backs come first
+    assert res["support"][0] == 3 and res["support"][58] == 0
+    assert br.combine(sources, seed=20261007)["lines"] == lines  # reproducible
+
+
+def test_pick_sources_skip_random_baselines_and_backtest_ensembles():
+    payload = {"predictions": {"random (baseline)": [[1, 2, 3, 4, 5, 6]], "ENSEMBLE x": [[7, 8, 9, 10, 11, 12]],
+                               "hot": [[13, 14, 15, 16, 17, 18]]},
+               "ml": {"eras": [{"picks": {"top6": [1, 2, 3, 4, 5, 6], "sampled": [[2, 3, 4, 5, 6, 7]]}}]}}
+    src = dict(br.pick_sources(payload))
+    assert src["Strategy backtest"] == [[13, 14, 15, 16, 17, 18]]
+    assert len(src["Machine learning"]) == 2
