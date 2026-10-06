@@ -135,6 +135,19 @@ td.flag { font-weight: 600; }
   <div class="table-wrap"><table id="gr-lags"></table></div>
 </section>
 
+<section id="radix-section">
+  <div class="eyebrow">Prime radix</div>
+  <h2>Conditional probabilities and copulas on prime-base digits</h2>
+  <p id="rx-lede"></p>
+  <div class="verdict" id="rx-verdict"></div>
+  <h3 class="h3">Do the digits carry structure?</h3>
+  <p class="note" id="rx-tests-note"></p>
+  <div class="table-wrap"><table id="rx-tests"></table></div>
+  <h3 class="h3">Do radix strategies pick better numbers?</h3>
+  <p class="note" id="rx-bt-note"></p>
+  <div class="table-wrap"><table id="rx-bt"></table></div>
+</section>
+
 <section>
   <div class="eyebrow">Fairness check</div>
   <h2>How often each ball came up since October 2015</h2>
@@ -365,6 +378,39 @@ new MutationObserver(drawHeatmaps).observe(document.documentElement, { attribute
   $("#gr-verdict").innerHTML = found
     ? `<strong>Possible structure found.</strong><span>${esc("At least one test points to structure; see the flagged rows below. Treat it with caution until it replicates in the other era.")}</span>`
     : `<strong>The Lotto speaks no grammar.</strong><span>${esc(`Its "language" is maximum-entropy noise. No model trained on earlier draws predicts later ones better than a fair machine, in either era. Compressors cannot shrink the real draw stream more than fair streams. The most frequent pairs, triples and ordered pairs are no more frequent than the top ones in simulated fair histories. ${Math.abs(top.other.z) < 2 ? `The one echo that stood out, at ${top.lag} rounds back in the ${top.era}-ball era, did not appear in the other era.` : `The strongest echo, at ${top.lag} rounds back, appeared in both eras and is worth watching, but on its own it is not enough to call a grammar.`}`)}</span>`;
+})();
+
+(function () {
+  const R = D.prime_radix;
+  if (!R) { document.getElementById("radix-section").hidden = true; return; }
+  const T = R.tests, rows = T.rows, keys = Object.keys(T.labels), cut = 0.05 / T.n_tests;
+  const pf = (p) => (p < 0.001 ? "<0.001" : p.toFixed(3));
+  const zf = (z) => (z >= 0 ? "+" : "") + z.toFixed(2);
+  const ex = (b) => { const w = rows.find((r) => r.base === b).width; let n = 59, d = []; for (let i = 0; i < w; i++) { d.unshift(n % b); n = Math.floor(n / b); } return d.join("-"); };
+  $("#rx-lede").textContent = `Each ball is rewritten in the first ten prime bases, as the repo's prime-radix pipeline does: 59 is ${ex(2)} in base 2, ${ex(7)} in base 7 and ${ex(29)} in base 29. The digits are then searched for structure. Conditional probabilities ask whether a digit depends on the digit before it or on the previous round. Copulas, measured with rank correlations that ignore each digit's own distribution, ask whether digits move together within a draw or from one round to the next. ${R.rounds.toLocaleString()} rounds from the 59-ball era are compared against ${T.sims} simulated fair histories, because drawing without replacement makes digits slightly dependent even in a fair machine.`;
+  $("#rx-tests").innerHTML = `<thead><tr><th>Base</th><th>Digits</th>${keys.map((k) => `<th style="white-space:normal;min-width:8rem">${esc(T.labels[k])}</th>`).join("")}</tr></thead><tbody>` +
+    rows.map((r) => `<tr><td>${r.base}</td><td>${r.width}</td>${keys.map((k) => `<td class="${r[k + "_p"] < cut ? "flag" : ""}">${pf(r[k + "_p"])}</td>`).join("")}</tr>`).join("") + "</tbody>";
+  const allP = rows.flatMap((r) => keys.map((k) => ({ p: r[k + "_p"], base: r.base, k })));
+  const minP = allP.reduce((a, b) => (b.p < a.p ? b : a));
+  const below05 = allP.filter((x) => x.p < 0.05).length;
+  const hits = allP.filter((x) => x.p < cut);
+  $("#rx-tests-note").textContent = `p-values from the simulated fair histories. ${T.n_tests} tests are run, so a finding needs p < ${cut.toFixed(5)}. ${hits.length ? `${hits.length} clear that threshold.` : `None does. The smallest p is ${pf(minP.p)} (base ${minP.base}: ${T.labels[minP.k]}). ${below05} of ${T.n_tests} fall below 0.05, against about ${(T.n_tests * 0.05).toFixed(0)} expected by chance alone.`}`;
+  const B = R.backtest.strategies, nn = Object.fromEntries(R.prime_nn.map((r) => [r.base, r]));
+  const base = B["random (baseline)"];
+  const cell = (s) => `<td>${zf(s.z_mean)}</td><td>${zf(s.z_min)} to ${zf(s.z_max)}</td>`;
+  $("#rx-bt").innerHTML = `<thead><tr><th>Base</th><th>Conditional probability z</th><th>seed range</th><th>Conditional copula z</th><th>seed range</th><th>Repo transformer z</th></tr></thead><tbody>` +
+    `<tr class="base-row"><td>random tickets</td>${cell(base)}<td></td><td></td><td></td></tr>` +
+    rows.map((r) => `<tr><td>${r.base}</td>${cell(B[`conditional probability, base ${r.base}`])}${cell(B[`conditional copula, base ${r.base}`])}<td>${nn[r.base] ? zf(nn[r.base].z) : "–"}</td></tr>`).join("") + "</tbody>";
+  const strat = Object.entries(B).filter(([k]) => k !== "random (baseline)");
+  const best = strat.reduce((a, b) => (b[1].z_mean > a[1].z_mean ? b : a));
+  const worst = strat.reduce((a, b) => (b[1].z_mean < a[1].z_mean ? b : a));
+  const steady = strat.filter(([, s]) => s.z_min > 0).map(([k]) => k);
+  const nnBest = R.prime_nn.reduce((a, b) => (b.z > a.z ? b : a));
+  $("#rx-bt-note").textContent = `Walk-forward over the ${R.backtest.test_rounds} rounds since ${R.split}, ${R.backtest.tickets_per_round} tickets per round, z-score of mean matches against the 36/59 chance rate, averaged over ${R.backtest.seeds.length} seeds. The best average is "${best[0]}" at ${zf(best[1].z_mean)}, and the worst is "${worst[0]}" at ${zf(worst[1].z_mean)}. With ${strat.length} strategies, averages within about ±3.0 are what chance produces. ${steady.length ? `${steady.length} of ${strat.length} stayed above zero in every seed. All seeds replay the same rounds, so their results move together and this says little on its own.` : "None stayed above zero in every seed."} The repo's prime-radix transformers, trained on draws up to ${R.split} and scored once on the later draws, peak at ${zf(nnBest.z)} (base ${nnBest.base}).`;
+  const found = hits.length || best[1].z_mean > 3.0;
+  $("#rx-verdict").innerHTML = found
+    ? `<strong>Something in the digits stands out.</strong><span>${esc("At least one test or strategy clears the multiple-testing threshold. It needs to replicate on new draws before it means anything.")}</span>`
+    : `<strong>No prime base reveals a pattern.</strong><span>${esc(`Rewriting the numbers in prime bases only changes how they are spelled. A fair draw stays fair in every base: no digit depends on the previous ball or the previous round beyond chance, the copulas match fair draws, and none of the ${strat.length} conditional-probability and copula strategies beats random tickets.`)}</span>`;
 })();
 
 $("#method").textContent = `Data: the full UK Lotto history from lottery.merseyworld.com (${D.era.last_draw.toLocaleString()} draws since 1994). The most recent rounds match the official National Lottery results exactly. Only draws since ${D.era.first_date} are used, when the pool grew from 49 to 59 balls. Each round in the test period was predicted using only draws from earlier dates, and both rounds of a two-round draw count as separate targets. The transformer was retrained every 26 rounds. Performance weights use a softmax over each strategy's mean hits in its last ${D.window} rounds (τ = ${D.tau}). z-scores compare mean hits with the exact hypergeometric expectation of 36/59. Seeds used: ${D.seeds.join(", ")}. This page is a statistics exercise. Lotto draws are independent and random, and no method here changes the odds of any ticket.`;
