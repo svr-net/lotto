@@ -7,6 +7,7 @@
   --bg: #f6f7f9; --surface: #fcfcfb; --fg: #14171c; --fg2: #4d535c; --muted: #7b828c;
   --rule: #dde1e6; --grid: #e8ebef;
   --s1: #2a78d6; --s2: #eb6834; --s1-soft: #e3eefb; --s2-soft: #fde9e0;
+  --c3: #1baf7a; --c4: #eda100; --c5: #e87ba4; --c6: #008300; --c7: #4a3aa7;
   --neg: #2a78d6; --mid: #f0efec; --pos: #e34948;
   --good: #0ca30c; --critical: #d03b3b;
   --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
@@ -17,11 +18,13 @@
   --bg: #121417; --surface: #1a1a19; --fg: #f2f3f5; --fg2: #c3c7cd; --muted: #8d939c;
   --rule: #2c3036; --grid: #25292e;
   --s1: #3987e5; --s2: #d95926; --s1-soft: #1b2a3d; --s2-soft: #3a2219;
+  --c3: #199e70; --c4: #c98500; --c5: #d55181; --c6: #008300; --c7: #9085e9;
   --neg: #3987e5; --mid: #383835; --pos: #e66767; color-scheme: dark } }
 :root[data-theme="dark"] {
   --bg: #121417; --surface: #1a1a19; --fg: #f2f3f5; --fg2: #c3c7cd; --muted: #8d939c;
   --rule: #2c3036; --grid: #25292e;
   --s1: #3987e5; --s2: #d95926; --s1-soft: #1b2a3d; --s2-soft: #3a2219;
+  --c3: #199e70; --c4: #c98500; --c5: #d55181; --c6: #008300; --c7: #9085e9;
   --neg: #3987e5; --mid: #383835; --pos: #e66767; color-scheme: dark }
 body { background: var(--bg); color: var(--fg); font: 16px/1.55 var(--body); }
 .wrap { max-width: 960px; margin: 0 auto; padding-inline: 16px; padding-block: 40px 64px; display: grid; gap: 48px; }
@@ -201,6 +204,18 @@ td.flag { font-weight: 600; }
   <h3 class="h3">Bayesian strategies</h3>
   <div class="table-wrap"><table id="by-bt"></table></div>
   <p class="note" id="by-bt-note"></p>
+</section>
+
+<section id="rl-section">
+  <div class="eyebrow">Reinforcement learning</div>
+  <h2>Can an agent learn to play better than chance?</h2>
+  <p id="rl-lede"></p>
+  <div class="verdict" id="rl-verdict"></div>
+  <div class="table-wrap"><table id="rl-table"></table></div>
+  <h3 class="h3">Matches above or below chance through the test period (59-ball era)</h3>
+  <div class="legend" id="rl-legend"></div>
+  <div class="chart" id="rl-path"></div>
+  <p class="note" id="rl-note"></p>
 </section>
 
 <section>
@@ -596,6 +611,42 @@ new MutationObserver(drawHeatmaps).observe(document.documentElement, { attribute
   $("#by-verdict").innerHTML = against.length
     ? `<strong>Some evidence against a fair machine.</strong><span>${esc(`${against.length} comparison(s) lean towards bias or a difference; see the table.`)}</span>`
     : `<strong>The evidence favours a fair machine.</strong><span>${esc(`In both eras the draws are at least ${Math.pow(10, minFair).toFixed(0)} times more likely under a fair machine than under one with biases of 3% or more (posterior probability of fairness ${E.map((e) => (e.p_fair_posterior * 100).toFixed(1) + "%").join(" and ")}). Machines, ball sets and calendar years show no material differences, ${allIn ? "every ball's credible interval includes fair" : "almost every ball's credible interval includes fair"}, and Bayesian strategies do no better than random tickets.`)}</span>`;
+})();
+
+(function () {
+  const RL = D.rl;
+  if (!RL) { document.getElementById("rl-section").hidden = true; return; }
+  const E = RL.eras, zf = (z) => (z >= 0 ? "+" : "") + z.toFixed(2);
+  const names = Object.keys(E[0].agents);
+  $("#rl-lede").textContent = `Each round an agent buys ${RL.tickets} tickets (its actions) and is rewarded with the number of balls each one matches. Its tickets can't change future draws, so this is the one-step case of reinforcement learning, a contextual bandit. Agents learn online from the first rounds of each era and keep learning through the test period. Three families take part. Bandits choose among ${RL.arms.length} simple strategies; four of them see only the reward of the strategy they played, and Hedge sees every strategy's result. Linear Thompson sampling picks numbers from a Bayesian model of the machine-learning features. REINFORCE learns a softmax policy over the numbers by policy gradient from its own rewards.`;
+  $("#rl-table").innerHTML = `<thead><tr><th>Agent</th><th>59-ball z</th><th>seed range</th><th>49-ball z</th><th>seed range</th></tr></thead><tbody>` +
+    names.map((n) => { const a = E[0].agents[n], b = E[1].agents[n]; return `<tr><td style="white-space:normal;min-width:16rem">${esc(n)}</td><td class="${a.z_mean >= 3 ? "flag" : ""}">${zf(a.z_mean)}</td><td>${zf(a.z_min)} to ${zf(a.z_max)}</td><td class="${b.z_mean >= 3 ? "flag" : ""}">${zf(b.z_mean)}</td><td>${zf(b.z_min)} to ${zf(b.z_max)}</td></tr>`; }).join("") + "</tbody>";
+  const cols = ["var(--s1)", "var(--s2)", "var(--c3)", "var(--c4)", "var(--c5)", "var(--c6)", "var(--c7)"];
+  const short = (n) => n.replace(" over strategies", "").replace(" (sees every strategy's result)", "").replace(" (adversarial bandit)", "").replace(" over numbers (contextual)", "").replace(" over numbers", "");
+  $("#rl-legend").innerHTML = names.map((n, i) => `<span style="--c:${cols[i]}">${esc(short(n))}</span>`).join("") + `<span style="--c:var(--grid)">±2σ chance band</span>`;
+  (function () {
+    const e = E[0], W = 900, H = 280, L = 46, R = 12, T = 12, B = 30, n = e.chance_band.length;
+    const all = names.flatMap((k) => e.paths[k]).concat(e.chance_band, e.chance_band.map((v) => -v));
+    const lo = Math.min(...all) * 1.05, hi = Math.max(...all) * 1.05;
+    const x = (i) => L + i / (n - 1) * (W - L - R), y = (v) => T + (hi - v) / (hi - lo) * (H - T - B);
+    let g = `<path d="M${x(0)},${y(e.chance_band[0])} ${e.chance_band.map((v, i) => `L${x(i)},${y(v)}`).join(" ")} ${e.chance_band.map((v, i) => `L${x(n - 1 - i)},${y(-e.chance_band[n - 1 - i])}`).join(" ")} Z" fill="var(--grid)" opacity="0.7"/>`;
+    const step = Math.pow(10, Math.floor(Math.log10((hi - lo) / 4)));
+    for (let v = Math.ceil(lo / step) * step; v <= hi; v += step) g += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--grid)" ${Math.abs(v) < 1e-9 ? 'stroke-width="1.5" style="stroke:var(--muted)"' : ""}/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${(v > 0 ? "+" : "") + v.toFixed(step < 1 ? 1 : 0)}</text>`;
+    for (let r = 0; r < n; r += 100) g += `<text x="${x(r)}" y="${H - 10}" text-anchor="middle">${r}</text>`;
+    names.forEach((k, i) => { g += `<polyline points="${e.paths[k].map((v, j) => `${x(j).toFixed(1)},${y(v).toFixed(1)}`).join(" ")}" fill="none" stroke="${cols[i]}" stroke-width="2" stroke-linejoin="round" data-tip="${esc(short(k))}: ${zf(e.paths[k][n - 1])} matches per ticket above chance after ${n} rounds"/>`; });
+    g += `<text x="${(W + L) / 2}" y="${H + 4}" text-anchor="middle">test rounds</text>`;
+    $("#rl-path").innerHTML = `<svg viewBox="0 0 ${W} ${H + 8}" style="min-width:640px" role="img" aria-label="Cumulative matches per ticket above chance for each agent">${g}</svg>`;
+    attachTip($("#rl-path"));
+  })();
+  const hedge = E[0].shares[names.find((n) => n.startsWith("Hedge"))];
+  const top = Object.entries(hedge).sort((a, b) => b[1] - a[1]).slice(0, 3);
+  const bestArm = Object.entries(E[0].arms).reduce((a, b) => (b[1].z_mean > a[1].z_mean ? b : a));
+  const ent = E[0].reinforce_entropy_share;
+  $("#rl-note").textContent = `Each line is an agent's running total of matches per ticket minus the 36/59 chance rate, for one seed. The grey band is where ${RL.tickets} independent random tickets per round land 95% of the time. Agents whose tickets are near-copies of each other, such as a bandit backing a fixed top-6 strategy, wander outside it more easily: ${RL.tickets} copies of one line are really a single bet. The z-scores in the table use each round's average, so they allow for that. Hedge, which sees every strategy's result, leaned towards ${top.map(([k, v]) => `${k} (${(v * 100).toFixed(0)}%)`).join(", ")}: whichever strategies happened to be ahead when it was deciding. It scored z ${zf(E[0].agents[names.find((n) => n.startsWith("Hedge"))].z_mean)}, because an early lead in a fair draw doesn't last. The best single strategy in hindsight was "${bestArm[0]}" at z ${zf(bestArm[1].z_mean)}, about what the best of ${RL.arms.length} random strategies usually scores. REINFORCE's policy kept ${(ent * 100).toFixed(1)}% of the maximum possible entropy, so after all that training it still picks numbers almost at random. It is regularized to relax back to uniform when nothing pays: an earlier, unregularized version chased the noise into a narrow, overconfident policy that did no better. On a rigged machine where last round's numbers are four times as likely to repeat, the same agents pull clearly ahead in the tests.`;
+  const learned = names.filter((n) => E.every((e) => e.agents[n].z_mean >= 3));
+  $("#rl-verdict").innerHTML = learned.length
+    ? `<strong>An agent learned something.</strong><span>${esc(`${learned.join(", ")} beat chance in both eras.`)}</span>`
+    : `<strong>There is nothing to learn.</strong><span>${esc(`No agent beats chance in either era: the bandits can't find a strategy worth backing, the contextual bandit can't find numbers worth backing, and the policy gradient never moves far from random. Exploration is wasted here, because the whole draw is revealed every round anyway.`)}</span>`;
 })();
 
 $("#method").textContent = `Data: the full UK Lotto history from lottery.merseyworld.com (${D.era.last_draw.toLocaleString()} draws since 1994). The most recent rounds match the official National Lottery results exactly. Only draws since ${D.era.first_date} are used, when the pool grew from 49 to 59 balls. Each round in the test period was predicted using only draws from earlier dates, and both rounds of a two-round draw count as separate targets. The transformer was retrained every 26 rounds. Performance weights use a softmax over each strategy's mean hits in its last ${D.window} rounds (τ = ${D.tau}). z-scores compare mean hits with the exact hypergeometric expectation of 36/59. Seeds used: ${D.seeds.join(", ")}. This page is a statistics exercise. Lotto draws are independent and random, and no method here changes the odds of any ticket.`;
