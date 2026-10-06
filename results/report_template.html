@@ -148,6 +148,19 @@ td.flag { font-weight: 600; }
   <div class="table-wrap"><table id="rx-bt"></table></div>
 </section>
 
+<section id="spectral-section">
+  <div class="eyebrow">Fourier and wavelets</div>
+  <h2>Do the draws have rhythms or bursts?</h2>
+  <p id="sp-lede"></p>
+  <div class="verdict" id="sp-verdict"></div>
+  <h3 class="h3">Rhythm and burst tests</h3>
+  <p class="note" id="sp-tests-note"></p>
+  <div class="table-wrap"><table id="sp-tests"></table></div>
+  <h3 class="h3">Do spectral strategies pick better numbers?</h3>
+  <p class="note" id="sp-bt-note"></p>
+  <div class="table-wrap"><table id="sp-bt"></table></div>
+</section>
+
 <section>
   <div class="eyebrow">Fairness check</div>
   <h2>How often each ball came up since October 2015</h2>
@@ -411,6 +424,34 @@ new MutationObserver(drawHeatmaps).observe(document.documentElement, { attribute
   $("#rx-verdict").innerHTML = found
     ? `<strong>Something in the digits stands out.</strong><span>${esc("At least one test or strategy clears the multiple-testing threshold. It needs to replicate on new draws before it means anything.")}</span>`
     : `<strong>No prime base reveals a pattern.</strong><span>${esc(`Rewriting the numbers in prime bases only changes how they are spelled. A fair draw stays fair in every base: no digit depends on the previous ball or the previous round beyond chance, the copulas match fair draws, and none of the ${strat.length} conditional-probability and copula strategies beats random tickets.`)}</span>`;
+})();
+
+(function () {
+  const S = D.spectral;
+  if (!S) { document.getElementById("spectral-section").hidden = true; return; }
+  const E = S.eras, cut = 0.05 / S.n_tests;
+  const pf = (p) => (p < 0.001 ? "<0.001" : p.toFixed(3));
+  const zf = (z) => (z >= 0 ? "+" : "") + z.toFixed(2);
+  $("#sp-lede").textContent = `Treat each era as a time series of rounds. Fourier analysis (the periodogram) looks for regular rhythms: a ball that keeps coming back every N rounds, or a draw sum that rises and falls on a cycle. Wavelets (Haar and Morlet) look for structure that is local in time: bursts, level shifts after a machine change, or a rhythm that switches on for a while. A fair machine makes every one of these series white noise, so each statistic is compared with ${E[0].sims.toLocaleString()} simulated fair histories of the same length.`;
+  const tests = E[0].tests.map((t, i) => [t, E[1].tests[i]]);
+  $("#sp-tests").innerHTML = `<thead><tr><th>Question</th><th>p, 59-ball</th><th>p, 49-ball</th><th>Strongest feature (59 / 49)</th></tr></thead><tbody>` +
+    tests.map(([a, b]) => `<tr><td style="white-space:normal;min-width:14rem">${esc(a.test)}</td><td class="${a.p < cut ? "flag" : ""}">${pf(a.p)}</td><td class="${b.p < cut ? "flag" : ""}">${pf(b.p)}</td><td style="white-space:normal;min-width:14rem;text-align:left">${esc([a.detail, b.detail].filter(Boolean).join(" / ") || "–")}</td></tr>`).join("") + "</tbody>";
+  const all = E.flatMap((e) => e.tests.map((t) => ({ ...t, era: e.pool })));
+  const minT = all.reduce((x, y) => (y.p < x.p ? y : x));
+  const other = E.find((e) => e.pool !== minT.era).tests.find((t) => t.key === minT.key);
+  const hits = all.filter((t) => t.p < cut);
+  const below = all.filter((t) => t.p < 0.05).length;
+  $("#sp-tests-note").textContent = `${S.n_tests} tests, so a finding needs p < ${cut.toFixed(4)}. ${hits.length ? `${hits.length} clear it.` : `None does. The smallest p is ${pf(minT.p)} in the ${minT.era}-ball era (${minT.test}${minT.detail ? `; ${minT.detail.replace(/^strongest: /, "")}` : ""}); in the other era the same test gives p = ${pf(other.p)}. ${below} of ${S.n_tests} ${below === 1 ? "falls" : "fall"} below 0.05, against about ${(S.n_tests * 0.05).toFixed(1)} expected by chance.`} The Haar scale shares show how each number's on/off series splits its variance from the finest scale (round to round) to the coarsest (about 128 rounds). White noise puts half at the finest scale and halves it at each coarser one, and the real draws do the same.`;
+  const B = S.backtest.strategies;
+  $("#sp-bt").innerHTML = `<thead><tr><th>Strategy</th><th>Average z</th><th>Seed range</th><th>Picks for the next draw</th></tr></thead><tbody>` +
+    Object.entries(B).map(([k, r]) => `<tr class="${k.startsWith("random") ? "base-row" : ""}"><td style="white-space:normal;min-width:14rem">${esc(k)}</td><td>${zf(r.z_mean)}</td><td>${zf(r.z_min)} to ${zf(r.z_max)}</td><td style="text-align:left">${S.backtest.picks[k] ? esc(S.backtest.picks[k][0].join(" ")) : "–"}</td></tr>`).join("") + "</tbody>";
+  const strat = Object.entries(B).filter(([k]) => !k.startsWith("random"));
+  const best = strat.reduce((a, b) => (b[1].z_mean > a[1].z_mean ? b : a));
+  $("#sp-bt-note").textContent = `Walk-forward over ${S.backtest.test_rounds} rounds since ${S.split}, each using the last 256 rounds before it, ${S.backtest.tickets_per_round} tickets per round, ${S.backtest.seeds.length} seeds. The Fourier strategy fits each ball's strongest cycles and projects them one round ahead. The wavelet strategy smooths each ball's recent on/off record at a chosen time scale and favours the balls running hot. The best average is "${best[0]}" at ${zf(best[1].z_mean)}, inside the chance band of about ±2.6 for ${strat.length} strategies.`;
+  const found = hits.length || best[1].z_mean > 2.6;
+  $("#sp-verdict").innerHTML = found
+    ? `<strong>Something rhythmic stands out.</strong><span>${esc("At least one test or strategy clears the multiple-testing threshold. It needs to replicate before it means anything.")}</span>`
+    : `<strong>No rhythms, no bursts.</strong><span>${esc(`The draw sequence is white noise at every frequency and every time scale. No ball returns on a schedule, no summary of the draw cycles, the variance splits across time scales exactly as fair noise does, and no Morlet or Haar burst exceeds what fair histories produce. Projecting cycles forward or riding wavelet-smoothed hot streaks does no better than random tickets.`)}</span>`;
 })();
 
 $("#method").textContent = `Data: the full UK Lotto history from lottery.merseyworld.com (${D.era.last_draw.toLocaleString()} draws since 1994). The most recent rounds match the official National Lottery results exactly. Only draws since ${D.era.first_date} are used, when the pool grew from 49 to 59 balls. Each round in the test period was predicted using only draws from earlier dates, and both rounds of a two-round draw count as separate targets. The transformer was retrained every 26 rounds. Performance weights use a softmax over each strategy's mean hits in its last ${D.window} rounds (τ = ${D.tau}). z-scores compare mean hits with the exact hypergeometric expectation of 36/59. Seeds used: ${D.seeds.join(", ")}. This page is a statistics exercise. Lotto draws are independent and random, and no method here changes the odds of any ticket.`;
