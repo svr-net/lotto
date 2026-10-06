@@ -61,3 +61,22 @@ def test_generate_batch_shape():
     assert batch.shape == (10, 6)
     for row in batch:
         assert len(set(row.tolist())) == 6
+
+
+def test_extract_grammar_counts_transitions_per_position():
+    data = np.array([[1, 2, 3, 4, 5, 6], [2, 3, 7, 8, 9, 10]])
+    grammar = extract_grammar(data)
+    assert grammar["positional_transition_counts"][(1, 2)][3] == 1
+    assert grammar["positional_transition_counts"][(0, 2)][3] == 1
+    assert (0, 3) not in grammar["positional_transition_counts"]
+
+
+def test_sampled_draws_do_not_pile_up_on_max_number():
+    # Draws spread over the whole range: a position-blind chain drifts upward and
+    # over-samples 59; the positional, room-aware sampler should not.
+    rng = np.random.default_rng(0)
+    data = np.array([sorted(rng.choice(np.arange(1, 60), 6, replace=False)) for _ in range(2000)])
+    batch = generate_batch(extract_grammar(data), num_samples=3000, rng=np.random.default_rng(1))
+    freq = np.bincount(batch.ravel(), minlength=60)[1:] / batch.size
+    assert freq[58] < 1.5 / 59  # position-blind chain: ~2x; fixed sampler: ~1.1x
+    assert all(row.tolist() == sorted(row.tolist()) and len(set(row.tolist())) == 6 for row in batch)

@@ -4,7 +4,7 @@ from __future__ import annotations
 import torch
 import torch.nn as nn
 
-from .model import LottoTransformer
+from .model import LottoTransformer, shift_right
 
 
 def train_model(
@@ -17,7 +17,10 @@ def train_model(
     device: torch.device | None = None,
     verbose: bool = True,
 ) -> list:
-    """Train `model` to reproduce the distributional structure of historical draws.
+    """Train `model` as a next-number predictor over historical draws.
+
+    Each position sees only the start token and the numbers before it, so the
+    model learns the conditional distribution of the next number.
 
     Returns the list of per-epoch average losses.
     """
@@ -42,7 +45,7 @@ def train_model(
         for i in range(0, n, batch_size):
             batch = tokens_shuffled[i : i + batch_size]
             optimizer.zero_grad()
-            logits = model(batch)
+            logits = model(shift_right(batch))
             loss = loss_fn(logits.view(-1, model.vocab_size), batch.view(-1))
             loss.backward()
             optimizer.step()

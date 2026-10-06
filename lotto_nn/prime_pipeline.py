@@ -86,7 +86,7 @@ def sample_draw_base(model: LottoTransformer, base: int, temperature: float = 0.
             candidates = [n for n in digits_of if n not in chosen]
             for k in range(width):
                 pos = len(seq)
-                padded = seq + [0] * (model.seq_len - len(seq))
+                padded = ([0] + seq + [0] * model.seq_len)[: model.seq_len]
                 inp = torch.tensor([padded], dtype=torch.long, device=device)
                 logits = model(inp)[0, pos].clone()
                 allowed = {digits_of[n][k] for n in candidates}

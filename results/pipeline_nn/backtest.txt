@@ -1,10 +1,10 @@
-Chi-square frequency statistic: 84867.02994188243
+Chi-square frequency statistic: 3555.9357733712986
 Top 20 historical pairs: [((np.int64(2), np.int64(54)), 24), ((np.int64(42), np.int64(59)), 23), ((np.int64(37), np.int64(42)), 22), ((np.int64(38), np.int64(47)), 22), ((np.int64(49), np.int64(56)), 22), ((np.int64(13), np.int64(14)), 21), ((np.int64(37), np.int64(39)), 21), ((np.int64(8), np.int64(33)), 21), ((np.int64(42), np.int64(58)), 20), ((np.int64(11), np.int64(44)), 20), ((np.int64(23), np.int64(54)), 19), ((np.int64(24), np.int64(34)), 19), ((np.int64(34), np.int64(52)), 19), ((np.int64(22), np.int64(47)), 19), ((np.int64(12), np.int64(29)), 19), ((np.int64(27), np.int64(36)), 19), ((np.int64(22), np.int64(54)), 19), ((np.int64(13), np.int64(39)), 18), ((np.int64(27), np.int64(52)), 18), ((np.int64(9), np.int64(46)), 18)]
-Top 20 generated pairs: [((np.int64(29), np.int64(36)), 1812), ((np.int64(29), np.int64(45)), 1667), ((np.int64(36), np.int64(45)), 1535), ((np.int64(18), np.int64(29)), 866), ((np.int64(18), np.int64(36)), 778), ((np.int64(18), np.int64(45)), 701), ((np.int64(8), np.int64(29)), 696), ((np.int64(8), np.int64(36)), 613), ((np.int64(8), np.int64(45)), 565), ((np.int64(9), np.int64(29)), 494), ((np.int64(29), np.int64(59)), 471), ((np.int64(9), np.int64(36)), 440), ((np.int64(36), np.int64(59)), 422), ((np.int64(29), np.int64(49)), 420), ((np.int64(9), np.int64(45)), 409), ((np.int64(45), np.int64(59)), 400), ((np.int64(12), np.int64(29)), 396), ((np.int64(36), np.int64(49)), 371), ((np.int64(29), np.int64(47)), 360), ((np.int64(12), np.int64(36)), 348)]
+Top 20 generated pairs: [((np.int64(52), np.int64(58)), 49), ((np.int64(37), np.int64(42)), 44), ((np.int64(22), np.int64(47)), 42), ((np.int64(55), np.int64(58)), 40), ((np.int64(47), np.int64(52)), 37), ((np.int64(42), np.int64(49)), 37), ((np.int64(26), np.int64(35)), 36), ((np.int64(22), np.int64(58)), 36), ((np.int64(54), np.int64(58)), 36), ((np.int64(38), np.int64(47)), 36), ((np.int64(14), np.int64(21)), 34), ((np.int64(20), np.int64(43)), 34), ((np.int64(36), np.int64(43)), 34), ((np.int64(22), np.int64(54)), 34), ((np.int64(20), np.int64(24)), 34), ((np.int64(47), np.int64(59)), 34), ((np.int64(17), np.int64(31)), 33), ((np.int64(31), np.int64(58)), 33), ((np.int64(36), np.int64(41)), 33), ((np.int64(15), np.int64(22)), 32)]
 Historical sum mean/std: {'mean': 181.4614733276884, 'std': 40.69747017662958}
-Generated sum mean/std: {'mean': 189.1655, 'std': 31.77507057033863}
+Generated sum mean/std: {'mean': 181.374, 'std': 39.54422997100841}
 Historical odd count mean/std: {'mean': 3.039796782387807, 'std': 1.1902545111063232}
-Generated odd count mean/std: {'mean': 3.3215, 'std': 0.8735775580908657}
+Generated odd count mean/std: {'mean': 3.021, 'std': 1.176247848032038}
 Historical spacing mean/std: {'mean': 8.51549534292972, 'std': 6.973408208693022}
-Generated spacing mean/std: {'mean': 8.0445, 'std': 4.920174768237405}
-Simulation hits - mean: 3.2705 std: 0.4475821153710232 max: 5
+Generated spacing mean/std: {'mean': 8.6958, 'std': 6.6593439887124015}
+Simulation hits - mean: 3.5185 std: 0.521207971926754 max: 5

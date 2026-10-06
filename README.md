@@ -10,7 +10,7 @@ draws against historical draws.
 ### Package layout
 
 - `lotto_nn/data.py` — CSV ingestion, tokenization, and temporal train/test split
-- `lotto_nn/model.py` — `LottoTransformer`, a small transformer encoder over 6-number sequences
+- `lotto_nn/model.py` — `LottoTransformer`, a small causal transformer that predicts each number of a sorted draw from the ones before it
 - `lotto_nn/train.py` — training loop
 - `lotto_nn/sample.py` — autoregressive sampling engine (masks invalid/duplicate tokens)
 - `lotto_nn/backtest.py` — frequency, pairing, sum, odd/even, spacing, positional bias,

@@ -9,7 +9,11 @@ class LottoTransformer(nn.Module):
     """A small transformer encoder that models sequences of 6 lotto numbers.
 
     vocab_size = 60 allows token indices 0-59; lotto numbers use 1-59 and 0 is
-    reserved as a padding/unknown token (e.g. during autoregressive sampling).
+    reserved as the start-of-draw token (and padding).
+
+    The encoder is causal: position i only attends to positions <= i, so the
+    model is trained as a next-number predictor (input shifted right behind the
+    start token, see ``shift_right``) instead of learning to copy its input.
     """
 
     def __init__(
@@ -42,6 +46,13 @@ class LottoTransformer(nn.Module):
         batch_size, seq_len = x.shape
         pos_idx = torch.arange(seq_len, device=x.device).unsqueeze(0).expand(batch_size, seq_len)
         x_emb = self.embed(x) + self.pos(pos_idx)
-        encoded = self.encoder(x_emb)
+        causal = torch.triu(torch.ones(seq_len, seq_len, dtype=torch.bool, device=x.device), diagonal=1)
+        encoded = self.encoder(x_emb, mask=causal)
         logits = self.fc(encoded)
         return logits
+
+
+def shift_right(tokens: torch.Tensor, start_token: int = 0) -> torch.Tensor:
+    """[batch, seq_len] targets -> inputs with ``start_token`` prepended and the last token dropped."""
+    start = torch.full_like(tokens[:, :1], start_token)
+    return torch.cat([start, tokens[:, :-1]], dim=1)

@@ -137,9 +137,10 @@ $("#facts").innerHTML = [
   ["Rounds tested", D.test_rounds], ["Seeds", D.seeds.length], ["Tickets/round", D.tickets_per_round],
   ["Chance mean", fmt(exp)], ["Chance 3+ hits", fmt(D.expected.pct_3plus, 2) + "%"],
 ].map(([k, v]) => `<span>${k} <b>${v}</b></span>`).join("");
+const wide = S.slice().sort((a, b) => (A[b].z_max - A[b].z_min) - (A[a].z_max - A[a].z_min))[0];
 const ensBest = Math.max(...S.filter(isEns).map((s) => A[s].z_mean));
 $("#verdict").innerHTML = `<strong>No strategy beat random chance.</strong><span>${esc(
-  `Random tickets average ${fmt(exp)} matching numbers. Averaged over ${D.seeds.length} seeds, every strategy and both ensembles land within normal chance variation of that (z-scores between ${fmt(Math.min(...S.map((s) => A[s].z_mean)), 2)} and ${fmt(Math.max(...S.map((s) => A[s].z_mean)), 2)}; best ensemble ${fmt(ensBest, 2)}). Single runs that looked promising reversed under another seed: the repo transformer scored z = ${fmt(A["transformer NN (repo)"].z_max, 2)} on one seed and ${fmt(A["transformer NN (repo)"].z_min, 2)} on another, because its 20 tickets per round are near-copies of each other, which inflates its z-score in both directions. The lowest score, repeating the last draw, is one fixed ticket per round. With 13 methods tested, a z of ${fmt(Math.min(...S.map((s) => A[s].z_mean)), 2)} is within what chance alone produces. The ball counts are consistent with a fair draw (p = ${fmt(D.fairness.p, 2)}).`)}</span>`;
+  `Random tickets average ${fmt(exp)} matching numbers. Averaged over ${D.seeds.length} seeds, every strategy and both ensembles land within normal chance variation of that (z-scores between ${fmt(Math.min(...S.map((s) => A[s].z_mean)), 2)} and ${fmt(Math.max(...S.map((s) => A[s].z_mean)), 2)}; best ensemble ${fmt(ensBest, 2)}). Single runs that looked promising reversed under another seed: the widest swing was ${pretty(wide)}, from z = ${fmt(A[wide].z_min, 2)} to ${fmt(A[wide].z_max, 2)} across seeds. The lowest average, repeating the last draw, is one fixed ticket per round. With 13 methods tested, a z of ${fmt(Math.min(...S.map((s) => A[s].z_mean)), 2)} is within what chance alone produces. The ball counts are consistent with a fair draw (p = ${fmt(D.fairness.p, 2)}).`)}</span>`;
 
 // ---------- tickets
 const latest = D.latest;

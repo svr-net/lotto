@@ -18,9 +18,11 @@ def sample_draw(
 ) -> list:
     """Sample a single draw of 6 unique numbers in [1, 59] from the model.
 
-    Invalid tokens (0, out-of-range, or already-chosen numbers) are masked out
-    of the softmax distribution before sampling, rather than rejection-sampled
-    in an unbounded loop.
+    The model is fed the start token plus the numbers drawn so far and the
+    logits at the next position are sampled. Draws are generated in ascending
+    order (matching ``tokenize``), so tokens that are 0, out of range, not
+    above the previous number, or too large to leave room for the remaining
+    numbers are masked out rather than rejection-sampled.
     """
     model.eval()
     if device is None:
@@ -29,17 +31,15 @@ def sample_draw(
     seq: list[int] = []
     with torch.no_grad():
         for pos in range(model.seq_len):
-            padded = seq + [0] * (model.seq_len - len(seq))
+            padded = ([0] + seq + [0] * model.seq_len)[: model.seq_len]
             inp = torch.tensor([padded], dtype=torch.long, device=device)
             logits = model(inp)[0, pos].clone()  # [vocab_size]
 
-            # Mask out padding token 0, numbers > MAX_NUM, and already-picked numbers.
-            mask = torch.zeros_like(logits, dtype=torch.bool)
-            mask[0] = True
-            if MAX_NUM + 1 < mask.shape[0]:
-                mask[MAX_NUM + 1 :] = True
-            for n in seq:
-                mask[n] = True
+            # Keep only numbers above the previous pick that leave room for the rest.
+            lowest = seq[-1] + 1 if seq else MIN_NUM
+            highest = MAX_NUM - (model.seq_len - pos - 1)
+            mask = torch.ones_like(logits, dtype=torch.bool)
+            mask[lowest : highest + 1] = False
             logits = logits.masked_fill(mask, float("-inf"))
 
             probs = F.softmax(logits / temperature, dim=0)

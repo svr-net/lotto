@@ -1,12 +1,12 @@
 Grammar summary (top starts): [(1, 108), (2, 101), (3, 98), (4, 91), (5, 82), (7, 74), (6, 67), (9, 58), (11, 55), (8, 54)]
 Grammar vocab size: 59
-Chi-square frequency statistic: 76679.78829773093
+Chi-square frequency statistic: 74346.69079501492
 Top 20 historical pairs: [((np.int64(2), np.int64(54)), 24), ((np.int64(42), np.int64(59)), 23), ((np.int64(37), np.int64(42)), 22), ((np.int64(38), np.int64(47)), 22), ((np.int64(49), np.int64(56)), 22), ((np.int64(13), np.int64(14)), 21), ((np.int64(37), np.int64(39)), 21), ((np.int64(8), np.int64(33)), 21), ((np.int64(42), np.int64(58)), 20), ((np.int64(11), np.int64(44)), 20), ((np.int64(23), np.int64(54)), 19), ((np.int64(24), np.int64(34)), 19), ((np.int64(34), np.int64(52)), 19), ((np.int64(22), np.int64(47)), 19), ((np.int64(12), np.int64(29)), 19), ((np.int64(27), np.int64(36)), 19), ((np.int64(22), np.int64(54)), 19), ((np.int64(13), np.int64(39)), 18), ((np.int64(27), np.int64(52)), 18), ((np.int64(9), np.int64(46)), 18)]
-Top 20 generated pairs: [((np.int64(58), np.int64(59)), 344), ((np.int64(57), np.int64(59)), 222), ((np.int64(56), np.int64(59)), 169), ((np.int64(57), np.int64(58)), 165), ((np.int64(56), np.int64(58)), 133), ((np.int64(54), np.int64(59)), 126), ((np.int64(51), np.int64(59)), 119), ((np.int64(55), np.int64(59)), 118), ((np.int64(54), np.int64(58)), 115), ((np.int64(55), np.int64(58)), 104), ((np.int64(53), np.int64(59)), 102), ((np.int64(52), np.int64(59)), 102), ((np.int64(54), np.int64(55)), 101), ((np.int64(22), np.int64(59)), 95), ((np.int64(29), np.int64(59)), 90), ((np.int64(13), np.int64(14)), 89), ((np.int64(35), np.int64(59)), 88), ((np.int64(20), np.int64(59)), 88), ((np.int64(11), np.int64(59)), 88), ((np.int64(55), np.int64(57)), 88)]
+Top 20 generated pairs: [((np.int64(37), np.int64(42)), 117), ((np.int64(42), np.int64(59)), 84), ((np.int64(33), np.int64(37)), 83), ((np.int64(13), np.int64(14)), 83), ((np.int64(52), np.int64(58)), 82), ((np.int64(37), np.int64(39)), 81), ((np.int64(39), np.int64(58)), 81), ((np.int64(48), np.int64(57)), 80), ((np.int64(11), np.int64(17)), 78), ((np.int64(14), np.int64(19)), 77), ((np.int64(49), np.int64(56)), 77), ((np.int64(15), np.int64(31)), 76), ((np.int64(25), np.int64(29)), 75), ((np.int64(36), np.int64(54)), 75), ((np.int64(27), np.int64(31)), 75), ((np.int64(31), np.int64(39)), 75), ((np.int64(36), np.int64(45)), 74), ((np.int64(42), np.int64(49)), 74), ((np.int64(22), np.int64(47)), 74), ((np.int64(22), np.int64(43)), 73)]
 Historical sum mean/std: {'mean': 181.4614733276884, 'std': 40.69747017662958}
-Generated sum mean/std: {'mean': 182.0194, 'std': 51.079242590704105}
+Generated sum mean/std: {'mean': 182.2644, 'std': 40.83685213921367}
 Historical odd count mean/std: {'mean': 3.039796782387807, 'std': 1.1902545111063232}
-Generated odd count mean/std: {'mean': 3.0858, 'std': 1.1862707785324562}
+Generated odd count mean/std: {'mean': 3.0632, 'std': 1.1835564033876882}
 Historical spacing mean/std: {'mean': 8.51549534292972, 'std': 6.973408208693022}
-Generated spacing mean/std: {'mean': 8.11572, 'std': 6.77841344870612}
-Simulation hits - mean: 3.5058 std: 0.5249441494102015 max: 5
+Generated spacing mean/std: {'mean': 8.51, 'std': 6.918767231234189}
+Simulation hits - mean: 3.6052 std: 0.552931243465225 max: 6
