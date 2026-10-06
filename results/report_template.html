@@ -66,6 +66,9 @@ tr.base-row td { color: var(--muted); }
 details summary { cursor: pointer; color: var(--fg2); font-weight: 600; }
 details summary:focus-visible, button:focus-visible { outline: 2px solid var(--s1); outline-offset: 2px; }
 .note { font-size: 0.9rem; }
+.h3 { margin: 8px 0 0; font: 600 1.05rem/1.3 var(--body); }
+td.good { color: var(--good); font-weight: 600; }
+td.flag { font-weight: 600; }
 </style>
 
 <div class="wrap">
@@ -112,6 +115,24 @@ details summary:focus-visible, button:focus-visible { outline: 2px solid var(--s
   <p id="do-lede"></p>
   <div class="table-wrap"><table id="do-table"></table></div>
   <p class="note" id="do-note"></p>
+</section>
+
+<section id="grammar-section">
+  <div class="eyebrow">Grammar search</div>
+  <h2>Is the Lotto speaking a grammar?</h2>
+  <p id="gr-lede"></p>
+  <div class="verdict" id="gr-verdict"></div>
+  <h3 class="h3">1. Can any model predict unseen draws better than a fair machine?</h3>
+  <p class="note" id="gr-ce-note"></p>
+  <div class="table-wrap"><table id="gr-ce"></table></div>
+  <h3 class="h3">2. Does the draw stream compress better than fair noise?</h3>
+  <div class="table-wrap"><table id="gr-comp"></table></div>
+  <h3 class="h3">3. Do any "rules" occur more often than chance allows?</h3>
+  <p class="note" id="gr-rules-note"></p>
+  <div class="table-wrap"><table id="gr-rules"></table></div>
+  <h3 class="h3">4. Do draws echo earlier draws?</h3>
+  <p class="note" id="gr-lag-note"></p>
+  <div class="table-wrap"><table id="gr-lags"></table></div>
 </section>
 
 <section>
@@ -299,6 +320,51 @@ new MutationObserver(drawHeatmaps).observe(document.documentElement, { attribute
     ? `${hits} of ${O.tests.length} tests clear the corrected threshold.`
     : `None of the ${O.tests.length} tests clears the corrected threshold; the smallest p-value is ${minP.toFixed(3)}${weak ? `, and the ${weak} below 0.05 are about what chance alone produces across this many tests` : ""}.`)
     + ` The machines compared are those with at least 100 rounds in this period (${O.machines.groups.join(", ")}). The ${ND} draw-order strategies in the backtest above scored average z-scores of ${dz}, so using the order did not help pick numbers.`;
+})();
+
+(function () {
+  const G = D.grammar;
+  if (!G) { document.getElementById("grammar-section").hidden = true; return; }
+  const E = G.eras, f2 = (x) => (x >= 0 ? "+" : "") + x.toFixed(3);
+  const pf = (p) => (p < 0.001 ? "<0.001" : p.toFixed(3));
+  $("#gr-lede").textContent = `If the draws followed any grammar, a model that learned it from earlier draws would encode later, unseen draws in fewer bits than a fair machine needs. A fair 59-ball draw costs ${E[0].order_limit_bits.toFixed(2)} bits to write down in the order the balls came out, or ${E[0].set_limit_bits.toFixed(2)} bits as a set of numbers. No honest model can go below that unless the machine has structure. Each era is tested on its own: the 59-ball era (models trained up to ${E[0].split}, tested on ${E[0].test} later rounds) and the 49-ball era from 1994 to 2015 (trained up to ${E[1].split}, tested on ${E[1].test}), which gives a second, independent check. Simulated fair histories (${G.sims} per test) supply the chance baselines.`;
+
+  // 1. held-out cross-entropy
+  const models = E[0].order_models.map((m, i) => [m, E[1].order_models[i]]).concat(E[0].set_models.map((m, i) => [m, E[1].set_models[i]]));
+  const nOrder = E[0].order_models.length;
+  const beat = models.filter(([a, b]) => a.excess < 0 && a.p_better < 0.05 || b.excess < 0 && b.p_better < 0.05);
+  const cell = (m) => `<td>${m.bits.toFixed(3)}</td><td class="${m.excess < 0 && m.p_better < 0.05 ? "good" : ""}">${m.model.startsWith("fair") ? "limit" : f2(m.excess)}</td>`;
+  $("#gr-ce").innerHTML = `<thead><tr><th>Model</th><th>Bits, 59-ball</th><th>vs fair</th><th>Bits, 49-ball</th><th>vs fair</th></tr></thead><tbody>` +
+    models.map(([a, b], i) => `${i === 0 ? '<tr><td colspan="5" class="h3" style="font-size:0.85rem">Balls in the order drawn</td></tr>' : ""}${i === nOrder ? '<tr><td colspan="5" class="h3" style="font-size:0.85rem">Sets of numbers (order ignored)</td></tr>' : ""}<tr><td style="white-space:normal;min-width:14rem">${esc(a.model)}</td>${cell(a)}${cell(b)}</tr>`).join("") + "</tbody>";
+  const worse = [...new Set(models.filter(([a, b]) => a.excess > 0.05 || b.excess > 0.05).map(([a]) => `"${a.model}"`))];
+  const closest = models.filter(([a]) => !a.model.startsWith("fair")).flatMap(([a, b]) => [[a, E[0].label], [b, E[1].label]]).sort((x, y) => x[0].excess - y[0].excess)[0];
+  $("#gr-ce-note").textContent = `Bits per draw on the test period; lower is better, and "vs fair" below zero would mean a real grammar. ${beat.length ? `${beat.length} model(s) beat the fair limit.` : `No model gets significantly below the fair limit in either era. The closest is "${closest[0].model}" in the ${closest[1].split(" (")[0]}, at ${f2(closest[0].excess)} bits (z = ${closest[0].z.toFixed(2)}, well within chance)${/alpha=(1000|10000|100000)$/.test(closest[0].setting) ? `. Its tuning on held-back training draws chose heavy smoothing (${closest[0].setting}), which makes it almost exactly the fair machine` : ""}. ${worse.length ? `${worse.join(" and ")} do clearly worse than fair, because the patterns they learned from the training years were noise that didn't recur.` : ""}`}`;
+
+  // 2. compression
+  $("#gr-comp").innerHTML = `<thead><tr><th>Era</th><th>Stream</th><th>Compressor</th><th>Real draws</th><th>Fair average</th><th>p</th></tr></thead><tbody>` +
+    E.flatMap((e) => e.compression.map((c) => `<tr><td>${e.pool}-ball</td><td>${c.stream}</td><td>${c.compressor}</td><td>${c.bytes.toLocaleString()} bytes</td><td>${c.fair_mean.toFixed(0)}</td><td class="${c.p_more_compressible < 0.01 ? "flag" : ""}">${pf(c.p_more_compressible)}</td></tr>`)).join("") + "</tbody>";
+
+  // 3. rules
+  const kinds = { pair: "Pair in the same draw", triple: "Triple in the same draw", digram: "Ball a, then ball b next" };
+  $("#gr-rules").innerHTML = `<thead><tr><th>Era</th><th>Rule type</th><th>Most frequent rule</th><th>Times seen</th><th>Expected each</th><th>Fair top rule (95%)</th><th>p</th></tr></thead><tbody>` +
+    E.flatMap((e) => Object.entries(e.rules).map(([k, r]) => `<tr><td>${e.pool}-ball</td><td>${kinds[k]}</td><td>${esc(r.top[0].rule)}</td><td>${r.observed_max}</td><td>${r.expected_each.toFixed(2)}</td><td>${r.fair_max_95.toFixed(0)}</td><td>${pf(r.p)}</td></tr>`)).join("") + "</tbody>";
+  $("#gr-rules-note").textContent = `There are 1,711 possible pairs in the 59-ball era (1,176 with 49 balls), tens of thousands of triples and thousands of ordered pairs, so some rule always looks frequent. The real test is whether the most frequent rule beats the most frequent rule in a fair history of the same length. "Fair top rule (95%)" is how often the top rule appears in the 95th-percentile fair history.`;
+
+  // 4. lags
+  const L = E.map((e) => e.lags);
+  $("#gr-lags").innerHTML = `<thead><tr><th>Era</th>${L[0].map((l) => `<th>${l.lag} back</th>`).join("")}</tr></thead><tbody>` +
+    E.map((e, i) => `<tr><td>${e.pool}-ball</td>${L[i].map((l) => `<td class="${Math.abs(l.z) >= 3 ? "flag" : ""}">${(l.z >= 0 ? "+" : "") + l.z.toFixed(1)}</td>`).join("")}</tr>`).join("") + "</tbody>";
+  const all = E.flatMap((e, i) => L[i].map((l) => ({ ...l, era: e.pool, other: E[1 - i].lags.find((o) => o.lag === l.lag) })));
+  const top = all.sort((a, b) => Math.abs(b.z) - Math.abs(a.z))[0];
+  const nTests = E.reduce((t, e) => t + e.order_models.length - 1 + e.set_models.length - 1 + e.compression.length + Object.keys(e.rules).length + e.lags.length, 0);
+  $("#gr-lag-note").textContent = `z-scores for how many numbers each round shares with the round k rounds earlier, against the 36/59 (or 36/49) expected by chance. The largest is ${(top.z >= 0 ? "+" : "") + top.z.toFixed(1)} in the ${top.era}-ball era at ${top.lag} back (p = ${top.p.toFixed(4)}): draws shared ${(Math.abs(top.mean_overlap / top.expected - 1) * 100).toFixed(0)}% ${top.z < 0 ? "fewer" : "more"} numbers with that round than chance predicts. In the other era the same lag gives ${(top.other.z >= 0 ? "+" : "") + top.other.z.toFixed(1)}, so it does not replicate. Across all ${nTests} tests on this page, a result this extreme somewhere has about a ${Math.min(99, Math.round((1 - Math.pow(1 - top.p, nTests)) * 100))}% chance of turning up with no grammar at all.`;
+
+  const compHit = E.some((e) => e.compression.some((c) => c.p_more_compressible < 0.01));
+  const ruleHit = E.some((e) => Object.values(e.rules).some((r) => r.p < 0.01));
+  const found = beat.length || compHit || ruleHit;
+  $("#gr-verdict").innerHTML = found
+    ? `<strong>Possible structure found.</strong><span>${esc("At least one test points to structure; see the flagged rows below. Treat it with caution until it replicates in the other era.")}</span>`
+    : `<strong>The Lotto speaks no grammar.</strong><span>${esc(`Its "language" is maximum-entropy noise. No model trained on earlier draws predicts later ones better than a fair machine, in either era. Compressors cannot shrink the real draw stream more than fair streams. The most frequent pairs, triples and ordered pairs are no more frequent than the top ones in simulated fair histories. ${Math.abs(top.other.z) < 2 ? `The one echo that stood out, at ${top.lag} rounds back in the ${top.era}-ball era, did not appear in the other era.` : `The strongest echo, at ${top.lag} rounds back, appeared in both eras and is worth watching, but on its own it is not enough to call a grammar.`}`)}</span>`;
 })();
 
 $("#method").textContent = `Data: the full UK Lotto history from lottery.merseyworld.com (${D.era.last_draw.toLocaleString()} draws since 1994). The most recent rounds match the official National Lottery results exactly. Only draws since ${D.era.first_date} are used, when the pool grew from 49 to 59 balls. Each round in the test period was predicted using only draws from earlier dates, and both rounds of a two-round draw count as separate targets. The transformer was retrained every 26 rounds. Performance weights use a softmax over each strategy's mean hits in its last ${D.window} rounds (τ = ${D.tau}). z-scores compare mean hits with the exact hypergeometric expectation of 36/59. Seeds used: ${D.seeds.join(", ")}. This page is a statistics exercise. Lotto draws are independent and random, and no method here changes the odds of any ticket.`;

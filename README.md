@@ -101,8 +101,20 @@ writes next-draw picks to `results/walk_forward.json`:
 ```bash
 python scripts/fetch_merseyworld.py
 python scripts/walk_forward_backtest.py --seeds 2026 1 2 3 4 --out results
-python scripts/build_report.py   # results/report.html
+python scripts/grammar_discovery.py   # results/grammar.json
+python scripts/build_report.py        # results/report.html
 ```
+
+`scripts/grammar_discovery.py` asks whether the draws follow any "grammar". For each era
+(49 and 59 balls) it fits models on earlier draws and measures how many bits they need to
+encode later, unseen draws, against the fair-machine limit (log2 of the number of possible
+draws). The models are number frequency, frequency by draw position, drawn-order bigram and
+trigram, echo of the previous round, per-machine frequency, a repo-style sorted grammar, and
+transformers on drawn and sorted order. It also compresses the draw stream (lzma, bz2, zlib),
+mines the most frequent pairs, triples and ordered pairs, and checks overlap with draws 1-10
+rounds back. Each result is compared with simulated fair histories. Any real grammar would
+show up as a model beating the limit, a stream compressing better than fair noise, or a rule
+more frequent than chance allows.
 
 ### Tests
 
