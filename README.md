@@ -103,6 +103,7 @@ python scripts/fetch_merseyworld.py
 python scripts/walk_forward_backtest.py --seeds 2026 1 2 3 4 --out results
 python scripts/grammar_discovery.py   # results/grammar.json
 python scripts/prime_radix_study.py   # results/prime_radix.json
+python scripts/spectral_study.py      # results/spectral.json
 python scripts/build_report.py        # results/report.html
 ```
 
@@ -134,3 +135,12 @@ pytest -q
 
 **Note:** This pipeline is for statistical/educational exploration only. Lottery draws are
 random and independent; no model can predict future outcomes.
+
+`scripts/spectral_study.py` treats each era as a time series of rounds and applies Fourier
+and wavelet analysis. Periodograms (Fisher's g) look for regular rhythms in each ball's on/off
+series, in summary series (sum, odd count, low-half count, smallest and largest ball, first
+ball out, bonus) and in the stream of balls in drawn order. A Haar decomposition checks how
+variance splits across time scales and looks for localized bursts, and a Morlet scalogram of
+the draw sum looks for rhythms that switch on and off. Every statistic is compared with 1,000
+simulated fair histories. It also backtests Fourier extrapolation (least-squares sinusoids at
+zero-padded periodogram peaks, projected one round ahead) and wavelet-smoothed hotness.
