@@ -139,7 +139,7 @@ $("#facts").innerHTML = [
 ].map(([k, v]) => `<span>${k} <b>${v}</b></span>`).join("");
 const ensBest = Math.max(...S.filter(isEns).map((s) => A[s].z_mean));
 $("#verdict").innerHTML = `<strong>No strategy beat random chance.</strong><span>${esc(
-  `Random tickets average ${fmt(exp)} matching numbers. Averaged over ${D.seeds.length} seeds, every strategy and both ensembles land within normal chance variation of that (z-scores between ${fmt(Math.min(...S.map((s) => A[s].z_mean)), 2)} and ${fmt(Math.max(...S.map((s) => A[s].z_mean)), 2)}; best ensemble ${fmt(ensBest, 2)}). Single runs that looked promising reversed under another seed. The ball counts are consistent with a fair draw (p = ${fmt(D.fairness.p, 2)}).`)}</span>`;
+  `Random tickets average ${fmt(exp)} matching numbers. Averaged over ${D.seeds.length} seeds, every strategy and both ensembles land within normal chance variation of that (z-scores between ${fmt(Math.min(...S.map((s) => A[s].z_mean)), 2)} and ${fmt(Math.max(...S.map((s) => A[s].z_mean)), 2)}; best ensemble ${fmt(ensBest, 2)}). Single runs that looked promising reversed under another seed: the repo transformer scored z = ${fmt(A["transformer NN (repo)"].z_max, 2)} on one seed and ${fmt(A["transformer NN (repo)"].z_min, 2)} on another, because its 20 tickets per round are near-copies of each other, which inflates its z-score in both directions. The lowest score, repeating the last draw, is one fixed ticket per round. With 13 methods tested, a z of ${fmt(Math.min(...S.map((s) => A[s].z_mean)), 2)} is within what chance alone produces. The ball counts are consistent with a fair draw (p = ${fmt(D.fairness.p, 2)}).`)}</span>`;
 
 // ---------- tickets
 const latest = D.latest;
