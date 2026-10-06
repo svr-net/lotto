@@ -102,6 +102,7 @@ writes next-draw picks to `results/walk_forward.json`:
 python scripts/fetch_merseyworld.py
 python scripts/walk_forward_backtest.py --seeds 2026 1 2 3 4 --out results
 python scripts/grammar_discovery.py   # results/grammar.json
+python scripts/prime_radix_study.py   # results/prime_radix.json
 python scripts/build_report.py        # results/report.html
 ```
 
@@ -115,6 +116,14 @@ mines the most frequent pairs, triples and ordered pairs, and checks overlap wit
 rounds back. Each result is compared with simulated fair histories. Any real grammar would
 show up as a model beating the limit, a stream compressing better than fair noise, or a rule
 more frequent than chance allows.
+
+`scripts/prime_radix_study.py` writes every ball in the first ten prime bases (as
+`lotto_nn.prime_pipeline` does) and applies conditional probabilities and copulas to the
+digits. It tests, per base and against simulated fair histories, whether a digit depends on
+the previous ball's digit or on its count in the previous round, and whether digits are
+rank-correlated (copula) within a draw or between consecutive rounds. It also backtests two
+strategies per base, a conditional-probability (digit lift) strategy and a conditional Gaussian
+copula over consecutive rounds' digits, alongside the repo prime-radix transformer.
 
 ### Tests
 
