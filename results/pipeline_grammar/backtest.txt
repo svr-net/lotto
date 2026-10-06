@@ -1,6 +1,6 @@
 Grammar summary (top starts): [(1, 108), (2, 101), (3, 98), (4, 91), (5, 82), (7, 74), (6, 67), (9, 58), (11, 55), (8, 54)]
 Grammar vocab size: 59
-Chi-square frequency statistic: 74346.69079501492
+Chi-square frequency statistic: 11.49 (dof 58, p=1.000)
 Top 20 historical pairs: [((np.int64(2), np.int64(54)), 24), ((np.int64(42), np.int64(59)), 23), ((np.int64(37), np.int64(42)), 22), ((np.int64(38), np.int64(47)), 22), ((np.int64(49), np.int64(56)), 22), ((np.int64(13), np.int64(14)), 21), ((np.int64(37), np.int64(39)), 21), ((np.int64(8), np.int64(33)), 21), ((np.int64(42), np.int64(58)), 20), ((np.int64(11), np.int64(44)), 20), ((np.int64(23), np.int64(54)), 19), ((np.int64(24), np.int64(34)), 19), ((np.int64(34), np.int64(52)), 19), ((np.int64(22), np.int64(47)), 19), ((np.int64(12), np.int64(29)), 19), ((np.int64(27), np.int64(36)), 19), ((np.int64(22), np.int64(54)), 19), ((np.int64(13), np.int64(39)), 18), ((np.int64(27), np.int64(52)), 18), ((np.int64(9), np.int64(46)), 18)]
 Top 20 generated pairs: [((np.int64(37), np.int64(42)), 117), ((np.int64(42), np.int64(59)), 84), ((np.int64(33), np.int64(37)), 83), ((np.int64(13), np.int64(14)), 83), ((np.int64(52), np.int64(58)), 82), ((np.int64(37), np.int64(39)), 81), ((np.int64(39), np.int64(58)), 81), ((np.int64(48), np.int64(57)), 80), ((np.int64(11), np.int64(17)), 78), ((np.int64(14), np.int64(19)), 77), ((np.int64(49), np.int64(56)), 77), ((np.int64(15), np.int64(31)), 76), ((np.int64(25), np.int64(29)), 75), ((np.int64(36), np.int64(54)), 75), ((np.int64(27), np.int64(31)), 75), ((np.int64(31), np.int64(39)), 75), ((np.int64(36), np.int64(45)), 74), ((np.int64(42), np.int64(49)), 74), ((np.int64(22), np.int64(47)), 74), ((np.int64(22), np.int64(43)), 73)]
 Historical sum mean/std: {'mean': 181.4614733276884, 'std': 40.69747017662958}
@@ -9,4 +9,4 @@ Historical odd count mean/std: {'mean': 3.039796782387807, 'std': 1.190254511106
 Generated odd count mean/std: {'mean': 3.0632, 'std': 1.1835564033876882}
 Historical spacing mean/std: {'mean': 8.51549534292972, 'std': 6.973408208693022}
 Generated spacing mean/std: {'mean': 8.51, 'std': 6.918767231234189}
-Simulation hits - mean: 3.6052 std: 0.552931243465225 max: 6
+Hold-out hits (fitted on draws up to 2022-12-31, scored on 426 later draws): mean 0.6097 vs chance 0.6102, z=-0.40, p=0.657, best 5, match counts 0..6 [1087476, 810786, 208291, 22436, 992, 19, 0]

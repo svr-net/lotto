@@ -21,6 +21,7 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from lotto_nn.backtest import chi2_sf  # noqa: E402
 from lotto_nn.grammar import extract_grammar, generate_batch as grammar_batch  # noqa: E402
 
 COLS = ["n1", "n2", "n3", "n4", "n5", "n6"]
@@ -36,31 +37,6 @@ def hypergeom_pmf(k: int) -> float:
 EXPECTED = np.array([hypergeom_pmf(k) for k in range(PICK + 1)])
 EXP_MEAN = PICK * PICK / POOL
 EXP_VAR = PICK * (PICK / POOL) * (1 - PICK / POOL) * (POOL - PICK) / (POOL - 1)
-
-
-def chi2_sf(x: float, k: int) -> float:
-    """Survival function of the chi-square distribution (regularized upper gamma)."""
-    a, x = k / 2.0, x / 2.0
-    if x <= 0:
-        return 1.0
-    if x < a + 1:  # series for the lower gamma, then complement
-        term = total = 1.0 / a
-        n = a
-        for _ in range(500):
-            n += 1
-            term *= x / n
-            total += term
-        return max(0.0, 1.0 - total * math.exp(-x + a * math.log(x) - math.lgamma(a)))
-    b, c, d = x + 1 - a, 1e300, 1.0 / (x + 1 - a)  # continued fraction for the upper gamma
-    h = d
-    for i in range(1, 500):
-        an = -i * (i - a)
-        b += 2
-        d = an * d + b
-        d = 1.0 / d if abs(d) > 1e-300 else 1e300
-        c = b + an / c if abs(c) > 1e-300 else 1e-300
-        h *= d * c
-    return h * math.exp(-x + a * math.log(x) - math.lgamma(a))
 
 
 def norm_sf(z: float) -> float:

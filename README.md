@@ -14,7 +14,8 @@ draws against historical draws.
 - `lotto_nn/train.py` — training loop
 - `lotto_nn/sample.py` — autoregressive sampling engine (masks invalid/duplicate tokens)
 - `lotto_nn/backtest.py` — frequency, pairing, sum, odd/even, spacing, positional bias,
-  and simulation backtests
+  and hold-out backtests (a two-sample chi-square on number frequencies, and tickets from a model
+  fitted on draws up to `--split-date` scored against the later draws vs the 36/59 chance rate)
 - `lotto_nn/pipeline.py` — orchestrates the full pipeline end-to-end and exposes a CLI
 - `lotto_nn/grammar.py` — fits a simple statistical n-gram "grammar" (start distribution +
   positional transition table) over historical draws and samples draws from it
