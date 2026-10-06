@@ -106,6 +106,7 @@ python scripts/prime_radix_study.py   # results/prime_radix.json
 python scripts/spectral_study.py      # results/spectral.json
 python scripts/ml_ensemble_study.py   # results/ml_ensemble.json (needs scikit-learn)
 python scripts/bayesian_study.py      # results/bayesian.json
+python scripts/rl_study.py            # results/rl.json
 python scripts/build_report.py        # results/report.html
 ```
 
@@ -166,3 +167,14 @@ the Bayes factor draw by draw, and backtests posterior-mean and Thompson-samplin
 (written to `results/combined_picks.json` and shown at the top of the report). Each
 investigation gets one equal vote, spread over its own lines; line 1 is the six numbers with the
 most combined support, and lines 2-5 are drawn in proportion to that support.
+
+`scripts/rl_study.py` treats playing as reinforcement learning: tickets are actions and matches
+are the reward. Tickets can't change future draws, so it is a contextual bandit. Agents learn
+online in each era and are scored on the held-out rounds using per-round means:
+- bandits choosing among 12 simple strategies: epsilon-greedy, UCB1, Thompson sampling, EXP3,
+  and Hedge with full information
+- linear Thompson sampling over numbers on the machine-learning features
+- a regularized REINFORCE policy-gradient agent with a Plackett-Luce policy
+
+Their next-draw picks join the five combined lines.
+

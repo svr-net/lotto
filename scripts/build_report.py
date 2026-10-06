@@ -1,5 +1,6 @@
 """Inject results/walk_forward.json (plus results/grammar.json, results/prime_radix.json,
-results/spectral.json, results/ml_ensemble.json and results/bayesian.json, if present) into
+results/spectral.json, results/ml_ensemble.json, results/bayesian.json and results/rl.json,
+if present) into
 results/report_template.html -> results/report.html, and combine every investigation's
 next-draw picks into five lines (also written to results/combined_picks.json)."""
 import json, os, sys
@@ -9,7 +10,8 @@ import numpy as np
 POOL, PICK = 59, 6
 EXTRA = [("grammar", "results/grammar.json"), ("prime_radix", "results/prime_radix.json"),
          ("spectral", "results/spectral.json"), ("ml", "results/ml_ensemble.json"),
-         ("bayes", "results/bayesian.json")]
+         ("bayes", "results/bayesian.json"),
+         ("rl", "results/rl.json")]
 
 
 def pick_sources(payload: dict) -> list:
@@ -20,7 +22,8 @@ def pick_sources(payload: dict) -> list:
           if not s.startswith(("random", "ENSEMBLE")) for line in lines]
     if wf:
         out.append(("Strategy backtest", wf))
-    for key, label in [("prime_radix", "Prime radix"), ("spectral", "Fourier and wavelets"), ("bayes", "Bayesian")]:
+    for key, label in [("prime_radix", "Prime radix"), ("spectral", "Fourier and wavelets"), ("bayes", "Bayesian"),
+                       ("rl", "Reinforcement learning")]:
         picks = (payload.get(key) or {}).get("backtest", {}).get("picks") or {}
         lines = [line for s, ls in picks.items() if not s.startswith("random") for line in ls]
         if lines:
