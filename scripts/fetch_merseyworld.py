@@ -8,9 +8,9 @@ comma-separated rows (newest first), one row per ball-drawing round:
     No., Day,DD,MMM,YYYY, N1,N2,N3,N4,N5,N6,BN,   Jackpot, Wins,   Machine  ,Set
 
 Balls are listed in draw order. This writes a chronological CSV with the
-main numbers sorted ascending:
+main numbers sorted ascending (n1..n6) and in the order drawn (d1..d6):
 
-    draw_no,date,round,n1,n2,n3,n4,n5,n6,bonus,jackpot,wins,machine,ball_set
+    draw_no,date,round,n1,n2,n3,n4,n5,n6,bonus,jackpot,wins,machine,ball_set,d1,d2,d3,d4,d5,d6
 
 Draws held as two rounds (same draw number) get round 1 / 2 in feed order.
 No authentication is required and the export covers every draw since 1994.
@@ -38,7 +38,7 @@ def parse(text):
         no, dd, mon, yyyy, balls, jackpot, wins, machine, ball_set = m.groups()
         nums = [int(x) for x in balls.replace(" ", "").strip(",").split(",")]
         date = datetime.strptime(f"{dd} {mon} {yyyy}", "%d %b %Y").date().isoformat()
-        rows.append(dict(draw_no=int(no), date=date, main=sorted(nums[:6]), bonus=nums[6],
+        rows.append(dict(draw_no=int(no), date=date, main=sorted(nums[:6]), drawn=nums[:6], bonus=nums[6],
                          jackpot=int(jackpot), wins=int(wins), machine=machine, ball_set=ball_set))
     # Feed is newest first; within a two-round draw, the first listed row is round 1.
     seen = {}
@@ -61,10 +61,10 @@ def main():
     with open(a.out, "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["draw_no", "date", "round", "n1", "n2", "n3", "n4", "n5", "n6", "bonus",
-                    "jackpot", "wins", "machine", "ball_set"])
+                    "jackpot", "wins", "machine", "ball_set", "d1", "d2", "d3", "d4", "d5", "d6"])
         for r in rows:
             w.writerow([r["draw_no"], r["date"], r["round"], *r["main"], r["bonus"],
-                        r["jackpot"], r["wins"], r["machine"], r["ball_set"]])
+                        r["jackpot"], r["wins"], r["machine"], r["ball_set"], *r["drawn"]])
     print(f"wrote {len(rows)} rows ({rows[0]['date']} -> {rows[-1]['date']}) to {a.out}")
 
 

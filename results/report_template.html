@@ -80,7 +80,7 @@ details summary:focus-visible, button:focus-visible { outline: 2px solid var(--s
 <section>
   <div class="eyebrow">Next draw</div>
   <h2>Ensemble picks</h2>
-  <p>These tickets combine all nine strategies. Each strategy votes with the numbers it would play. The equal-weight ensemble counts every vote the same. The performance-weighted ensemble trusts strategies more when they matched more numbers over the last 52 rounds. Every line has the same 1 in 45,057,474 chance of a jackpot.</p>
+  <p>These tickets combine all <span id="n-base"></span> strategies. Each strategy votes with the numbers it would play. The equal-weight ensemble counts every vote the same. The performance-weighted ensemble trusts strategies more when they matched more numbers over the last 52 rounds. Every line has the same 1 in 45,057,474 chance of a jackpot.</p>
   <div class="ticket-grid" id="ens-tickets"></div>
   <details><summary>Picks from each individual strategy</summary><div class="ticket-grid" id="base-tickets" style="margin-top:16px"></div></details>
 </section>
@@ -89,7 +89,7 @@ details summary:focus-visible, button:focus-visible { outline: 2px solid var(--s
   <div class="eyebrow">Walk-forward backtest</div>
   <h2>Matches per ticket against real draws</h2>
   <p id="bt-lede"></p>
-  <div class="legend"><span style="--c:var(--s1)">Single strategy</span><span style="--c:var(--s2)">Ensemble of all nine</span><span style="--c:var(--fg2)">Bar ends: lowest and highest result across seeds</span></div>
+  <div class="legend"><span style="--c:var(--s1)">Single strategy</span><span style="--c:var(--s2)">Ensemble of all strategies</span><span style="--c:var(--fg2)">Bar ends: lowest and highest result across seeds</span></div>
   <div class="chart" id="bt-chart"></div>
   <div class="table-wrap"><table id="bt-table"></table></div>
 </section>
@@ -104,6 +104,14 @@ details summary:focus-visible, button:focus-visible { outline: 2px solid var(--s
   </div>
   <div class="legend"><span style="--c:var(--neg)">Negative correlation</span><span style="--c:var(--mid)">None</span><span style="--c:var(--pos)">Positive correlation</span></div>
   <p class="note" id="corr-note"></p>
+</section>
+
+<section>
+  <div class="eyebrow">Draw order</div>
+  <h2>Does the order the balls come out tell us anything?</h2>
+  <p id="do-lede"></p>
+  <div class="table-wrap"><table id="do-table"></table></div>
+  <p class="note" id="do-note"></p>
 </section>
 
 <section>
@@ -125,6 +133,9 @@ const $ = (s) => document.querySelector(s);
 const fmt = (x, d = 3) => Number(x).toFixed(d);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const D = DATA, S = D.strategies, isEns = (s) => s.startsWith("ENSEMBLE");
+const DO = new Set(D.draw_order_strategies || []);
+const NB = S.filter((s) => !isEns(s)).length, ND = DO.size;
+document.getElementById("n-base").textContent = NB;
 const pretty = (s) => s.replace("ENSEMBLE ", "Ensemble: ");
 const ndDate = new Date(D.next_draw_date + "T12:00:00Z");
 $("#nd").textContent = ndDate.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
@@ -132,15 +143,17 @@ $("#nd").textContent = ndDate.toLocaleDateString("en-GB", { weekday: "long", day
 const exp = D.expected.mean;
 const A = D.across_seeds;
 const best = S.slice().sort((a, b) => A[b].z_mean - A[a].z_mean)[0];
-$("#lede").textContent = `Every UK Lotto draw from ${D.era.first_date} (the first 59-ball draw) to ${D.era.last_date}: ${D.era.rounds.toLocaleString()} rounds, including the two-round draws held since June 2026. Nine prediction strategies and two ensembles were each replayed against the ${D.test_rounds} rounds drawn since ${D.split_date}, seeing only draws that came before each one.`;
+$("#lede").textContent = `Every UK Lotto draw from ${D.era.first_date} (the first 59-ball draw) to ${D.era.last_date}: ${D.era.rounds.toLocaleString()} rounds, including the two-round draws held since June 2026. ${NB} prediction strategies (${ND} of them built on the order the balls came out of the machine) and two ensembles were each replayed against the ${D.test_rounds} rounds drawn since ${D.split_date}, seeing only draws that came before each one.`;
 $("#facts").innerHTML = [
   ["Rounds tested", D.test_rounds], ["Seeds", D.seeds.length], ["Tickets/round", D.tickets_per_round],
   ["Chance mean", fmt(exp)], ["Chance 3+ hits", fmt(D.expected.pct_3plus, 2) + "%"],
 ].map(([k, v]) => `<span>${k} <b>${v}</b></span>`).join("");
 const wide = S.slice().sort((a, b) => (A[b].z_max - A[b].z_min) - (A[a].z_max - A[a].z_min))[0];
 const ensBest = Math.max(...S.filter(isEns).map((s) => A[s].z_mean));
-$("#verdict").innerHTML = `<strong>No strategy beat random chance.</strong><span>${esc(
-  `Random tickets average ${fmt(exp)} matching numbers. Averaged over ${D.seeds.length} seeds, every strategy and both ensembles land within normal chance variation of that (z-scores between ${fmt(Math.min(...S.map((s) => A[s].z_mean)), 2)} and ${fmt(Math.max(...S.map((s) => A[s].z_mean)), 2)}; best ensemble ${fmt(ensBest, 2)}). Single runs that looked promising reversed under another seed: the widest swing was ${pretty(wide)}, from z = ${fmt(A[wide].z_min, 2)} to ${fmt(A[wide].z_max, 2)} across seeds. The lowest average, repeating the last draw, is one fixed ticket per round. With 13 methods tested, a z of ${fmt(Math.min(...S.map((s) => A[s].z_mean)), 2)} is within what chance alone produces. The ball counts are consistent with a fair draw (p = ${fmt(D.fairness.p, 2)}).`)}</span>`;
+const zCut = 2.9; // about p < 0.05 after allowing for ~20 one-sided tests
+const standout = S.filter((s) => A[s].z_mean > zCut && A[s].z_min > 0);
+$("#verdict").innerHTML = `<strong>${standout.length ? esc(`${pretty(standout[0])} beat chance in every seed. Treat it with caution.`) : "No strategy beat random chance."}</strong><span>${esc(
+  `Random tickets average ${fmt(exp)} matching numbers. Averaged over ${D.seeds.length} seeds, every strategy and both ensembles land within normal chance variation of that (z-scores between ${fmt(Math.min(...S.map((s) => A[s].z_mean)), 2)} and ${fmt(Math.max(...S.map((s) => A[s].z_mean)), 2)}; best ensemble ${fmt(ensBest, 2)}). Single runs that looked promising reversed under another seed: the widest swing was ${pretty(wide)}, from z = ${fmt(A[wide].z_min, 2)} to ${fmt(A[wide].z_max, 2)} across seeds. The lowest average, repeating the last draw, is one fixed ticket per round. With ${S.length} methods tested, a z of ${fmt(Math.min(...S.map((s) => A[s].z_mean)), 2)} is within what chance alone produces. The ball counts are consistent with a fair draw (p = ${fmt(D.fairness.p, 2)}).`)}</span>`;
 
 // ---------- tickets
 const latest = D.latest;
@@ -199,7 +212,7 @@ $("#bt-lede").textContent = `Each bar runs from the chance line (${fmt(exp)} mat
   const expRow = `<tr class="base-row"><td>Random chance (exact)</td><td>–</td><td>${fmt(exp, 4)}</td><td>0</td><td>–</td><td>${fmt(D.expected.pct_3plus, 2)}%</td>${D.expected.dist.map((p) => `<td>${(p * 100).toFixed(p < 0.001 ? 4 : 2)}%</td>`).join("")}</tr>`;
   const body = S.map((s) => {
     const r = D.backtest[s], a = A[s];
-    return `<tr class="${isEns(s) ? "ens" : ""}"><td>${esc(pretty(s))}</td><td>${r.tickets.toLocaleString()}</td><td>${fmt(a.mean_matches, 4)}</td><td>${a.z_mean >= 0 ? "+" : ""}${fmt(a.z_mean, 2)}</td><td>${fmt(a.z_min, 1)} to ${fmt(a.z_max, 1)}</td><td>${fmt(a.pct_3plus, 2)}%</td>${r.dist.map((c) => `<td>${c}</td>`).join("")}</tr>`;
+    return `<tr class="${isEns(s) ? "ens" : ""}"><td>${esc(pretty(s))}${DO.has(s) ? ' <span class="pill">draw order</span>' : ""}</td><td>${r.tickets.toLocaleString()}</td><td>${fmt(a.mean_matches, 4)}</td><td>${a.z_mean >= 0 ? "+" : ""}${fmt(a.z_mean, 2)}</td><td>${fmt(a.z_min, 1)} to ${fmt(a.z_max, 1)}</td><td>${fmt(a.pct_3plus, 2)}%</td>${r.dist.map((c) => `<td>${c}</td>`).join("")}</tr>`;
   }).join("");
   $("#bt-table").innerHTML = `<thead>${head}</thead><tbody>${expRow}${body}</tbody><caption style="caption-side:bottom;text-align:left;padding:8px 12px;color:var(--muted);font-size:0.8rem">Columns 0–6 count tickets by numbers matched, from the first seed (${D.seeds[0]}). Mean, z and 3+ are averaged over all seeds.</caption>`;
 })();
@@ -228,8 +241,8 @@ function heatmap(el, names, M, title) {
   attachTip(el);
 }
 function drawHeatmaps() {
-  heatmap($("#perf-corr"), S, D.perf_corr, "Round-by-round hits (all 13)");
-  heatmap($("#pick-corr"), D.pick_corr_names, D.pick_corr, "Numbers picked (the nine strategies)");
+  heatmap($("#perf-corr"), S, D.perf_corr, `Round-by-round hits (all ${S.length})`);
+  heatmap($("#pick-corr"), D.pick_corr_names, D.pick_corr, `Numbers picked (the ${NB} strategies)`);
 }
 drawHeatmaps();
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", drawHeatmaps);
@@ -247,7 +260,7 @@ new MutationObserver(drawHeatmaps).observe(document.documentElement, { attribute
   const link = Math.abs(avg) < 0.1
     ? `Between single strategies, round-by-round hits correlate at only r = ${avg.toFixed(2)} on average, so each method's good and bad rounds fall at different times, the way independent random tickets would.`
     : `Between single strategies, round-by-round hits correlate at r = ${avg.toFixed(2)} on average. Every ticket is scored against the same six balls, so some rounds favour every method at once.`;
-  $("#corr-note").textContent = `${link} The pick map shows the most similar pair is ${pretty(pp[0][1])} and ${pretty(pp[0][2])} (r = ${pp[0][0].toFixed(2)}). Each ensemble's hits correlate with its nine members at r ≤ ${eMax.toFixed(2)} on average. Blending the strategies averages away their individual quirks, but none of them carried a real signal to begin with, so the blend has no edge either.`;
+  $("#corr-note").textContent = `${link} The pick map shows the most similar pair is ${pretty(pp[0][1])} and ${pretty(pp[0][2])} (r = ${pp[0][0].toFixed(2)}). Each ensemble's hits correlate with its ${base.length} members at r ≤ ${eMax.toFixed(2)} on average. Blending the strategies averages away their individual quirks, but none of them carried a real signal to begin with, so the blend has no edge either.`;
 })();
 
 // ---------- frequency chart
@@ -267,6 +280,25 @@ new MutationObserver(drawHeatmaps).observe(document.documentElement, { attribute
   attachTip($("#freq-chart"));
   const lo = c.indexOf(Math.min(...c)) + 1, hi = c.indexOf(Math.max(...c)) + 1;
   $("#fair-lede").textContent = `Ball ${hi} came up most (${Math.max(...c)} times) and ball ${lo} least (${Math.min(...c)}), against an average of ${mean.toFixed(1)}. A chi-square test gives χ² = ${D.fairness.chi2.toFixed(1)} on ${D.fairness.dof} degrees of freedom, p = ${D.fairness.p.toFixed(2)}. The spread is, if anything, slightly smaller than random draws would usually produce, so the "hot" and "cold" numbers come from noise.`;
+})();
+
+(function () {
+  const O = D.draw_order;
+  if (!O) return;
+  const cut = O.bonferroni_alpha;
+  $("#do-lede").textContent = `Every result in the feed lists the balls in the order the machine released them. These ${O.tests.length} tests look for structure in that order across ${O.rounds.toLocaleString()} rounds since ${D.era.first_date}. Tests without an exact formula are compared against ${O.sims.toLocaleString()} simulated fair histories of the same size. Because ${O.tests.length} tests are run, a result needs p < ${cut.toFixed(4)} to count as a real finding, not p < 0.05.`;
+  const rows = O.tests.map((t) => {
+    const tag = t.p < cut ? '<span class="pill" style="background:var(--s2-soft);color:var(--fg)">finding</span>' : t.p < 0.05 ? '<span class="pill">weak, likely chance</span>' : '<span class="pill">consistent with chance</span>';
+    return `<tr><td style="white-space:normal;min-width:16rem">${esc(t.test)}</td><td>${esc(t.stat)}</td><td>${t.p < 0.001 ? "<0.001" : t.p.toFixed(3)}</td><td>${tag}</td></tr>`;
+  }).join("");
+  $("#do-table").innerHTML = `<thead><tr><th>Question</th><th>Result</th><th>p</th><th>Verdict</th></tr></thead><tbody>${rows}</tbody>`;
+  const hits = O.tests.filter((t) => t.p < cut).length, weak = O.tests.filter((t) => t.p >= cut && t.p < 0.05).length;
+  const minP = Math.min(...O.tests.map((t) => t.p));
+  const dz = [...DO].map((s) => `${pretty(s)} ${A[s].z_mean >= 0 ? "+" : ""}${fmt(A[s].z_mean, 2)}`).join(", ");
+  $("#do-note").textContent = (hits
+    ? `${hits} of ${O.tests.length} tests clear the corrected threshold.`
+    : `None of the ${O.tests.length} tests clears the corrected threshold; the smallest p-value is ${minP.toFixed(3)}${weak ? `, and the ${weak} below 0.05 are about what chance alone produces across this many tests` : ""}.`)
+    + ` The machines compared are those with at least 100 rounds in this period (${O.machines.groups.join(", ")}). The ${ND} draw-order strategies in the backtest above scored average z-scores of ${dz}, so using the order did not help pick numbers.`;
 })();
 
 $("#method").textContent = `Data: the full UK Lotto history from lottery.merseyworld.com (${D.era.last_draw.toLocaleString()} draws since 1994). The most recent rounds match the official National Lottery results exactly. Only draws since ${D.era.first_date} are used, when the pool grew from 49 to 59 balls. Each round in the test period was predicted using only draws from earlier dates, and both rounds of a two-round draw count as separate targets. The transformer was retrained every 26 rounds. Performance weights use a softmax over each strategy's mean hits in its last ${D.window} rounds (τ = ${D.tau}). z-scores compare mean hits with the exact hypergeometric expectation of 36/59. Seeds used: ${D.seeds.join(", ")}. This page is a statistics exercise. Lotto draws are independent and random, and no method here changes the odds of any ticket.`;

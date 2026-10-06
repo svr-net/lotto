@@ -15,14 +15,19 @@ def sample_draw(
     model: LottoTransformer,
     temperature: float = 0.9,
     device: torch.device | None = None,
+    ascending: bool = True,
 ) -> list:
     """Sample a single draw of 6 unique numbers in [1, 59] from the model.
 
     The model is fed the start token plus the numbers drawn so far and the
-    logits at the next position are sampled. Draws are generated in ascending
-    order (matching ``tokenize``), so tokens that are 0, out of range, not
-    above the previous number, or too large to leave room for the remaining
-    numbers are masked out rather than rejection-sampled.
+    logits at the next position are sampled. By default draws are generated in
+    ascending order (matching ``tokenize``), so tokens that are 0, out of
+    range, not above the previous number, or too large to leave room for the
+    remaining numbers are masked out rather than rejection-sampled.
+
+    With ``ascending=False`` (for a model trained on balls in the order they
+    were drawn) only 0, out-of-range and already-drawn numbers are masked, and
+    the draw is returned in generated order.
     """
     model.eval()
     if device is None:
@@ -35,11 +40,15 @@ def sample_draw(
             inp = torch.tensor([padded], dtype=torch.long, device=device)
             logits = model(inp)[0, pos].clone()  # [vocab_size]
 
-            # Keep only numbers above the previous pick that leave room for the rest.
-            lowest = seq[-1] + 1 if seq else MIN_NUM
-            highest = MAX_NUM - (model.seq_len - pos - 1)
             mask = torch.ones_like(logits, dtype=torch.bool)
-            mask[lowest : highest + 1] = False
+            if ascending:
+                # Keep only numbers above the previous pick that leave room for the rest.
+                lowest = seq[-1] + 1 if seq else MIN_NUM
+                highest = MAX_NUM - (model.seq_len - pos - 1)
+                mask[lowest : highest + 1] = False
+            else:
+                mask[MIN_NUM : MAX_NUM + 1] = False
+                mask[seq] = True
             logits = logits.masked_fill(mask, float("-inf"))
 
             probs = F.softmax(logits / temperature, dim=0)
@@ -53,7 +62,8 @@ def generate_batch(
     num_samples: int = 1000,
     temperature: float = 0.9,
     device: torch.device | None = None,
+    ascending: bool = True,
 ) -> np.ndarray:
     """Generate a batch of NN-style draws. Returns an [num_samples, 6] int array."""
-    samples = [sample_draw(model, temperature, device) for _ in range(num_samples)]
+    samples = [sample_draw(model, temperature, device, ascending) for _ in range(num_samples)]
     return np.array(samples, dtype=int)
