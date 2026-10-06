@@ -281,7 +281,13 @@ def backtest(sets: np.ndarray, dates: np.ndarray, split, seeds: list, tickets: i
                   "mean_matches": float(np.mean([r["mean_matches"] for r in res[s]])),
                   "pct_3plus": float(np.mean([r["pct_3plus"] for r in res[s]])), "tickets": res[s][0]["tickets"]}
         print(f"    {s:36s} z {out[s]['z_mean']:+.2f} [{out[s]['z_min']:+.2f}, {out[s]['z_max']:+.2f}]")
-    return {"strategies": out, "test_rounds": len(test_idx), "seeds": seeds, "tickets_per_round": tickets}
+    # next-draw picks: each strategy fitted on every round, one line per base
+    rng = np.random.default_rng(seeds[0])
+    picks = {}
+    for p in FIRST_10_PRIMES:
+        picks[f"conditional probability, base {p}"] = [sorted(int(x) for x in cond_prob_tickets(sets, p, 1, rng)[0])]
+        picks[f"conditional copula, base {p}"] = [sorted(int(x) for x in copula_tickets(sets, p, 1, rng)[0])]
+    return {"strategies": out, "test_rounds": len(test_idx), "seeds": seeds, "tickets_per_round": tickets, "picks": picks}
 
 
 def prime_nn_reference(csv: str, split: str, epochs: int, samples: int) -> list:

@@ -105,6 +105,7 @@ python scripts/grammar_discovery.py   # results/grammar.json
 python scripts/prime_radix_study.py   # results/prime_radix.json
 python scripts/spectral_study.py      # results/spectral.json
 python scripts/ml_ensemble_study.py   # results/ml_ensemble.json (needs scikit-learn)
+python scripts/bayesian_study.py      # results/bayesian.json
 python scripts/build_report.py        # results/report.html
 ```
 
@@ -153,3 +154,15 @@ sum). Gradient boosting (scikit-learn HistGradientBoosting), a random forest, lo
 regression and their soft-voting average are retrained walk-forward every 26 rounds in each
 era. They are scored by held-out log-loss against the fair rate, per-round AUC, matches for
 top-6 and probability-sampled tickets, and permutation importance.
+
+`scripts/bayesian_study.py` compares a fair machine with one whose ball probabilities follow a
+Dirichlet prior with unknown concentration (biases of roughly 3% to 100%), using
+Dirichlet-multinomial marginal likelihoods. The Bayes factor and posterior probability of
+fairness are calibrated against simulated fair histories. It also asks whether machines, ball
+sets or calendar years favour different balls, gives each ball's 95% credible interval, tracks
+the Bayes factor draw by draw, and backtests posterior-mean and Thompson-sampling strategies.
+
+`scripts/build_report.py` also combines every investigation's next-draw picks into five lines
+(written to `results/combined_picks.json` and shown at the top of the report). Each
+investigation gets one equal vote, spread over its own lines; line 1 is the six numbers with the
+most combined support, and lines 2-5 are drawn in proportion to that support.
