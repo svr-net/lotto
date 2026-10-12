@@ -107,6 +107,7 @@ python scripts/spectral_study.py      # results/spectral.json
 python scripts/ml_ensemble_study.py   # results/ml_ensemble.json (needs scikit-learn)
 python scripts/bayesian_study.py      # results/bayesian.json
 python scripts/rl_study.py            # results/rl.json
+python scripts/score_live.py          # results/live_scores.json (after a draw)
 python scripts/build_report.py        # results/report.html
 ```
 
@@ -178,3 +179,9 @@ online in each era and are scored on the held-out rounds using per-round means:
 
 Their next-draw picks join the five combined lines.
 
+
+`scripts/score_live.py` keeps the live record. After each draw it takes the five combined lines
+and every strategy's tickets as they were committed on `origin/main` before the draw, scores them
+against the real result (matches per round and whether the bonus ball was held) and adds them to
+`results/live_scores.json`. The report shows the running totals next to what random tickets would
+score, and each draw's lines with the matching balls highlighted.

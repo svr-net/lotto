@@ -1,6 +1,6 @@
 """Inject results/walk_forward.json (plus results/grammar.json, results/prime_radix.json,
-results/spectral.json, results/ml_ensemble.json, results/bayesian.json and results/rl.json,
-if present) into
+results/spectral.json, results/ml_ensemble.json, results/bayesian.json, results/rl.json and
+results/live_scores.json, if present) into
 results/report_template.html -> results/report.html, and combine every investigation's
 next-draw picks into five lines (also written to results/combined_picks.json)."""
 import json, os, sys
@@ -11,7 +11,7 @@ POOL, PICK = 59, 6
 EXTRA = [("grammar", "results/grammar.json"), ("prime_radix", "results/prime_radix.json"),
          ("spectral", "results/spectral.json"), ("ml", "results/ml_ensemble.json"),
          ("bayes", "results/bayesian.json"),
-         ("rl", "results/rl.json")]
+         ("rl", "results/rl.json"), ("live", "results/live_scores.json")]
 
 
 def pick_sources(payload: dict) -> list:

@@ -80,6 +80,14 @@ details summary:focus-visible, button:focus-visible { outline: 2px solid var(--s
 .h3 { margin: 8px 0 0; font: 600 1.05rem/1.3 var(--body); }
 td.good { color: var(--good); font-weight: 600; }
 td.flag { font-weight: 600; }
+.muted { color: var(--muted); }
+.ball.hit { background: var(--s2); border-color: var(--s2); color: var(--bg); font-weight: 700; }
+.ball.bonus-hit { border-style: dashed; border-color: var(--s2); }
+.live-draw { display: grid; gap: 8px; }
+.live-draw .line { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.live-draw .ln { font: 600 0.8rem var(--mono); color: var(--muted); width: 1.2rem; }
+.live-draw .tag { font: 0.75rem var(--mono); color: var(--muted); white-space: nowrap; }
+.live-draw .grp { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-right: 12px; }
 </style>
 
 <div class="wrap">
@@ -95,6 +103,15 @@ td.flag { font-weight: 600; }
   <div class="facts" id="facts"></div>
   <div class="verdict" id="verdict"></div>
 </header>
+
+<section id="live-section" hidden>
+  <div class="eyebrow">Live results</div>
+  <h2>How the picks did in real draws</h2>
+  <p id="live-lede"></p>
+  <div class="table-wrap"><table id="live-table"></table></div>
+  <div id="live-draws" style="display:grid;gap:24px"></div>
+  <p class="note" id="live-note"></p>
+</section>
 
 <section>
   <div class="eyebrow">Next draw</div>
@@ -269,6 +286,30 @@ $("#verdict").innerHTML = `<strong>${standout.length ? esc(`${pretty(standout[0]
   $("#picks5-sub").textContent = `combining ${n} investigations`;
   $("#picks5-lines").innerHTML = C.lines.map((line, i) => `<div class="line"><span class="ln">${i + 1}</span><div class="balls">${line.map((b) => `<span class="ball${i === 0 ? " lead" : ""}" title="Ball ${b}: picked by ${C.support[b - 1]} of ${n} investigations">${b}</span>`).join("")}</div>${i === 0 ? '<span class="tag">most support</span>' : ""}</div>`).join("");
   $("#picks5-note").textContent = `Each investigation gets one equal vote, spread over its own next-draw lines: ${C.sources.map((s) => `${s.investigation} (${s.lines} lines)`).join(", ")}. The grammar search builds probability models rather than tickets, so it takes part through the n-gram grammar strategy in the backtest. Line 1 is the six numbers with the most combined support; lines 2 to 5 are drawn in proportion to that support. None of the investigations found any pattern in the draws, so these lines are exactly as likely to win as any others: 1 in 45,057,474 for the jackpot.`;
+})();
+
+// ---------- live results: committed picks scored against the real draws
+(function () {
+  const LV = D.live;
+  if (!LV || !LV.draws.length) return;
+  $("#live-section").hidden = false;
+  const Sm = LV.summary, P = LV.summary.chance, dfmt = (d) => new Date(d + "T12:00:00Z").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+  const n = LV.draws.length;
+  $("#live-lede").textContent = `Before each draw the report commits five combined lines and every strategy's tickets. After the draw they are scored against the real numbers. Each line is checked against every round, so a two-round draw scores each line twice. ${n} draw${n > 1 ? "s" : ""} scored so far, from ${dfmt(LV.draws[0].date)} to ${dfmt(LV.draws[n - 1].date)}.`;
+  const row = (label, t) => { const exp = (k) => t.line_rounds * (k === 3 ? [3, 4, 5, 6].reduce((a, j) => a + P[j], 0) : P[k]);
+    return `<tr><td>${label}</td><td>${t.line_rounds}</td>${[0, 1, 2].map((k) => `<td>${t.counts[k]} <span class="muted">(${exp(k).toFixed(1)})</span></td>`).join("")}<td class="${t.prize ? "good" : ""}">${t.prize} <span class="muted">(${exp(3).toFixed(1)})</span></td><td>${t.bonus}</td><td>${fmt(t.mean, 2)}</td></tr>`; };
+  $("#live-table").innerHTML = `<thead><tr><th>Lines</th><th>Line-rounds</th><th>0 hits</th><th>1 hit</th><th>2 hits</th><th>3+ (a prize)</th><th>Bonus</th><th>Mean</th></tr></thead><tbody>` +
+    row("Five combined lines", Sm.combined) + row("Every strategy and ensemble line", Sm.strategies) +
+    `<tr class="base-row"><td>Random line (chance)</td><td></td><td>${fmt(P[0] * 100, 1)}%</td><td>${fmt(P[1] * 100, 1)}%</td><td>${fmt(P[2] * 100, 1)}%</td><td>${fmt([3, 4, 5, 6].reduce((a, j) => a + P[j], 0) * 100, 2)}%</td><td></td><td>${fmt(Sm.chance_mean, 2)}</td></tr></tbody>`;
+  const ball = (b, r) => `<span class="ball${r.numbers.includes(b) ? " hit" : b === r.bonus ? " bonus-hit" : ""}">${b}</span>`;
+  $("#live-draws").innerHTML = LV.draws.slice().reverse().map((e) => {
+    const res = e.rounds.map((r) => `<div class="line"><span class="ln">R${r.round}</span><div class="balls">${r.numbers.map((b) => `<span class="ball lead">${b}</span>`).join("")}<span class="ball bonus-hit" title="Bonus ball">${r.bonus}</span></div><span class="tag">drawn</span></div>`).join("");
+    const lines = e.combined.map((s, i) => `<div class="line"><span class="ln">${i + 1}</span>${e.rounds.map((r, j) => `<span class="grp"><div class="balls">${s.line.map((b) => ball(b, r)).join("")}</div><span class="tag">${e.rounds.length > 1 ? `R${r.round}: ` : ""}${s.matches[j]}${s.bonus[j] ? " + bonus" : ""}</span></span>`).join("")}</div>`).join("");
+    const st = Object.entries(e.strategies).map(([k, ls]) => [k, Math.max(...ls.flatMap((s) => s.matches)), ls.length]).sort((a, b) => b[1] - a[1]);
+    const best = Math.max(...e.combined.flatMap((s) => s.matches));
+    return `<div class="live-draw"><h3 class="h3">Draw ${e.draw_no} · ${dfmt(e.date)} · best combined line ${best} match${best === 1 ? "" : "es"}</h3>${res}${lines}${st.length ? `<details><summary>Best line from each strategy</summary><div class="table-wrap"><table><thead><tr><th>Strategy</th><th>Lines</th><th>Best matches</th></tr></thead><tbody>${st.map(([k, m, c]) => `<tr><td>${esc(pretty(k))}</td><td>${c}</td><td class="${m >= 3 ? "good" : ""}">${m}</td></tr>`).join("")}</tbody></table></div></details>` : ""}</div>`;
+  }).join("");
+  $("#live-note").textContent = `Filled balls in a line are numbers that came up in that round; a dashed outline is the bonus ball. Figures in brackets are how many line-rounds random tickets would put in each column on average. The lowest prize needs 3 matching numbers. These results are expected to track chance: the backtests over ${D.test_rounds} past rounds found no method that beats it, and a handful of live draws is far too few to tell any method apart from random.`;
 })();
 
 // ---------- tickets
