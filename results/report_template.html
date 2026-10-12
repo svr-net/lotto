@@ -80,6 +80,14 @@ details summary:focus-visible, button:focus-visible { outline: 2px solid var(--s
 .h3 { margin: 8px 0 0; font: 600 1.05rem/1.3 var(--body); }
 td.good { color: var(--good); font-weight: 600; }
 td.flag { font-weight: 600; }
+.muted { color: var(--muted); }
+.ball.hit { background: var(--s2); border-color: var(--s2); color: var(--bg); font-weight: 700; }
+.ball.bonus-hit { border-style: dashed; border-color: var(--s2); }
+.live-draw { display: grid; gap: 8px; }
+.live-draw .line { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.live-draw .ln { font: 600 0.8rem var(--mono); color: var(--muted); width: 1.2rem; }
+.live-draw .tag { font: 0.75rem var(--mono); color: var(--muted); white-space: nowrap; }
+.live-draw .grp { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-right: 12px; }
 </style>
 
 <div class="wrap">
@@ -90,11 +98,35 @@ td.flag { font-weight: 600; }
     <div class="picks5-head"><strong>Five lines for <span id="nd5"></span></strong><span class="note" id="picks5-sub"></span></div>
     <div class="picks5-lines" id="picks5-lines"></div>
     <p class="note" id="picks5-note"></p>
+    <div id="pop5" hidden style="display:grid;gap:8px">
+      <div class="picks5-head"><strong>Popularity-aware lines</strong><span class="note">same chance of winning, less likely to share the jackpot</span></div>
+      <div class="picks5-lines" id="pop5-lines"></div>
+      <p class="note" id="pop5-note"></p>
+    </div>
   </div>
   <p id="lede"></p>
   <div class="facts" id="facts"></div>
   <div class="verdict" id="verdict"></div>
 </header>
+
+<section id="pop-section" hidden>
+  <div class="eyebrow">Other players</div>
+  <h2>Which lines do other players pick?</h2>
+  <p id="pop-lede"></p>
+  <div class="table-wrap"><table id="pop-table"></table></div>
+  <div class="table-wrap"><table id="pop-birthday"></table></div>
+  <div class="table-wrap"><table id="pop-examples"></table></div>
+  <p class="note" id="pop-note"></p>
+</section>
+
+<section id="live-section" hidden>
+  <div class="eyebrow">Live results</div>
+  <h2>How the picks did in real draws</h2>
+  <p id="live-lede"></p>
+  <div class="table-wrap"><table id="live-table"></table></div>
+  <div id="live-draws" style="display:grid;gap:24px"></div>
+  <p class="note" id="live-note"></p>
+</section>
 
 <section>
   <div class="eyebrow">Next draw</div>
@@ -269,6 +301,54 @@ $("#verdict").innerHTML = `<strong>${standout.length ? esc(`${pretty(standout[0]
   $("#picks5-sub").textContent = `combining ${n} investigations`;
   $("#picks5-lines").innerHTML = C.lines.map((line, i) => `<div class="line"><span class="ln">${i + 1}</span><div class="balls">${line.map((b) => `<span class="ball${i === 0 ? " lead" : ""}" title="Ball ${b}: picked by ${C.support[b - 1]} of ${n} investigations">${b}</span>`).join("")}</div>${i === 0 ? '<span class="tag">most support</span>' : ""}</div>`).join("");
   $("#picks5-note").textContent = `Each investigation gets one equal vote, spread over its own next-draw lines: ${C.sources.map((s) => `${s.investigation} (${s.lines} lines)`).join(", ")}. The grammar search builds probability models rather than tickets, so it takes part through the n-gram grammar strategy in the backtest. Line 1 is the six numbers with the most combined support; lines 2 to 5 are drawn in proportion to that support. None of the investigations found any pattern in the draws, so these lines are exactly as likely to win as any others: 1 in 45,057,474 for the jackpot.`;
+})();
+
+// ---------- popularity-aware lines and the model behind them
+(function () {
+  const PM = D.popularity, C = D.combined;
+  if (!PM) return;
+  const pc = (v) => (v >= 1 ? "+" : "") + ((v - 1) * 100).toFixed(1) + "%";
+  if (C && C.popularity_lines) {
+    $("#pop5").hidden = false;
+    const P = C.popularity;
+    $("#pop5-lines").innerHTML = C.popularity_lines.map((line, i) => `<div class="line"><span class="ln">${i + 1}</span><div class="balls">${line.map((b) => `<span class="ball">${b}</span>`).join("")}</div><span class="tag">${P.aware[i].popularity.toFixed(2)}× as popular · jackpot ${pc(P.aware[i].value)}</span></div>`).join("");
+    const cv = P.combined.map((r) => r.value), avg = (a) => a.reduce((x, y) => x + y, 0) / a.length;
+    $("#pop5-note").textContent = `Drawn from the same combined support as the five lines above, then the least popular candidates kept, at most two numbers shared between lines. Popularity is relative to an average random line. "Jackpot" is the expected jackpot payout if the line wins, compared with an average line: a typical winning line shares with ${P.lam.toFixed(2)} other winners on average, so the gain is small. The five lines above average ${pc(avg(cv))} on the same measure. Only the jackpot is shared; Match 3 to Match 5 + bonus pay fixed prizes, so they are unaffected.`;
+  }
+  $("#pop-section").hidden = false;
+  $("#pop-lede").textContent = `Every line is equally likely to be drawn, but the jackpot is split between everyone who holds the winning line. The number of jackpot winners in each of the ${PM.rounds.toLocaleString()} rounds since 1994 shows which lines people play: when a popular line comes up, more people win. A Poisson regression of the winner count on features of the drawn line, allowing for ticket sales (year, era and round effects plus the size of the pot), measures how much each feature adds. Together the features explain far more than sales alone (likelihood-ratio test ${PM.lr_stat.toFixed(0)} on ${PM.df} degrees of freedom, p = ${PM.p.toExponential(1)}).`;
+  $("#pop-table").innerHTML = `<thead><tr><th>Feature of the line</th><th>Popularity per unit</th><th>z</th></tr></thead><tbody>` +
+    PM.features.map((f) => `<tr><td>${esc(f.name)}</td><td class="${Math.abs(f.z) >= 3 ? "flag" : ""}">×${f.multiplier.toFixed(2)}</td><td>${(f.z >= 0 ? "+" : "") + f.z.toFixed(1)}</td></tr>`).join("") + "</tbody>";
+  const bt = PM.birthday_table.filter((r) => r.rounds >= 10);
+  $("#pop-birthday").innerHTML = `<thead><tr><th>Numbers 1-31 in the drawn line</th>${bt.filter((r) => r.era === 49).map((r) => `<th>${r.low}</th>`).join("")}</tr></thead><tbody>` +
+    [49, 59].map((e) => `<tr><td>${e}-ball era: mean jackpot winners</td>${bt.filter((r) => r.era === 49).map((c) => { const r = bt.find((x) => x.era === e && x.low === c.low); return `<td>${r ? r.mean_wins.toFixed(2) : "–"}</td>`; }).join("")}</tr>`).join("") + "</tbody>";
+  $("#pop-examples").innerHTML = `<thead><tr><th>Example line</th><th>Popularity</th><th>Jackpot value</th></tr></thead><tbody>` +
+    PM.examples.map((x) => `<tr><td style="white-space:normal">${esc(x.label)}</td><td>×${x.popularity.toFixed(2)}</td><td>${pc(x.value)}</td></tr>`).join("") + "</tbody>";
+  $("#pop-note").textContent = `Each number from 1 to 31 makes a line more popular, months (1-12) more so, and 7 most of all; consecutive numbers are played less, because people avoid them when they try to look random. Pattern tickets such as 1-2-3-4-5-6 or 7-14-21-28-35-42 are played by thousands but have never been drawn, so the data can't measure them; they are left out of the popularity-aware lines, as are lines with two or more consecutive pairs, where the model would be extrapolating. Draw 9 in January 1995 had 133 jackpot winners, far more than the model expects, possibly because the line also formed a shape on the playslip, which these features cannot see. None of this changes the chance of winning: it only affects how many people share a jackpot.`;
+})();
+
+// ---------- live results: committed picks scored against the real draws
+(function () {
+  const LV = D.live;
+  if (!LV || !LV.draws.length) return;
+  $("#live-section").hidden = false;
+  const Sm = LV.summary, P = LV.summary.chance, dfmt = (d) => new Date(d + "T12:00:00Z").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+  const n = LV.draws.length;
+  $("#live-lede").textContent = `Before each draw the report commits five combined lines and every strategy's tickets. After the draw they are scored against the real numbers. Each line is checked against every round, so a two-round draw scores each line twice. ${n} draw${n > 1 ? "s" : ""} scored so far, from ${dfmt(LV.draws[0].date)} to ${dfmt(LV.draws[n - 1].date)}.`;
+  const row = (label, t) => { const exp = (k) => t.line_rounds * (k === 3 ? [3, 4, 5, 6].reduce((a, j) => a + P[j], 0) : P[k]);
+    return `<tr><td>${label}</td><td>${t.line_rounds}</td>${[0, 1, 2].map((k) => `<td>${t.counts[k]} <span class="muted">(${exp(k).toFixed(1)})</span></td>`).join("")}<td class="${t.prize ? "good" : ""}">${t.prize} <span class="muted">(${exp(3).toFixed(1)})</span></td><td>${t.bonus}</td><td>${fmt(t.mean, 2)}</td></tr>`; };
+  $("#live-table").innerHTML = `<thead><tr><th>Lines</th><th>Line-rounds</th><th>0 hits</th><th>1 hit</th><th>2 hits</th><th>3+ (a prize)</th><th>Bonus</th><th>Mean</th></tr></thead><tbody>` +
+    row("Five combined lines", Sm.combined) + (Sm.popularity_lines && Sm.popularity_lines.line_rounds ? row("Popularity-aware lines", Sm.popularity_lines) : "") + row("Every strategy and ensemble line", Sm.strategies) +
+    `<tr class="base-row"><td>Random line (chance)</td><td></td><td>${fmt(P[0] * 100, 1)}%</td><td>${fmt(P[1] * 100, 1)}%</td><td>${fmt(P[2] * 100, 1)}%</td><td>${fmt([3, 4, 5, 6].reduce((a, j) => a + P[j], 0) * 100, 2)}%</td><td></td><td>${fmt(Sm.chance_mean, 2)}</td></tr></tbody>`;
+  const ball = (b, r) => `<span class="ball${r.numbers.includes(b) ? " hit" : b === r.bonus ? " bonus-hit" : ""}">${b}</span>`;
+  $("#live-draws").innerHTML = LV.draws.slice().reverse().map((e) => {
+    const res = e.rounds.map((r) => `<div class="line"><span class="ln">R${r.round}</span><div class="balls">${r.numbers.map((b) => `<span class="ball lead">${b}</span>`).join("")}<span class="ball bonus-hit" title="Bonus ball">${r.bonus}</span></div><span class="tag">drawn</span></div>`).join("");
+    const lines = e.combined.map((s, i) => `<div class="line"><span class="ln">${i + 1}</span>${e.rounds.map((r, j) => `<span class="grp"><div class="balls">${s.line.map((b) => ball(b, r)).join("")}</div><span class="tag">${e.rounds.length > 1 ? `R${r.round}: ` : ""}${s.matches[j]}${s.bonus[j] ? " + bonus" : ""}</span></span>`).join("")}</div>`).join("");
+    const st = Object.entries(e.strategies).map(([k, ls]) => [k, Math.max(...ls.flatMap((s) => s.matches)), ls.length]).sort((a, b) => b[1] - a[1]);
+    const best = Math.max(...e.combined.flatMap((s) => s.matches));
+    return `<div class="live-draw"><h3 class="h3">Draw ${e.draw_no} · ${dfmt(e.date)} · best combined line ${best} match${best === 1 ? "" : "es"}</h3>${res}${lines}${st.length ? `<details><summary>Best line from each strategy</summary><div class="table-wrap"><table><thead><tr><th>Strategy</th><th>Lines</th><th>Best matches</th></tr></thead><tbody>${st.map(([k, m, c]) => `<tr><td>${esc(pretty(k))}</td><td>${c}</td><td class="${m >= 3 ? "good" : ""}">${m}</td></tr>`).join("")}</tbody></table></div></details>` : ""}</div>`;
+  }).join("");
+  $("#live-note").textContent = `Filled balls in a line are numbers that came up in that round; a dashed outline is the bonus ball. Figures in brackets are how many line-rounds random tickets would put in each column on average. The lowest prize needs 3 matching numbers. These results are expected to track chance: the backtests over ${D.test_rounds} past rounds found no method that beats it, and a handful of live draws is far too few to tell any method apart from random.`;
 })();
 
 // ---------- tickets

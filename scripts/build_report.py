@@ -1,17 +1,21 @@
 """Inject results/walk_forward.json (plus results/grammar.json, results/prime_radix.json,
-results/spectral.json, results/ml_ensemble.json, results/bayesian.json and results/rl.json,
-if present) into
+results/spectral.json, results/ml_ensemble.json, results/bayesian.json, results/rl.json and
+results/live_scores.json, if present) into
 results/report_template.html -> results/report.html, and combine every investigation's
 next-draw picks into five lines (also written to results/combined_picks.json)."""
 import json, os, sys
 
 import numpy as np
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import popularity_study as ps  # noqa: E402
+
 POOL, PICK = 59, 6
 EXTRA = [("grammar", "results/grammar.json"), ("prime_radix", "results/prime_radix.json"),
          ("spectral", "results/spectral.json"), ("ml", "results/ml_ensemble.json"),
          ("bayes", "results/bayesian.json"),
-         ("rl", "results/rl.json")]
+         ("rl", "results/rl.json"), ("live", "results/live_scores.json"),
+         ("popularity", "results/popularity.json")]
 
 
 def pick_sources(payload: dict) -> list:
@@ -59,6 +63,18 @@ def combine(sources: list, seed: int, n_lines: int = 5) -> dict:
             "sources": [{"investigation": s, "lines": len(ls)} for s, ls in sources]}
 
 
+def add_popularity_lines(combined: dict, model: dict, latest: list, seed: int) -> None:
+    """Five more lines drawn from the same combined support, keeping the ones other players are least
+    likely to have picked, and each line's popularity and jackpot value for both sets."""
+    pop = ps.Popularity(model["beta"], model["lam"])
+    prev = sorted({int(r[f"n{i}"]) for r in latest for i in range(1, 7)})
+    lines = ps.choose_lines(combined["score"], pop, prev, seed=seed)
+    rate = lambda ls: [{"popularity": round(pop.popularity(l, prev), 3), "value": round(pop.value(l, prev), 3)} for l in ls]
+    combined["popularity_lines"] = lines
+    combined["popularity"] = {"combined": rate(combined["lines"]), "aware": rate(lines),
+                              "lam": model["lam"], "typical_share": pop.typical_share}
+
+
 def main():
     src = sys.argv[1] if len(sys.argv) > 1 else "results/walk_forward.json"
     payload = json.load(open(src))
@@ -70,6 +86,8 @@ def main():
         seed = int(payload.get("next_draw_date", "2026-01-01").replace("-", ""))
         payload["combined"] = combine(sources, seed)
         payload["combined"]["next_draw_date"] = payload.get("next_draw_date")
+        if payload.get("popularity"):
+            add_popularity_lines(payload["combined"], payload["popularity"], payload.get("latest") or [], seed)
         with open("results/combined_picks.json", "w") as fh:
             json.dump(payload["combined"], fh, indent=1)
     data = json.dumps(payload, separators=(",", ":")).replace("</", "<\\/")
