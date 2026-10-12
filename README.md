@@ -108,6 +108,7 @@ python scripts/ml_ensemble_study.py   # results/ml_ensemble.json (needs scikit-l
 python scripts/bayesian_study.py      # results/bayesian.json
 python scripts/rl_study.py            # results/rl.json
 python scripts/score_live.py          # results/live_scores.json (after a draw)
+python scripts/popularity_study.py    # results/popularity.json
 python scripts/build_report.py        # results/report.html
 ```
 
@@ -185,3 +186,13 @@ and every strategy's tickets as they were committed on `origin/main` before the 
 against the real result (matches per round and whether the bonus ball was held) and adds them to
 `results/live_scores.json`. The report shows the running totals next to what random tickets would
 score, and each draw's lines with the matching balls highlighted.
+
+`scripts/popularity_study.py` asks which lines other players pick. Every line is equally likely to
+be drawn, but the jackpot is split between everyone holding the winning line, so the number of
+jackpot winners in each round since 1994 shows how popular the drawn line was. A Poisson regression
+of that count, allowing for ticket sales (year, era and round effects plus the total pot), measures
+how much birthday numbers (1-31), months (1-12), 7, consecutive numbers, shared last digits and
+repeats of the last round add. `build_report.py` then picks five popularity-aware lines: drawn from
+the same combined support as the five combined lines, keeping the least popular, and skipping
+pattern tickets the data can't measure. They are exactly as likely to win; they only raise the
+expected jackpot share if they do. Only the jackpot is shared, so lower prizes are unaffected.

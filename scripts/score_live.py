@@ -46,6 +46,7 @@ def score_entry(combined: dict, wf: dict, rounds: list, ref: str) -> dict:
         strategies[name] = [score_line(l, rounds) for l in lines]
     return {"date": combined["next_draw_date"], "draw_no": rounds[0]["draw_no"], "ref": ref,
             "rounds": rounds, "combined": [score_line(l, rounds) for l in combined["lines"]],
+            "popularity_lines": [score_line(l, rounds) for l in combined.get("popularity_lines", [])],
             "strategies": strategies}
 
 
@@ -69,6 +70,7 @@ def summarise(entries: list) -> dict:
                 "prize": sum(counts[3:])}
     return {"combined": tally([s for e in entries for s in e["combined"]]),
             "strategies": tally([s for e in entries for ls in e["strategies"].values() for s in ls]),
+            "popularity_lines": tally([s for e in entries for s in e.get("popularity_lines", [])]),
             "chance": chance(), "chance_mean": PICK * PICK / POOL}
 
 
