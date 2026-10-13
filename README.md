@@ -196,3 +196,8 @@ repeats of the last round add. `build_report.py` then picks five popularity-awar
 the same combined support as the five combined lines, keeping the least popular, and skipping
 pattern tickets the data can't measure. They are exactly as likely to win; they only raise the
 expected jackpot share if they do. Only the jackpot is shared, so lower prizes are unaffected.
+
+`scripts/replay_five_lines.py` replays the five combined lines and the five popularity-aware lines
+for past draws. For each draw it rebuilds every investigation's picks from earlier draws only, with
+the same functions and seeds the routine uses (it reproduces the committed lines exactly), combines
+them and scores them against the real rounds (`results/replay_five_lines.json`).
