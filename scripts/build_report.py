@@ -15,7 +15,7 @@ EXTRA = [("grammar", "results/grammar.json"), ("prime_radix", "results/prime_rad
          ("spectral", "results/spectral.json"), ("ml", "results/ml_ensemble.json"),
          ("bayes", "results/bayesian.json"),
          ("rl", "results/rl.json"), ("live", "results/live_scores.json"),
-         ("popularity", "results/popularity.json")]
+         ("popularity", "results/popularity.json"), ("replay", "results/replay_five_lines.json")]
 
 
 def pick_sources(payload: dict) -> list:
@@ -38,6 +38,22 @@ def pick_sources(payload: dict) -> list:
     return out
 
 
+def lines_from_score(score, seed: int, n_lines: int = 5) -> list:
+    """Line 1 is the six numbers with the most support (the seed only breaks exact ties); the other
+    lines are drawn in proportion to support, using the seed."""
+    score = np.asarray(score, dtype=float)
+    rng = np.random.default_rng(seed)
+    top = np.argsort(-(score + rng.random(POOL) * 1e-9))[:PICK] + 1
+    lines = [sorted(int(x) for x in top)]
+    p = score + score.mean() * 0.2  # every number keeps some chance
+    p /= p.sum()
+    while len(lines) < n_lines:
+        line = sorted(int(x) for x in rng.choice(np.arange(1, POOL + 1), PICK, replace=False, p=p))
+        if line not in lines:
+            lines.append(line)
+    return lines
+
+
 def combine(sources: list, seed: int, n_lines: int = 5) -> dict:
     """Equal vote per investigation, spread evenly over its lines. Line 1 is the six numbers
     with the most support; the other lines are drawn in proportion to support."""
@@ -50,15 +66,7 @@ def combine(sources: list, seed: int, n_lines: int = 5) -> dict:
         score += v / v.sum()
         support += (v > 0).astype(int)
     score /= len(sources)
-    rng = np.random.default_rng(seed)
-    top = np.argsort(-(score + rng.random(POOL) * 1e-9))[:PICK] + 1
-    lines = [sorted(int(x) for x in top)]
-    p = score + score.mean() * 0.2  # every number keeps some chance
-    p /= p.sum()
-    while len(lines) < n_lines:
-        line = sorted(int(x) for x in rng.choice(np.arange(1, POOL + 1), PICK, replace=False, p=p))
-        if line not in lines:
-            lines.append(line)
+    lines = lines_from_score(score, seed, n_lines)
     return {"lines": lines, "score": score.round(5).tolist(), "support": support.tolist(),
             "sources": [{"investigation": s, "lines": len(ls)} for s, ls in sources]}
 

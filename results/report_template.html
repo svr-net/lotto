@@ -109,6 +109,18 @@ td.flag { font-weight: 600; }
   <div class="verdict" id="verdict"></div>
 </header>
 
+<section id="replay-section" hidden>
+  <div class="eyebrow">Three-month replay</div>
+  <h2>How the five lines would have done since <span id="replay-since"></span></h2>
+  <p id="replay-lede"></p>
+  <div class="table-wrap"><table id="replay-table"></table></div>
+  <div class="table-wrap"><table id="replay-draws"></table></div>
+  <h3 class="h3">Does the seed matter?</h3>
+  <p id="replay-seed-lede"></p>
+  <div class="table-wrap"><table id="replay-seeds"></table></div>
+  <p class="note" id="replay-note"></p>
+</section>
+
 <section id="pop-section" hidden>
   <div class="eyebrow">Other players</div>
   <h2>Which lines do other players pick?</h2>
@@ -301,6 +313,34 @@ $("#verdict").innerHTML = `<strong>${standout.length ? esc(`${pretty(standout[0]
   $("#picks5-sub").textContent = `combining ${n} investigations`;
   $("#picks5-lines").innerHTML = C.lines.map((line, i) => `<div class="line"><span class="ln">${i + 1}</span><div class="balls">${line.map((b) => `<span class="ball${i === 0 ? " lead" : ""}" title="Ball ${b}: picked by ${C.support[b - 1]} of ${n} investigations">${b}</span>`).join("")}</div>${i === 0 ? '<span class="tag">most support</span>' : ""}</div>`).join("");
   $("#picks5-note").textContent = `Each investigation gets one equal vote, spread over its own next-draw lines: ${C.sources.map((s) => `${s.investigation} (${s.lines} lines)`).join(", ")}. The grammar search builds probability models rather than tickets, so it takes part through the n-gram grammar strategy in the backtest. Line 1 is the six numbers with the most combined support; lines 2 to 5 are drawn in proportion to that support. None of the investigations found any pattern in the draws, so these lines are exactly as likely to win as any others: 1 in 45,057,474 for the jackpot.`;
+})();
+
+// ---------- replay of the five lines over recent draws
+(function () {
+  const RP = D.replay;
+  if (!RP || !RP.draws.length) return;
+  $("#replay-section").hidden = false;
+  const dfmt = (d, y) => new Date(d + "T12:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "long", ...(y ? { year: "numeric" } : {}), timeZone: "UTC" });
+  const n = RP.draws.length, Sm = RP.summary, P = Sm.chance, p3 = [3, 4, 5, 6].reduce((a, j) => a + P[j], 0);
+  $("#replay-since").textContent = dfmt(RP.draws[0].date, false);
+  $("#replay-lede").textContent = `For each of the ${n} draws from ${dfmt(RP.draws[0].date, true)} to ${dfmt(RP.draws[n - 1].date, true)}, every investigation's picks were rebuilt from the draws before it only, using the same code and seeds as the routine, then combined into the five lines and the five popularity-aware lines and scored against both rounds. The replay reproduces the lines the routine actually committed exactly.`;
+  const zf = (t) => (t.mean - Sm.chance_mean) / Math.sqrt(6 * (6 / 59) * (53 / 59) * (53 / 58) / t.line_rounds);
+  const row = (label, t) => `<tr><td>${label}</td><td>${t.line_rounds}</td>${[0, 1, 2].map((k) => `<td>${t.counts[k]} <span class="muted">(${(t.line_rounds * P[k]).toFixed(1)})</span></td>`).join("")}<td class="${t.prize ? "good" : ""}">${t.prize} <span class="muted">(${(t.line_rounds * p3).toFixed(1)})</span></td><td>${fmt(t.mean, 3)}</td><td>${(zf(t) >= 0 ? "+" : "") + zf(t).toFixed(2)}</td></tr>`;
+  $("#replay-table").innerHTML = `<thead><tr><th>Lines</th><th>Line-rounds</th><th>0 hits</th><th>1 hit</th><th>2 hits</th><th>3+ (a prize)</th><th>Mean</th><th>z</th></tr></thead><tbody>` +
+    row("Five combined lines", Sm.combined) + row("Popularity-aware lines", Sm.popularity_lines) +
+    `<tr class="base-row"><td>Random line (chance)</td><td></td><td>${fmt(P[0] * 100, 1)}%</td><td>${fmt(P[1] * 100, 1)}%</td><td>${fmt(P[2] * 100, 1)}%</td><td>${fmt(p3 * 100, 2)}%</td><td>${fmt(Sm.chance_mean, 3)}</td><td></td></tr></tbody>`;
+  const cell = (ls) => ls.map((s) => s.matches.map((m) => m >= 3 ? `<b>${m}</b>` : m).join("/")).join(" ");
+  $("#replay-draws").innerHTML = `<thead><tr><th>Draw</th><th>Combined lines (R1/R2 matches)</th><th>Popularity-aware lines</th><th>Best</th></tr></thead><tbody>` +
+    RP.draws.slice().reverse().map((d) => { const best = Math.max(...d.combined.concat(d.popularity_lines).flatMap((s) => s.matches));
+      return `<tr><td>${d.draw_no} · ${dfmt(d.date, false)}</td><td>${cell(d.combined)}</td><td>${cell(d.popularity_lines)}</td><td class="${best >= 3 ? "good" : ""}">${best}</td></tr>`; }).join("") + "</tbody>";
+  const SS = RP.seed_study;
+  if (SS) {
+    $("#replay-seed-lede").textContent = `Line 1 is always the six numbers with the most support, so the seed doesn't change it (it averaged ${fmt(SS.line1.mean, 3)} matches over ${SS.line1.line_rounds} line-rounds). The seed only decides which of the many supported lines are drawn for lines 2 to 5. Here lines 2 to 5 are redrawn from each draw's same support with different seeds, including a seed taken from the first draw of a rolling window of recent draws, and compared with ${SS.random.n.toLocaleString()} random seeds.`;
+    $("#replay-seeds").innerHTML = `<thead><tr><th>Seed for lines 2-5</th><th>Mean matches</th><th>3+ hits</th><th>Percentile among random seeds</th></tr></thead><tbody>` +
+      SS.variants.map((v) => `<tr><td>${esc(v.seed)}</td><td>${fmt(v.mean, 3)}</td><td>${v.hits3}</td><td>${v.percentile.toFixed(0)}%</td></tr>`).join("") +
+      `<tr class="base-row"><td>${SS.random.n.toLocaleString()} random seeds</td><td>${fmt(SS.random.mean, 3)}</td><td></td><td>90% between ${fmt(SS.random.p5, 3)} and ${fmt(SS.random.p95, 3)}</td></tr></tbody>`;
+  }
+  $("#replay-note").textContent = `Figures in brackets are what random lines average. z compares the mean with the 36/59 chance rate; with this many comparisons, anything inside about ±2.5 is chance. Bold numbers are 3-match hits, worth the lowest prize. Every seed lands inside the range random seeds give: a seed only shuffles which lines are drawn and carries no information about the next draw, so the date is kept, because it makes each line reproducible.`;
 })();
 
 // ---------- popularity-aware lines and the model behind them

@@ -29,3 +29,10 @@ def test_pick_sources_skip_random_baselines_and_backtest_ensembles():
     src = dict(br.pick_sources(payload))
     assert src["Strategy backtest"] == [[13, 14, 15, 16, 17, 18]]
     assert len(src["Machine learning"]) == 2
+
+
+def test_lines_from_score_reproduces_combine():
+    sources = [("A", [[1, 2, 3, 4, 5, 6]]), ("B", [[1, 2, 3, 40, 41, 42], [7, 8, 9, 10, 11, 12]])]
+    res = br.combine(sources, seed=20261014)
+    assert br.lines_from_score(res["score"], 20261014) == res["lines"]
+    assert br.lines_from_score(res["score"], 1)[0] == res["lines"][0]  # line 1 doesn't depend on the seed

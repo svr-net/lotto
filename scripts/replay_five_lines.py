@@ -116,6 +116,38 @@ def replay_one(args):
     return out
 
 
+def line_seed(line) -> int:
+    """A draw's six numbers as one integer, e.g. 3 8 11 38 42 44 -> 30811384244."""
+    return int("".join(f"{x:02d}" for x in sorted(line)))
+
+
+def seed_study(draws: list, n_random: int = 1000) -> dict:
+    """Does the seed for lines 2-5 matter? Redraw them from each draw's stored support with other
+    seeds (the date, the last draw, the first draw of a rolling window) and with many random seeds."""
+    import numpy as np
+    br = _load("build_report")
+
+    def mean_matches(seed_of):
+        m = [len(set(l) & set(r["numbers"])) for d in draws
+             for l in br.lines_from_score(d["score"], seed_of(d))[1:] for r in d["rounds"]]
+        return float(np.mean(m)), int(sum(x >= 3 for x in m)), len(m)
+
+    variants = {"date (current)": lambda d: int(d["date"].replace("-", "")),
+                "last draw's numbers": lambda d: line_seed(d["window"][-1])}
+    for w in (10, 26, 52, 104):
+        variants[f"first draw of the last {w} rounds"] = (lambda w: lambda d: line_seed(d["window"][-w]))(w)
+    null = np.array([mean_matches(lambda d, s=s: s * 7919 + int(d["date"].replace("-", "")))[0]
+                     for s in range(n_random)])
+    rows = []
+    for name, fn in variants.items():
+        m, hits, n = mean_matches(fn)
+        rows.append({"seed": name, "mean": m, "hits3": hits, "line_rounds": n, "percentile": float((null < m).mean() * 100)})
+    line1 = [len(set(d["combined"][0]["line"]) & set(r["numbers"])) for d in draws for r in d["rounds"]]
+    return {"variants": rows, "random": {"n": n_random, "mean": float(null.mean()),
+                                         "p5": float(np.percentile(null, 5)), "p95": float(np.percentile(null, 95))},
+            "line1": {"mean": float(np.mean(line1)), "line_rounds": len(line1)}}
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--csv", default="data/uk_lotto_full.csv")
@@ -131,8 +163,14 @@ def main():
         draws = pool.map(replay_one, [(d, a.csv) for d in dates], chunksize=1)
     summary = sl.summarise([{**d, "strategies": {}} for d in draws])
     del summary["strategies"]
+    seeds = seed_study(draws)
+    for d in draws:
+        del d["window"]  # only needed for the seed study
     with open(a.out, "w") as fh:
-        json.dump({"since": a.since, "draws": draws, "summary": summary}, fh, indent=1)
+        json.dump({"since": a.since, "draws": draws, "summary": summary, "seed_study": seeds}, fh, indent=1)
+    for r in seeds["variants"]:
+        print(f"  lines 2-5 seeded by {r['seed']:32s} mean {r['mean']:.3f}, 3+ {r['hits3']}, "
+              f"{r['percentile']:.0f}th percentile of {seeds['random']['n']} random seeds")
     s = summary["combined"]
     print(f"combined lines: {s['line_rounds']} line-rounds, counts {s['counts'][:4]}, mean {s['mean']:.3f} "
           f"(chance {summary['chance_mean']:.3f}), 3+ = {s['prize']}")
