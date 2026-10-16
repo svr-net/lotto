@@ -14,7 +14,7 @@ this round?", with features computed only from earlier rounds:
   - the number itself: value, odd/even, decade, residues mod 3, 5 and 7
   - the previous round's sum (shared context, so trees can form interactions)
 
-Models are trained walk-forward: on all rounds before each block of 26 test rounds,
+Models are trained walk-forward: on all rounds before each block of 52 test rounds,
 then used to predict that block. Each era (49 and 59 balls) is run separately.
 Scoring:
   - log-loss against the fair base rate (6/49 or 6/59) in bits per round; below
@@ -101,7 +101,7 @@ def make_models(seed: int) -> dict:
             max_iter=300, learning_rate=0.05, max_leaf_nodes=15, min_samples_leaf=200, l2_regularization=1.0,
             early_stopping=True, validation_fraction=0.2, n_iter_no_change=20, random_state=seed),
         "random forest": RandomForestClassifier(
-            n_estimators=200, min_samples_leaf=100, max_features="sqrt", n_jobs=-1, random_state=seed),
+            n_estimators=100, min_samples_leaf=100, max_features="sqrt", n_jobs=-1, random_state=seed),
         "logistic regression": make_pipeline(StandardScaler(), LogisticRegression(C=0.1, max_iter=500)),
     }
 
@@ -148,6 +148,7 @@ def era_study(df: pd.DataFrame, pool: int, split: str, label: str, seeds: list, 
     base_bits = bits(np.full((len(test), pool), base_p), Y[test])
     runs = {n: {"bits": [], "auc": [], "top6": [], "sampled": []} for n in names}
     last_models = None
+    lr_cache = {}  # logistic regression has no randomness: fit once per block, reuse for every seed
     for seed in seeds:
         rng = np.random.default_rng(seed)
         P = {n: np.zeros((len(test), pool)) for n in names}
@@ -157,7 +158,12 @@ def era_study(df: pd.DataFrame, pool: int, split: str, label: str, seeds: list, 
             Xtr, ytr = X[tr].reshape(-1, X.shape[-1]), Y[tr].ravel()
             models = make_models(seed)
             for n, m in models.items():
-                m.fit(Xtr, ytr)
+                if n == "logistic regression":
+                    if b0 not in lr_cache:
+                        lr_cache[b0] = m.fit(Xtr, ytr)
+                    m = models[n] = lr_cache[b0]
+                else:
+                    m.fit(Xtr, ytr)
                 P[n][b0:b0 + len(idx)] = m.predict_proba(X[idx].reshape(-1, X.shape[-1]))[:, 1].reshape(len(idx), pool)
             last_models = models
         P[ENSEMBLE] = np.mean([P[n] for n in names[:-1]], axis=0)
@@ -214,7 +220,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--csv", default="data/uk_lotto_full.csv")
     ap.add_argument("--seeds", type=int, nargs="+", default=[2026, 1, 2])
-    ap.add_argument("--block", type=int, default=26, help="retrain every N test rounds")
+    ap.add_argument("--block", type=int, default=52, help="retrain every N test rounds")
     ap.add_argument("--tickets", type=int, default=20)
     ap.add_argument("--out", default="results/ml_ensemble.json")
     a = ap.parse_args()
