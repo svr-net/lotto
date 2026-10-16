@@ -91,6 +91,13 @@ def investigation_picks(hist, mods) -> dict:
     return payload
 
 
+def wheel_entry(br, score, rounds, sl) -> dict:
+    """The wheel option for a past draw: its 12 candidates, how many came up in each round, its lines' scores."""
+    cand, lines = br.wheel_lines(score)
+    return {"candidates": cand, "in_candidates": [len(set(cand) & set(r["numbers"])) for r in rounds],
+            "lines": [sl.score_line(l, rounds) for l in lines]}
+
+
 def replay_one(args):
     date, csv = args
     os.environ.setdefault("OMP_NUM_THREADS", "1")
@@ -112,6 +119,7 @@ def replay_one(args):
     out = {"date": date, "draw_no": rounds[0]["draw_no"], "rounds": rounds,
            "combined": [sl.score_line(l, rounds) for l in combined["lines"]],
            "popularity_lines": [sl.score_line(l, rounds) for l in combined["popularity_lines"]],
+           "wheel": wheel_entry(br, combined["score"], rounds, sl),
            "popularity": combined["popularity"], "score": combined["score"],
            "window": hist[hist.draw_no >= 2066].sort_values(["draw_no", "round"])
                      [["n1", "n2", "n3", "n4", "n5", "n6"]].tail(104).to_numpy().tolist(),
@@ -166,7 +174,7 @@ def main():
     print(f"replaying {len(dates)} draws from {dates[0]} to {dates[-1]} with {a.workers} workers", flush=True)
     with Pool(a.workers) as pool:
         draws = pool.map(replay_one, [(d, a.csv) for d in dates], chunksize=1)
-    summary = sl.summarise([{**d, "strategies": {}} for d in draws])
+    summary = sl.summarise([{**d, "strategies": {}, "wheel_lines": d["wheel"]["lines"]} for d in draws])
     del summary["strategies"]
     seeds = seed_study(draws)
     for d in draws:

@@ -69,11 +69,16 @@ WHEEL_12 = [(0, 1, 2, 3, 4, 5), (0, 1, 6, 7, 8, 9), (2, 3, 6, 7, 10, 11), (4, 5,
             (1, 2, 4, 7, 9, 10), (1, 3, 5, 6, 8, 10), (0, 2, 5, 7, 8, 10), (1, 2, 4, 6, 8, 11), (0, 1, 2, 3, 8, 9)]
 
 
-def wheel(score) -> dict:
-    """The 12 numbers with the most combined support, played as the WHEEL_12 lines."""
-    from math import comb
+def wheel_lines(score) -> tuple:
+    """(candidates, lines): the 12 numbers with the most combined support, played as the WHEEL_12 lines."""
     cand = sorted(int(x) + 1 for x in np.argsort(-np.asarray(score), kind="stable")[:12])
-    lines = [sorted(cand[i] for i in row) for row in WHEEL_12]
+    return cand, [sorted(cand[i] for i in row) for row in WHEEL_12]
+
+
+def wheel(score) -> dict:
+    """The wheel option with its odds."""
+    from math import comb
+    cand, lines = wheel_lines(score)
     p_cond = sum(comb(12, k) * comb(POOL - 12, PICK - k) for k in range(3, PICK + 1)) / comb(POOL, PICK)
     return {"candidates": cand, "lines": lines, "guarantee": "3 if 3", "p_condition": p_cond,
             "coverage": coverage(lines)}

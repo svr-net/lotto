@@ -374,17 +374,30 @@ const covText = (c) => `They cover ${c.distinct} different numbers. In each roun
   $("#replay-since").textContent = dfmt(RP.draws[0].date, false);
   $("#replay-lede").textContent = `For each of the ${n} draws from ${dfmt(RP.draws[0].date, true)} to ${dfmt(RP.draws[n - 1].date, true)}, every investigation's picks were rebuilt from the draws before it only, using the same code and seeds as the routine, then combined into the five lines and the five popularity-aware lines and scored against both rounds. It uses today's method for every draw, so where the method has since changed (lines 2 to 5 now share no numbers with each other or line 1, since 16 October 2026) its lines differ from the ones committed at the time; the live results above score what was actually committed.`;
   const zf = (t) => (t.mean - Sm.chance_mean) / Math.sqrt(6 * (6 / 59) * (53 / 59) * (53 / 58) / t.line_rounds);
-  const row = (label, t) => `<tr><td>${label}</td><td>${t.line_rounds}</td>${[0, 1, 2].map((k) => `<td>${t.counts[k]} <span class="muted">(${(t.line_rounds * P[k]).toFixed(1)})</span></td>`).join("")}<td class="${t.prize ? "good" : ""}">${t.prize} <span class="muted">(${(t.line_rounds * p3).toFixed(1)})</span></td><td>${fmt(t.mean, 3)}</td><td>${(zf(t) >= 0 ? "+" : "") + zf(t).toFixed(2)}</td></tr>`;
+  const row = (label, t, zOver) => { const z = zOver === undefined ? zf(t) : zOver; return `<tr><td>${label}</td><td>${t.line_rounds}</td>${[0, 1, 2].map((k) => `<td>${t.counts[k]} <span class="muted">(${(t.line_rounds * P[k]).toFixed(1)})</span></td>`).join("")}<td class="${t.prize ? "good" : ""}">${t.prize} <span class="muted">(${(t.line_rounds * p3).toFixed(1)})</span></td><td>${fmt(t.mean, 3)}</td><td>${(z >= 0 ? "+" : "") + z.toFixed(2)}</td></tr>`; };
+  // the wheel's 15 lines all use the same 12 numbers, so its rounds, not its lines, are the independent trials:
+  // z compares how many drawn numbers fell among the 12 candidates with the hypergeometric 12*6/59
+  const wIn = RP.draws.filter((d) => d.wheel).flatMap((d) => d.wheel.in_candidates);
+  const wZ = wIn.length ? (wIn.reduce((a, b) => a + b, 0) / wIn.length - 72 / 59) / Math.sqrt(6 * (12 / 59) * (47 / 59) * (53 / 58) / wIn.length) : 0;
   $("#replay-table").innerHTML = `<thead><tr><th>Lines</th><th>Line-rounds</th><th>0 hits</th><th>1 hit</th><th>2 hits</th><th>3+ (a prize)</th><th>Mean</th><th>z</th></tr></thead><tbody>` +
     row("Five combined lines", Sm.combined) + row("Popularity-aware lines", Sm.popularity_lines) +
+    (Sm.wheel_lines && Sm.wheel_lines.line_rounds ? row("Wheel lines (15 per round)", Sm.wheel_lines, wZ) : "") +
     `<tr class="base-row"><td>Random line (chance)</td><td></td><td>${fmt(P[0] * 100, 1)}%</td><td>${fmt(P[1] * 100, 1)}%</td><td>${fmt(P[2] * 100, 1)}%</td><td>${fmt(p3 * 100, 2)}%</td><td>${fmt(Sm.chance_mean, 3)}</td><td></td></tr></tbody>`;
   const anyHit = (k, t) => RP.draws.reduce((a, d) => a + d.rounds.filter((_, j) => d[k].some((s) => s.matches[j] >= t)).length, 0);
   const nr = RP.draws.reduce((a, d) => a + d.rounds.length, 0);
   $("#replay-lede").textContent += ` Counting rounds rather than lines, at least one of the five combined lines matched 2 or more in ${anyHit("combined", 2)} of ${nr} rounds and 3 or more in ${anyHit("combined", 3)}; for the popularity-aware lines, ${anyHit("popularity_lines", 2)} and ${anyHit("popularity_lines", 3)}.`;
+  const WD = RP.draws.filter((d) => d.wheel);
+  if (WD.length) {
+    const wr = WD.flatMap((d) => d.rounds.map((_, j) => ({ inC: d.wheel.in_candidates[j], best: Math.max(...d.wheel.lines.map((l) => l.matches[j])), hits: d.wheel.lines.filter((l) => l.matches[j] >= 3).length })));
+    const cond = wr.filter((r) => r.inC >= 3), any3 = wr.filter((r) => r.best >= 3).length, any2 = wr.filter((r) => r.best >= 2).length;
+    const multi = wr.filter((r) => r.hits > 1).length;
+    $("#replay-lede").textContent += ` The wheel option (the 12 most-supported numbers in 15 lines) had 3 or more of a round's numbers among its candidates in ${cond.length} of ${wr.length} rounds, about ${(wr.length * 0.0919).toFixed(1)} expected, and ${cond.every((r) => r.best >= 3) ? "its guarantee delivered a 3-match every time" : "its guarantee failed"}. Some wheel line matched 3+ in ${any3} rounds and 2+ in ${any2}; ${multi} of those rounds had more than one winning line, which is how a wheel bunches its wins.`;
+  }
   const cell = (ls) => ls.map((s) => s.matches.map((m) => m >= 3 ? `<b>${m}</b>` : m).join("/")).join(" ");
-  $("#replay-draws").innerHTML = `<thead><tr><th>Draw</th><th>Combined lines (R1/R2 matches)</th><th>Popularity-aware lines</th><th>Best</th></tr></thead><tbody>` +
-    RP.draws.slice().reverse().map((d) => { const best = Math.max(...d.combined.concat(d.popularity_lines).flatMap((s) => s.matches));
-      return `<tr><td>${d.draw_no} · ${dfmt(d.date, false)}</td><td>${cell(d.combined)}</td><td>${cell(d.popularity_lines)}</td><td class="${best >= 3 ? "good" : ""}">${best}</td></tr>`; }).join("") + "</tbody>";
+  const wcell = (d) => d.wheel ? d.rounds.map((_, j) => { const b = Math.max(...d.wheel.lines.map((l) => l.matches[j])); return `${d.wheel.in_candidates[j]}→${b >= 3 ? `<b>${b}</b>` : b}`; }).join(" / ") : "–";
+  $("#replay-draws").innerHTML = `<thead><tr><th>Draw</th><th>Combined lines (R1/R2 matches)</th><th>Popularity-aware lines</th><th>Wheel: candidates drawn → best line</th><th>Best</th></tr></thead><tbody>` +
+    RP.draws.slice().reverse().map((d) => { const best = Math.max(...d.combined.concat(d.popularity_lines, d.wheel ? d.wheel.lines : []).flatMap((s) => s.matches));
+      return `<tr><td>${d.draw_no} · ${dfmt(d.date, false)}</td><td>${cell(d.combined)}</td><td>${cell(d.popularity_lines)}</td><td>${wcell(d)}</td><td class="${best >= 3 ? "good" : ""}">${best}</td></tr>`; }).join("") + "</tbody>";
   const SS = RP.seed_study;
   if (SS) {
     $("#replay-seed-lede").textContent = `Line 1 is always the six numbers with the most support, so the seed doesn't change it (it averaged ${fmt(SS.line1.mean, 3)} matches over ${SS.line1.line_rounds} line-rounds). The seed only decides which of the many supported lines are drawn for lines 2 to 5. Here lines 2 to 5 are redrawn from each draw's same support with different seeds, including a seed taken from the first draw of a rolling window of recent draws, and compared with ${SS.random.n.toLocaleString()} random seeds.`;
@@ -392,7 +405,7 @@ const covText = (c) => `They cover ${c.distinct} different numbers. In each roun
       SS.variants.map((v) => `<tr><td>${esc(v.seed)}</td><td>${fmt(v.mean, 3)}</td><td>${v.hits3}</td><td>${v.percentile.toFixed(0)}%</td></tr>`).join("") +
       `<tr class="base-row"><td>${SS.random.n.toLocaleString()} random seeds</td><td>${fmt(SS.random.mean, 3)}</td><td></td><td>90% between ${fmt(SS.random.p5, 3)} and ${fmt(SS.random.p95, 3)}</td></tr></tbody>`;
   }
-  $("#replay-note").textContent = `Figures in brackets are what random lines average. z compares the mean with the 36/59 chance rate; with this many comparisons, anything inside about ±2.5 is chance. Bold numbers are 3-match hits, worth the lowest prize. Every seed lands inside the range random seeds give: a seed only shuffles which lines are drawn and carries no information about the next draw, so the date is kept, because it makes each line reproducible.`;
+  $("#replay-note").textContent = `Figures in brackets are what random lines average. z compares the mean with the 36/59 chance rate (for the wheel, whose lines share the same 12 numbers, it compares how many drawn numbers fell among the 12 with the 1.22 chance gives); with this many comparisons, anything inside about ±2.5 is chance. Bold numbers are 3-match hits, worth the lowest prize. Every seed lands inside the range random seeds give: a seed only shuffles which lines are drawn and carries no information about the next draw, so the date is kept, because it makes each line reproducible.`;
 })();
 
 // ---------- classic strategies on prime-base digits
