@@ -155,7 +155,7 @@ zero-padded periodogram peaks, projected one round ahead) and wavelet-smoothed h
 with 20 features computed only from earlier rounds (windowed frequencies, gaps, last-round
 and bonus flags, usual drawing position, last machine's rate, parity/decade/residues, previous
 sum). Gradient boosting (scikit-learn HistGradientBoosting), a random forest, logistic
-regression and their soft-voting average are retrained walk-forward every 26 rounds in each
+regression (the forest with 100 trees) and their soft-voting average are retrained walk-forward every 52 rounds in each
 era. They are scored by held-out log-loss against the fair rate, per-round AUC, matches for
 top-6 and probability-sampled tickets, and permutation importance.
 
