@@ -42,17 +42,17 @@
     {
      "test": "the drawn-ball stream has a periodicity",
      "key": "stream_g",
-     "observed": 0.002389190062734563,
+     "observed": 0.002280888345699296,
      "fair_mean": 0.002471519569651747,
-     "p": 0.5214785214785215,
+     "p": 0.6453546453546454,
      "detail": ""
     },
     {
      "test": "the drawn-ball stream has a period-6 rhythm",
      "key": "stream_period6",
-     "observed": 2.6004858962688013,
+     "observed": 2.775938483353271,
      "fair_mean": 1.0341172522484574,
-     "p": 0.08691308691308691,
+     "p": 0.07592407592407592,
      "detail": ""
     },
     {
@@ -106,9 +106,9 @@
     {
      "test": "first ball out: periodicity",
      "key": "series_g:first ball out",
-     "observed": 0.0131770464698845,
+     "observed": 0.012718448617144372,
      "fair_mean": 0.011811750364665844,
-     "p": 0.21678321678321677,
+     "p": 0.2707292707292707,
      "detail": "strongest period 3.5 rounds"
     },
     {
