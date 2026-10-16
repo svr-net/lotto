@@ -43,6 +43,6 @@ def test_popularity_aware_lines_avoid_popular_numbers_and_patterns():
     lines = ps.choose_lines(np.ones(59), pop, seed=3)
     assert len(lines) == 5 and all(len(set(l)) == 6 for l in lines)
     assert all(not ps.pattern_line(l) for l in lines)
-    assert all(len(set(a) & set(b)) <= 2 for i, a in enumerate(lines) for b in lines[i + 1:])
+    assert all(len(set(a) & set(b)) <= 1 for i, a in enumerate(lines) for b in lines[i + 1:])
     assert np.mean([sum(x <= 31 for x in l) for l in lines]) < 2
     assert ps.pattern_line([7, 14, 21, 28, 35, 42]) and ps.pattern_line([4, 5, 6, 20, 30, 40])

@@ -199,5 +199,12 @@ expected jackpot share if they do. Only the jackpot is shared, so lower prizes a
 
 `scripts/replay_five_lines.py` replays the five combined lines and the five popularity-aware lines
 for past draws. For each draw it rebuilds every investigation's picks from earlier draws only, with
-the same functions and seeds the routine uses (it reproduces the committed lines exactly), combines
+the same functions and seeds the routine uses (with the current method), combines
 them and scores them against the real rounds (`results/replay_five_lines.json`).
+
+The five combined lines share no numbers: after line 1 (the most-supported six), each line is drawn
+in proportion to support from numbers no earlier line uses. The popularity-aware lines share at
+most one. Any five lines average the same matches and the same number of prizes, but lines that
+don't overlap win and lose less often together, so the chance that at least one of them matches
+2+ or 3+ in a round goes up (for the five combined lines from about 42.0% to 48.2% for 2+, and from
+5.24% to 5.42% for 3+). The report shows these chances for each set.

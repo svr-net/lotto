@@ -36,3 +36,13 @@ def test_lines_from_score_reproduces_combine():
     res = br.combine(sources, seed=20261014)
     assert br.lines_from_score(res["score"], 20261014) == res["lines"]
     assert br.lines_from_score(res["score"], 1)[0] == res["lines"][0]  # line 1 doesn't depend on the seed
+
+
+def test_combined_lines_share_no_numbers_and_cover_more():
+    score = [1.0 / (i + 1) for i in range(59)]
+    lines = br.lines_from_score(score, 7)
+    nums = [x for l in lines for x in l]
+    assert len(nums) == len(set(nums)) == 30
+    assert lines[0] == [1, 2, 3, 4, 5, 6]
+    spread, stacked = br.coverage(lines, n=200_000), br.coverage([lines[0]] * 5, n=200_000)
+    assert spread["p2"] > stacked["p2"] + 0.2 and spread["p3"] > stacked["p3"] * 4

@@ -107,9 +107,11 @@ def pattern_line(line) -> bool:
 
 
 def choose_lines(score, pop: Popularity, prev=(), n_lines: int = 5, n_cand: int = 20000,
-                 max_overlap: int = 2, seed: int = 0) -> list:
+                 max_overlap: int = 1, seed: int = 0) -> list:
     """Sample candidate lines in proportion to the investigations' combined support (as the combined
-    lines are), then keep the least popular ones, with at most max_overlap numbers in common."""
+    lines are), then keep the least popular ones, with at most max_overlap numbers in common (relaxed
+    if that leaves too few lines). Sharing at most one number keeps nearly all of the chance that some
+    line wins a prize; sharing none would force birthday numbers in and cut the jackpot advantage."""
     rng = np.random.default_rng(seed)
     p = np.asarray(score, dtype=float)
     p = p + p.mean() * 0.2
@@ -126,6 +128,8 @@ def choose_lines(score, pop: Popularity, prev=(), n_lines: int = 5, n_cand: int 
             chosen.append(sorted(int(x) for x in cand[i]))
         if len(chosen) == n_lines:
             break
+    if len(chosen) < n_lines and max_overlap < 6:
+        return choose_lines(score, pop, prev, n_lines, n_cand, max_overlap + 1, seed)
     return chosen
 
 
