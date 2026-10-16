@@ -213,5 +213,6 @@ don't overlap win and lose less often together, so the chance that at least one 
 
 The report is published at https://svr-net.github.io/lotto/ by `.github/workflows/pages.yml`
 whenever a change to `results/` lands on main (or on demand from the Actions tab). The site's
-index page is `results/report.html`, and every `results/*.json` is served under `data/`, e.g.
+index page is `results/report.html` (a menu at the top switches between its sections, and each has
+its own link, e.g. https://svr-net.github.io/lotto/#live), and every `results/*.json` is served under `data/`, e.g.
 https://svr-net.github.io/lotto/data/combined_picks.json for the next draw's lines.
