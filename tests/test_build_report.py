@@ -46,3 +46,10 @@ def test_combined_lines_share_no_numbers_and_cover_more():
     assert lines[0] == [1, 2, 3, 4, 5, 6]
     spread, stacked = br.coverage(lines, n=200_000), br.coverage([lines[0]] * 5, n=200_000)
     assert spread["p2"] > stacked["p2"] + 0.2 and spread["p3"] > stacked["p3"] * 4
+
+
+def test_digit_strategy_picks_vote_within_prime_radix():
+    payload = {"prime_radix": {"backtest": {"picks": {"conditional probability, base 2": [[1, 2, 3, 4, 5, 6]]}}},
+               "radix_strat": {"backtest": {"picks": {"hot top-6, base 5": [[7, 8, 9, 10, 11, 12]]}}}}
+    src = dict(br.pick_sources(payload))
+    assert src["Prime radix"] == [[1, 2, 3, 4, 5, 6], [7, 8, 9, 10, 11, 12]]

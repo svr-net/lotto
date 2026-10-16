@@ -238,6 +238,15 @@ nav.tabs a:focus-visible { outline: 2px solid var(--s1); outline-offset: 2px; }
   <div class="table-wrap"><table id="rx-bt"></table></div>
 </section>
 
+<section id="radix-strat-section" data-tab="radix" hidden>
+  <div class="eyebrow">Prime radix · classic strategies</div>
+  <h2>Hot, cold and overdue, played on prime-base digits</h2>
+  <p id="rs-lede"></p>
+  <div class="table-wrap"><table id="rs-table"></table></div>
+  <div class="verdict" id="rs-verdict"></div>
+  <p class="note" id="rs-note"></p>
+</section>
+
 <section id="spectral-section" data-tab="rhythms">
   <div class="eyebrow">Fourier and wavelets</div>
   <h2>Do the draws have rhythms or bursts?</h2>
@@ -378,6 +387,24 @@ const covText = (c) => `They cover ${c.distinct} different numbers. In each roun
       `<tr class="base-row"><td>${SS.random.n.toLocaleString()} random seeds</td><td>${fmt(SS.random.mean, 3)}</td><td></td><td>90% between ${fmt(SS.random.p5, 3)} and ${fmt(SS.random.p95, 3)}</td></tr></tbody>`;
   }
   $("#replay-note").textContent = `Figures in brackets are what random lines average. z compares the mean with the 36/59 chance rate; with this many comparisons, anything inside about ±2.5 is chance. Bold numbers are 3-match hits, worth the lowest prize. Every seed lands inside the range random seeds give: a seed only shuffles which lines are drawn and carries no information about the next draw, so the date is kept, because it makes each line reproducible.`;
+})();
+
+// ---------- classic strategies on prime-base digits
+(function () {
+  const RS = D.radix_strat;
+  if (!RS) return;
+  $("#radix-strat-section").hidden = false;
+  const zf = (z) => (z >= 0 ? "+" : "") + z.toFixed(2);
+  $("#rs-lede").textContent = `The backtest's classic strategies, played on digits instead of numbers. Each ball is written in each of the first ten prime bases, and a number is scored by how its digits, position by position, have behaved: 23 in base 5 is 043, so it borrows from every number with a 4 in the middle. Digit classes aren't equally common over 1-59, so each count is compared with what a fair draw gives that class. Every strategy is replayed over the ${RS.test_rounds} rounds since ${RS.split}, seeing only earlier draws; the "numbers" column plays the same strategies on whole numbers for comparison. Cells are z-scores against the 36/59 chance rate${RS.seeds.length > 1 ? `, averaged over ${RS.seeds.length} seeds for the sampled strategies` : ""}.`;
+  const bases = RS.bases;
+  $("#rs-table").innerHTML = `<thead><tr><th>Strategy</th>${bases.map((b) => `<th>${esc(b.replace("base ", ""))}</th>`).join("")}</tr></thead><tbody>` +
+    RS.strategies.map((s) => `<tr><td>${esc(s)}</td>${bases.map((b) => { const r = RS.results[`${s}, ${b}`]; return `<td class="${r.z_mean >= RS.z_cut ? "good" : ""}" title="${esc(s)}, ${esc(b)}: z ${zf(r.z_mean)}">${zf(r.z_mean)}</td>`; }).join("")}</tr>`).join("") + "</tbody>";
+  const b = RS.results[RS.best], beat = Object.values(RS.results).filter((r) => r.base !== "numbers" && r.z_mean >= RS.z_cut);
+  $("#rs-verdict").innerHTML = beat.length
+    ? `<strong>A digit strategy beats chance.</strong><span>${esc(beat.map((r) => `${r.strategy} in ${r.base} (z ${zf(r.z_mean)})`).join(", ") + ` clears the corrected threshold of ${RS.z_cut.toFixed(2)}. Treat it with caution until it holds up over more draws.`)}</span>`
+    : `<strong>Digits don't help.</strong><span>${esc(`The best of the ${RS.pairs} base and strategy pairs is ${b.strategy} in ${b.base}, at z ${zf(b.z_mean)}. With ${RS.pairs} tries the best one is expected to reach about ${zf(RS.expected_best)} by chance alone, and the corrected threshold is ${RS.z_cut.toFixed(2)}. No strategy does better on digits than on whole numbers in any consistent way.`)}</span>`;
+  const P = RS.planted.hot_weighted_z;
+  $("#rs-note").textContent = `Could these strategies find a digit pattern if there was one? On simulated draws where ${RS.planted.favoured} are ${RS.planted.boost} times as likely, hot-weighted scores z ${zf(P["base 5"])} in base 5, ${zf(P["numbers"])} on whole numbers and ${zf(P["base 7"])} in base 7: a real digit bias shows up strongly in the base that carries it. The real draws show nothing of the kind. The digit strategies' next-draw lines vote within the prime-radix investigation.`;
 })();
 
 // ---------- popularity-aware lines and the model behind them
