@@ -83,6 +83,10 @@ def investigation_picks(hist, mods) -> dict:
         finally:
             sys.stdout = old
     payload["rl"] = {"backtest": {"picks": era["picks"]}}
+
+    # every strategy family played on prime-base digits (radix_strategies_study.next_picks)
+    if "rs" in mods:
+        payload["radix_strat"] = {"backtest": {"picks": mods["rs"].next_picks(mods["rs"].History(e59), SEED)}}
     payload["latest"] = e59.tail(2)[["draw_no", "date", "round", "n1", "n2", "n3", "n4", "n5", "n6", "bonus"]].to_dict("records")
     return payload
 
@@ -94,7 +98,8 @@ def replay_one(args):
     import torch
     torch.set_num_threads(1)
     mods = {"wf": _load("walk_forward_backtest"), "pr": _load("prime_radix_study"), "sp": _load("spectral_study"),
-            "by": _load("bayesian_study"), "ml": _load("ml_ensemble_study"), "rl": _load("rl_study")}
+            "by": _load("bayesian_study"), "ml": _load("ml_ensemble_study"), "rl": _load("rl_study"),
+            "rs": _load("radix_strategies_study")}
     br, ps, sl = _load("build_report"), _load("popularity_study"), _load("score_live")
     t0 = time.time()
     df = pd.read_csv(csv)
