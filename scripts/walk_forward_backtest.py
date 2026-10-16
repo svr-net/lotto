@@ -237,7 +237,46 @@ ENSEMBLES = [
     "ENSEMBLE equal-weight sampled",
     "ENSEMBLE perf-weighted top-6",
     "ENSEMBLE perf-weighted sampled",
+    "ENSEMBLE stacked top-6",
+    "ENSEMBLE stacked sampled",
 ]
+STACKED = ENSEMBLES[4:]
+
+
+class Stacker:
+    """Stacking: a logistic regression learns one weight per strategy from how strongly each strategy
+    backed each number (its vote share) and whether that number was drawn. Trained walk-forward on
+    the test rounds already played, refitted every `retrain` rounds; until `min_rounds` rounds have been
+    seen it falls back to equal weights."""
+
+    def __init__(self, retrain: int = 26, min_rounds: int = 52):
+        self.X, self.y = [], []
+        self.retrain, self.min_rounds = retrain, min_rounds
+        self.model, self.trained_on = None, 0
+
+    def add(self, vote_mat: np.ndarray, drawn: np.ndarray) -> None:
+        self.X.append(vote_mat.T)  # [numbers, strategies]
+        self.y.append(drawn.astype(int))
+
+    def fit(self):
+        from sklearn.linear_model import LogisticRegression
+        from sklearn.pipeline import make_pipeline
+        from sklearn.preprocessing import StandardScaler
+        self.model = make_pipeline(StandardScaler(), LogisticRegression(C=1.0, max_iter=1000))
+        self.model.fit(np.concatenate(self.X), np.concatenate(self.y))
+        self.trained_on = len(self.X)
+        return self.model
+
+    def probs(self, vote_mat: np.ndarray) -> np.ndarray:
+        if len(self.X) < self.min_rounds:
+            return vote_mat.mean(0)
+        if self.model is None or len(self.X) - self.trained_on >= self.retrain:
+            self.fit()
+        return self.model.predict_proba(vote_mat.T)[:, 1]
+
+    def weights(self) -> np.ndarray:
+        """Learned weight per strategy, per standard deviation of its vote share."""
+        return self.model[-1].coef_[0] if self.model is not None else np.zeros(0)
 
 
 def ensemble_tickets(vote_mat: np.ndarray, w: np.ndarray, n: int, rng) -> dict:
@@ -304,6 +343,8 @@ def run_backtest(draws, dates, test_idx, a, seed, aux):
     matches = {s: [] for s in names + ENSEMBLES}
     round_mean = {s: [] for s in names + ENSEMBLES}
     pick_corr = []
+    stack = Stacker()
+    srng = np.random.default_rng([seed, 7])  # its own generator, so the other strategies' draws are unchanged
     for i in test_idx:
         mask = dates < dates[i]  # strictly earlier draw dates only
         hist = draws[mask]
@@ -318,6 +359,10 @@ def run_backtest(draws, dates, test_idx, a, seed, aux):
         vote_mat = np.array([votes(tickets[s]) for s in names])
         pick_corr.append(np.corrcoef(vote_mat))
         tickets.update(ensemble_tickets(vote_mat, w, a.tickets, rng))
+        p = stack.probs(vote_mat)
+        tickets[STACKED[0]] = top6(p, srng)
+        tickets[STACKED[1]] = weighted_tickets(p + 1e-9, a.tickets, srng)
+        stack.add(vote_mat, actual[1:])
         for s, ts in tickets.items():
             ms = actual[np.asarray(ts, dtype=int)].sum(1)
             matches[s].extend(ms.tolist())
@@ -329,6 +374,8 @@ def run_backtest(draws, dates, test_idx, a, seed, aux):
         "pick_corr": np.nanmean(np.array(pick_corr), axis=0),
         "final_weights": dict(zip(names, perf_weights(
             np.array([np.mean(round_mean[s][-a.window:]) for s in names]), a.tau).tolist())),
+        "stacker": stack.fit(),  # refitted on every test round, for the next draw
+        "stack_weights": dict(zip(names, stack.weights().tolist())),
     }
 
 
@@ -497,7 +544,12 @@ def main():
     vote_mat = np.array([votes(tickets[s]) for s in base])
     w = np.array([runs[0]["final_weights"][s] for s in base])
     tickets.update(ensemble_tickets(vote_mat, w, a.predictions, rng))
+    srng = np.random.default_rng([a.seeds[0], 7])
+    p_stack = runs[0]["stacker"].predict_proba(vote_mat.T)[:, 1]
+    tickets[STACKED[0]] = top6(p_stack, srng)
+    tickets[STACKED[1]] = weighted_tickets(p_stack + 1e-9, a.predictions, srng)
     preds = {s: [sorted(int(x) for x in t) for t in tickets[s][:a.predictions]] for s in names}
+    stack_w = {s: float(np.mean([r["stack_weights"][s] for r in runs])) for s in base}
     consensus = vote_mat.mean(0)
     perf_cons = w @ vote_mat
     print(f"\nnext draw {nd}")
@@ -517,6 +569,7 @@ def main():
         "perf_corr": perf_corr.round(4).tolist(), "pick_corr": pick_corr.round(4).tolist(),
         "pick_corr_names": base,
         "final_weights": runs[0]["final_weights"],
+        "stack_weights": stack_w,
         "fairness": fairness,
         "draw_order": draw_order,
         "draw_order_strategies": DRAW_ORDER_STRATEGIES,

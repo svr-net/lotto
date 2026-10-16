@@ -67,3 +67,23 @@ def test_draw_order_tests_flag_a_biased_first_ball():
     res = wf.draw_order_tests(df, sims=50, seed=0)
     first = next(t for t in res["tests"] if t["test"].startswith("ball 1 out"))
     assert first["p"] < res["bonferroni_alpha"]
+
+
+def test_stacking_learns_the_weight_of_an_informative_strategy():
+    import numpy as np
+    rng = np.random.default_rng(0)
+    wf = _load("walk_forward_backtest")
+    st = wf.Stacker(retrain=26, min_rounds=52)
+    for _ in range(200):
+        drawn = np.zeros(59, dtype=bool)
+        drawn[rng.choice(59, 6, replace=False)] = True
+        good = drawn * 0.5 + rng.random(59) * 0.5  # this strategy leans towards the drawn numbers
+        noise = rng.random((2, 59))
+        votes = np.vstack([good, noise])
+        votes /= votes.sum(1, keepdims=True)
+        st.probs(votes)
+        st.add(votes, drawn)
+    st.fit()
+    w = st.weights()
+    assert w[0] > 1.0 and abs(w[1]) < 0.3 and abs(w[2]) < 0.3
+    assert len(wf.STACKED) == 2 and all(s in wf.ENSEMBLES for s in wf.STACKED)

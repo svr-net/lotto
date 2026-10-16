@@ -173,7 +173,7 @@ nav.tabs a:focus-visible { outline: 2px solid var(--s1); outline-offset: 2px; }
 <section data-tab="next">
   <div class="eyebrow">Next draw</div>
   <h2>Ensemble picks</h2>
-  <p>These tickets combine all <span id="n-base"></span> strategies. Each strategy votes with the numbers it would play. The equal-weight ensemble counts every vote the same. The performance-weighted ensemble trusts strategies more when they matched more numbers over the last 52 rounds. Every line has the same 1 in 45,057,474 chance of a jackpot.</p>
+  <p>These tickets combine all <span id="n-base"></span> strategies. Each strategy votes with the numbers it would play. The equal-weight ensemble counts every vote the same. The performance-weighted ensemble trusts strategies more when they matched more numbers over the last 52 rounds. The stacked ensemble learns its weights: a logistic regression, trained on the rounds already played and refitted every 26, learns how much each strategy's vote says about whether a number is drawn. <span id="stack-note"></span> Every line has the same 1 in 45,057,474 chance of a jackpot.</p>
   <div class="ticket-grid" id="ens-tickets"></div>
   <details><summary>Picks from each individual strategy</summary><div class="ticket-grid" id="base-tickets" style="margin-top:16px"></div></details>
 </section>
@@ -330,7 +330,7 @@ $("#nd").textContent = ndDate.toLocaleDateString("en-GB", { weekday: "long", day
 const exp = D.expected.mean;
 const A = D.across_seeds;
 const best = S.slice().sort((a, b) => A[b].z_mean - A[a].z_mean)[0];
-$("#lede").textContent = `Every UK Lotto draw from ${D.era.first_date} (the first 59-ball draw) to ${D.era.last_date}: ${D.era.rounds.toLocaleString()} rounds, including the two-round draws held since June 2026. ${NB} prediction strategies (${ND} of them built on the order the balls came out of the machine) and two ensembles were each replayed against the ${D.test_rounds} rounds drawn since ${D.split_date}, seeing only draws that came before each one.`;
+$("#lede").textContent = `Every UK Lotto draw from ${D.era.first_date} (the first 59-ball draw) to ${D.era.last_date}: ${D.era.rounds.toLocaleString()} rounds, including the two-round draws held since June 2026. ${NB} prediction strategies (${ND} of them built on the order the balls came out of the machine) and three kinds of ensemble were each replayed against the ${D.test_rounds} rounds drawn since ${D.split_date}, seeing only draws that came before each one.`;
 $("#facts").innerHTML = [
   ["Rounds tested", D.test_rounds], ["Seeds", D.seeds.length], ["Tickets/round", D.tickets_per_round],
   ["Chance mean", fmt(exp)], ["Chance 3+ hits", fmt(D.expected.pct_3plus, 2) + "%"],
@@ -340,7 +340,7 @@ const ensBest = Math.max(...S.filter(isEns).map((s) => A[s].z_mean));
 const zCut = 2.9; // about p < 0.05 after allowing for ~20 one-sided tests
 const standout = S.filter((s) => A[s].z_mean > zCut && A[s].z_min > 0);
 $("#verdict").innerHTML = `<strong>${standout.length ? esc(`${pretty(standout[0])} beat chance in every seed. Treat it with caution.`) : "No strategy beat random chance."}</strong><span>${esc(
-  `Random tickets average ${fmt(exp)} matching numbers. Averaged over ${D.seeds.length} seeds, every strategy and both ensembles land within normal chance variation of that (z-scores between ${fmt(Math.min(...S.map((s) => A[s].z_mean)), 2)} and ${fmt(Math.max(...S.map((s) => A[s].z_mean)), 2)}; best ensemble ${fmt(ensBest, 2)}). Single runs that looked promising reversed under another seed: the widest swing was ${pretty(wide)}, from z = ${fmt(A[wide].z_min, 2)} to ${fmt(A[wide].z_max, 2)} across seeds. The lowest average, repeating the last draw, is one fixed ticket per round. With ${S.length} methods tested, a z of ${fmt(Math.min(...S.map((s) => A[s].z_mean)), 2)} is within what chance alone produces. The ball counts are consistent with a fair draw (p = ${fmt(D.fairness.p, 2)}).`)}</span>`;
+  `Random tickets average ${fmt(exp)} matching numbers. Averaged over ${D.seeds.length} seeds, every strategy and every ensemble land within normal chance variation of that (z-scores between ${fmt(Math.min(...S.map((s) => A[s].z_mean)), 2)} and ${fmt(Math.max(...S.map((s) => A[s].z_mean)), 2)}; best ensemble ${fmt(ensBest, 2)}). Single runs that looked promising reversed under another seed: the widest swing was ${pretty(wide)}, from z = ${fmt(A[wide].z_min, 2)} to ${fmt(A[wide].z_max, 2)} across seeds. The lowest average, repeating the last draw, is one fixed ticket per round. With ${S.length} methods tested, a z of ${fmt(Math.min(...S.map((s) => A[s].z_mean)), 2)} is within what chance alone produces. The ball counts are consistent with a fair draw (p = ${fmt(D.fairness.p, 2)}).`)}</span>`;
 
 // chance that at least one of a set of lines wins something in a round, against five lines picked independently
 const P3_LINE = 0.0108641, P2_LINE = 0.1083479; // exact chance a single line matches 3+ / 2+
@@ -454,6 +454,15 @@ const covText = (c) => `They cover ${c.distinct} different numbers. In each roun
     return `<div class="live-draw"><h3 class="h3">Draw ${e.draw_no} · ${dfmt(e.date)} · best combined line ${best} match${best === 1 ? "" : "es"}</h3>${res}${lines}${st.length ? `<details><summary>Best line from each strategy</summary><div class="table-wrap"><table><thead><tr><th>Strategy</th><th>Lines</th><th>Best matches</th></tr></thead><tbody>${st.map(([k, m, c]) => `<tr><td>${esc(pretty(k))}</td><td>${c}</td><td class="${m >= 3 ? "good" : ""}">${m}</td></tr>`).join("")}</tbody></table></div></details>` : ""}</div>`;
   }).join("");
   $("#live-note").textContent = `Filled balls in a line are numbers that came up in that round; a dashed outline is the bonus ball. Figures in brackets are how many line-rounds random tickets would put in each column on average. The lowest prize needs 3 matching numbers. These results are expected to track chance: the backtests over ${D.test_rounds} past rounds found no method that beats it, and a handful of live draws is far too few to tell any method apart from random.`;
+})();
+
+// ---------- stacking's learned weights
+(function () {
+  const W = D.stack_weights;
+  if (!W) return;
+  const e = Object.entries(W).sort((a, b) => b[1] - a[1]);
+  const f = (v) => (v >= 0 ? "+" : "") + v.toFixed(3);
+  $("#stack-note").textContent = `Its learned weights, averaged over ${D.seeds.length} seeds and given per standard deviation of a strategy's vote, run from ${f(e[e.length - 1][1])} (${e[e.length - 1][0]}) to ${f(e[0][1])} (${e[0][0]}); the random baseline gets ${f(W["random (baseline)"])}. Weights this close to zero mean no strategy's votes carry information about the draw.`;
 })();
 
 // ---------- tickets
