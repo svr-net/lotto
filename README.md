@@ -103,6 +103,7 @@ python scripts/fetch_merseyworld.py
 python scripts/walk_forward_backtest.py --seeds 2026 1 2 3 4 --out results
 python scripts/grammar_discovery.py   # results/grammar.json
 python scripts/prime_radix_study.py   # results/prime_radix.json
+python scripts/radix_strategies_study.py  # results/radix_strategies.json
 python scripts/spectral_study.py      # results/spectral.json
 python scripts/ml_ensemble_study.py   # results/ml_ensemble.json (needs scikit-learn)
 python scripts/bayesian_study.py      # results/bayesian.json
@@ -216,3 +217,11 @@ whenever a change to `results/` lands on main (or on demand from the Actions tab
 index page is `results/report.html` (a menu at the top switches between its sections, and each has
 its own link, e.g. https://svr-net.github.io/lotto/#live), and every `results/*.json` is served under `data/`, e.g.
 https://svr-net.github.io/lotto/data/combined_picks.json for the next draw's lines.
+
+`scripts/radix_strategies_study.py` plays the backtest's classic strategies (hot- and cold-weighted,
+hot and cold top-6, most overdue, repeat the last draw) on digits instead of numbers: each ball is
+written in the first ten prime bases and scored by how its digits, position by position, have
+behaved compared with what a fair draw gives each digit class. All 60 base and strategy pairs are
+replayed walk-forward and checked against a Bonferroni threshold, alongside the same strategies on
+whole numbers. A planted-bias check shows they find a digit bias in the base that carries it. Their
+next-draw lines vote within the prime-radix investigation.

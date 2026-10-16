@@ -15,7 +15,8 @@ EXTRA = [("grammar", "results/grammar.json"), ("prime_radix", "results/prime_rad
          ("spectral", "results/spectral.json"), ("ml", "results/ml_ensemble.json"),
          ("bayes", "results/bayesian.json"),
          ("rl", "results/rl.json"), ("live", "results/live_scores.json"),
-         ("popularity", "results/popularity.json"), ("replay", "results/replay_five_lines.json")]
+         ("popularity", "results/popularity.json"), ("replay", "results/replay_five_lines.json"),
+         ("radix_strat", "results/radix_strategies.json")]
 
 
 def pick_sources(payload: dict) -> list:
@@ -26,10 +27,11 @@ def pick_sources(payload: dict) -> list:
           if not s.startswith(("random", "ENSEMBLE")) for line in lines]
     if wf:
         out.append(("Strategy backtest", wf))
-    for key, label in [("prime_radix", "Prime radix"), ("spectral", "Fourier and wavelets"), ("bayes", "Bayesian"),
-                       ("rl", "Reinforcement learning")]:
-        picks = (payload.get(key) or {}).get("backtest", {}).get("picks") or {}
-        lines = [line for s, ls in picks.items() if not s.startswith("random") for line in ls]
+    for keys, label in [(("prime_radix", "radix_strat"), "Prime radix"), (("spectral",), "Fourier and wavelets"),
+                        (("bayes",), "Bayesian"), (("rl",), "Reinforcement learning")]:
+        # the classic strategies played on prime-base digits vote within the prime-radix investigation
+        lines = [line for key in keys for s, ls in ((payload.get(key) or {}).get("backtest", {}).get("picks") or {}).items()
+                 if not s.startswith("random") for line in ls]
         if lines:
             out.append((label, lines))
     ml = (payload.get("ml") or {}).get("eras", [{}])[0].get("picks")

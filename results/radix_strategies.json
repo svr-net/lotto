@@ -1,0 +1,1179 @@
+{
+ "rounds": 1187,
+ "split": "2022-12-31",
+ "test_rounds": 432,
+ "seeds": [
+  2026,
+  1,
+  2
+ ],
+ "tickets_per_round": 20,
+ "strategies": [
+  "hot-weighted",
+  "cold-weighted",
+  "hot top-6",
+  "cold top-6",
+  "most overdue",
+  "repeat digits"
+ ],
+ "bases": [
+  "base 2",
+  "base 3",
+  "base 5",
+  "base 7",
+  "base 11",
+  "base 13",
+  "base 17",
+  "base 19",
+  "base 23",
+  "base 29",
+  "numbers"
+ ],
+ "results": {
+  "hot-weighted, base 2": {
+   "strategy": "hot-weighted",
+   "base": "base 2",
+   "z_mean": -1.3095236457214547,
+   "z_min": -2.1772814768234743,
+   "z_max": 0.42420655728202844,
+   "mean_matches": 0.6006558641975309
+  },
+  "cold-weighted, base 2": {
+   "strategy": "cold-weighted",
+   "base": "base 2",
+   "z_mean": -0.207873084378143,
+   "z_min": -1.7216277482544116,
+   "z_max": 0.818826145889955,
+   "mean_matches": 0.6083719135802469
+  },
+  "hot top-6, base 2": {
+   "strategy": "hot top-6",
+   "base": "base 2",
+   "z_mean": -0.5181021940724558,
+   "z_min": -0.5181021940724558,
+   "z_max": -0.5181021940724558,
+   "mean_matches": 0.5925925925925926
+  },
+  "cold top-6, base 2": {
+   "strategy": "cold top-6",
+   "base": "base 2",
+   "z_mean": -0.0422284113436194,
+   "z_min": -0.0422284113436194,
+   "z_max": -0.0422284113436194,
+   "mean_matches": 0.6087962962962963
+  },
+  "most overdue, base 2": {
+   "strategy": "most overdue",
+   "base": "base 2",
+   "z_mean": 1.1035641260278155,
+   "z_min": 1.1035641260278155,
+   "z_max": 1.1035641260278155,
+   "mean_matches": 0.6481481481481481
+  },
+  "repeat digits, base 2": {
+   "strategy": "repeat digits",
+   "base": "base 2",
+   "z_mean": 0.8959684142787845,
+   "z_min": 0.8959684142787845,
+   "z_max": 0.8959684142787845,
+   "mean_matches": 0.6412037037037037
+  },
+  "hot-weighted, base 3": {
+   "strategy": "hot-weighted",
+   "base": "base 3",
+   "z_mean": -0.014306175142581553,
+   "z_min": -1.0360069843773645,
+   "z_max": 0.7437143356573236,
+   "mean_matches": 0.6100694444444444
+  },
+  "cold-weighted, base 3": {
+   "strategy": "cold-weighted",
+   "base": "base 3",
+   "z_mean": -0.6615224506048797,
+   "z_min": -1.0592730859903123,
+   "z_max": 0.0915460008237068,
+   "mean_matches": 0.6052083333333335
+  },
+  "hot top-6, base 3": {
+   "strategy": "hot top-6",
+   "base": "base 3",
+   "z_mean": -1.261927878601588,
+   "z_min": -1.261927878601588,
+   "z_max": -1.261927878601588,
+   "mean_matches": 0.5694444444444444
+  },
+  "cold top-6, base 3": {
+   "strategy": "cold top-6",
+   "base": "base 3",
+   "z_mean": -1.0372591117091412,
+   "z_min": -1.0372591117091412,
+   "z_max": -1.0372591117091412,
+   "mean_matches": 0.5763888888888888
+  },
+  "most overdue, base 3": {
+   "strategy": "most overdue",
+   "base": "base 3",
+   "z_mean": 0.28668223135449833,
+   "z_min": 0.28668223135449833,
+   "z_max": 0.28668223135449833,
+   "mean_matches": 0.6203703703703703
+  },
+  "repeat digits, base 3": {
+   "strategy": "repeat digits",
+   "base": "base 3",
+   "z_mean": 0.7386252366118699,
+   "z_min": 0.7386252366118699,
+   "z_max": 0.7386252366118699,
+   "mean_matches": 0.6365740740740741
+  },
+  "hot-weighted, base 5": {
+   "strategy": "hot-weighted",
+   "base": "base 5",
+   "z_mean": -0.4422990864687774,
+   "z_min": -1.0831457280543277,
+   "z_max": 0.4309937244642773,
+   "mean_matches": 0.6070601851851852
+  },
+  "cold-weighted, base 5": {
+   "strategy": "cold-weighted",
+   "base": "base 5",
+   "z_mean": -0.7393062266561526,
+   "z_min": -1.5254656302252958,
+   "z_max": 0.07739409151992935,
+   "mean_matches": 0.604513888888889
+  },
+  "hot top-6, base 5": {
+   "strategy": "hot top-6",
+   "base": "base 5",
+   "z_mean": -1.0706421607335785,
+   "z_min": -1.0706421607335785,
+   "z_max": -1.0706421607335785,
+   "mean_matches": 0.5740740740740741
+  },
+  "cold top-6, base 5": {
+   "strategy": "cold top-6",
+   "base": "base 5",
+   "z_mean": 0.7036761766742085,
+   "z_min": 0.7036761766742085,
+   "z_max": 0.7036761766742085,
+   "mean_matches": 0.6342592592592593
+  },
+  "most overdue, base 5": {
+   "strategy": "most overdue",
+   "base": "base 5",
+   "z_mean": -1.5796113252121304,
+   "z_min": -1.5796113252121304,
+   "z_max": -1.5796113252121304,
+   "mean_matches": 0.5601851851851852
+  },
+  "repeat digits, base 5": {
+   "strategy": "repeat digits",
+   "base": "base 5",
+   "z_mean": 0.9040994611207185,
+   "z_min": 0.9040994611207185,
+   "z_max": 0.9040994611207185,
+   "mean_matches": 0.6412037037037037
+  },
+  "hot-weighted, base 7": {
+   "strategy": "hot-weighted",
+   "base": "base 7",
+   "z_mean": -0.6626937385626374,
+   "z_min": -1.2211334123207827,
+   "z_max": -0.04412511731716629,
+   "mean_matches": 0.6050154320987654
+  },
+  "cold-weighted, base 7": {
+   "strategy": "cold-weighted",
+   "base": "base 7",
+   "z_mean": -0.10715386696119504,
+   "z_min": -0.8895153325223452,
+   "z_max": 0.8938174295786891,
+   "mean_matches": 0.609375
+  },
+  "hot top-6, base 7": {
+   "strategy": "hot top-6",
+   "base": "base 7",
+   "z_mean": -1.0606652948745592,
+   "z_min": -1.0606652948745592,
+   "z_max": -1.0606652948745592,
+   "mean_matches": 0.5740740740740741
+  },
+  "cold top-6, base 7": {
+   "strategy": "cold top-6",
+   "base": "base 7",
+   "z_mean": 0.30107482523260554,
+   "z_min": 0.30107482523260554,
+   "z_max": 0.30107482523260554,
+   "mean_matches": 0.6203703703703703
+  },
+  "most overdue, base 7": {
+   "strategy": "most overdue",
+   "base": "base 7",
+   "z_mean": 1.5081117204043344,
+   "z_min": 1.5081117204043344,
+   "z_max": 1.5081117204043344,
+   "mean_matches": 0.6643518518518519
+  },
+  "repeat digits, base 7": {
+   "strategy": "repeat digits",
+   "base": "base 7",
+   "z_mean": -0.3819762656710715,
+   "z_min": -0.3819762656710715,
+   "z_max": -0.3819762656710715,
+   "mean_matches": 0.5972222222222222
+  },
+  "hot-weighted, base 11": {
+   "strategy": "hot-weighted",
+   "base": "base 11",
+   "z_mean": -0.05752097218778832,
+   "z_min": -0.6449955913826472,
+   "z_max": 0.5595359876819536,
+   "mean_matches": 0.6096836419753087
+  },
+  "cold-weighted, base 11": {
+   "strategy": "cold-weighted",
+   "base": "base 11",
+   "z_mean": 0.2683393817691599,
+   "z_min": 0.017328507139673714,
+   "z_max": 0.4558739658605355,
+   "mean_matches": 0.612229938271605
+  },
+  "hot top-6, base 11": {
+   "strategy": "hot top-6",
+   "base": "base 11",
+   "z_mean": -0.6540158015482552,
+   "z_min": -0.6540158015482552,
+   "z_max": -0.6540158015482552,
+   "mean_matches": 0.5879629629629629
+  },
+  "cold top-6, base 11": {
+   "strategy": "cold top-6",
+   "base": "base 11",
+   "z_mean": 1.5543173276214401,
+   "z_min": 1.5543173276214401,
+   "z_max": 1.5543173276214401,
+   "mean_matches": 0.6666666666666666
+  },
+  "most overdue, base 11": {
+   "strategy": "most overdue",
+   "base": "base 11",
+   "z_mean": -0.11166463791183441,
+   "z_min": -0.11166463791183441,
+   "z_max": -0.11166463791183441,
+   "mean_matches": 0.6064814814814815
+  },
+  "repeat digits, base 11": {
+   "strategy": "repeat digits",
+   "base": "base 11",
+   "z_mean": 0.1698975037633965,
+   "z_min": 0.1698975037633965,
+   "z_max": 0.1698975037633965,
+   "mean_matches": 0.6157407407407407
+  },
+  "hot-weighted, base 13": {
+   "strategy": "hot-weighted",
+   "base": "base 13",
+   "z_mean": -1.5514122005668283,
+   "z_min": -1.9955482861038323,
+   "z_max": -1.2028722652892216,
+   "mean_matches": 0.598070987654321
+  },
+  "cold-weighted, base 13": {
+   "strategy": "cold-weighted",
+   "base": "base 13",
+   "z_mean": -0.6357822308833875,
+   "z_min": -1.1386077791624445,
+   "z_max": -0.16762148239452324,
+   "mean_matches": 0.6051311728395062
+  },
+  "hot top-6, base 13": {
+   "strategy": "hot top-6",
+   "base": "base 13",
+   "z_mean": -1.275348631804997,
+   "z_min": -1.275348631804997,
+   "z_max": -1.275348631804997,
+   "mean_matches": 0.5671296296296297
+  },
+  "cold top-6, base 13": {
+   "strategy": "cold top-6",
+   "base": "base 13",
+   "z_mean": 1.4308595963644464,
+   "z_min": 1.4308595963644464,
+   "z_max": 1.4308595963644464,
+   "mean_matches": 0.6620370370370371
+  },
+  "most overdue, base 13": {
+   "strategy": "most overdue",
+   "base": "base 13",
+   "z_mean": -0.1757089270731823,
+   "z_min": -0.1757089270731823,
+   "z_max": -0.1757089270731823,
+   "mean_matches": 0.6041666666666666
+  },
+  "repeat digits, base 13": {
+   "strategy": "repeat digits",
+   "base": "base 13",
+   "z_mean": -0.5359031436314097,
+   "z_min": -0.5359031436314097,
+   "z_max": -0.5359031436314097,
+   "mean_matches": 0.5925925925925926
+  },
+  "hot-weighted, base 17": {
+   "strategy": "hot-weighted",
+   "base": "base 17",
+   "z_mean": -0.36011527616425737,
+   "z_min": -1.2502069793938952,
+   "z_max": 0.9982179295752108,
+   "mean_matches": 0.6072916666666667
+  },
+  "cold-weighted, base 17": {
+   "strategy": "cold-weighted",
+   "base": "base 17",
+   "z_mean": -0.0596925135401379,
+   "z_min": -1.151615752648887,
+   "z_max": 0.5906918640671837,
+   "mean_matches": 0.6097993827160493
+  },
+  "hot top-6, base 17": {
+   "strategy": "hot top-6",
+   "base": "base 17",
+   "z_mean": -1.479792947547377,
+   "z_min": -1.479792947547377,
+   "z_max": -1.479792947547377,
+   "mean_matches": 0.5601851851851852
+  },
+  "cold top-6, base 17": {
+   "strategy": "cold top-6",
+   "base": "base 17",
+   "z_mean": 0.027476708061922154,
+   "z_min": 0.027476708061922154,
+   "z_max": 0.027476708061922154,
+   "mean_matches": 0.6111111111111112
+  },
+  "most overdue, base 17": {
+   "strategy": "most overdue",
+   "base": "base 17",
+   "z_mean": -0.43226348615659044,
+   "z_min": -0.43226348615659044,
+   "z_max": -0.43226348615659044,
+   "mean_matches": 0.5949074074074074
+  },
+  "repeat digits, base 17": {
+   "strategy": "repeat digits",
+   "base": "base 17",
+   "z_mean": 1.0480071109110207,
+   "z_min": 1.0480071109110207,
+   "z_max": 1.0480071109110207,
+   "mean_matches": 0.6481481481481481
+  },
+  "hot-weighted, base 19": {
+   "strategy": "hot-weighted",
+   "base": "base 19",
+   "z_mean": 0.22063835159602574,
+   "z_min": -0.748433280674366,
+   "z_max": 1.7478388805720027,
+   "mean_matches": 0.6118055555555556
+  },
+  "cold-weighted, base 19": {
+   "strategy": "cold-weighted",
+   "base": "base 19",
+   "z_mean": 0.7350588210831752,
+   "z_min": -0.07528637180199209,
+   "z_max": 2.112405461462247,
+   "mean_matches": 0.6158564814814814
+  },
+  "hot top-6, base 19": {
+   "strategy": "hot top-6",
+   "base": "base 19",
+   "z_mean": -0.3951247089530621,
+   "z_min": -0.3951247089530621,
+   "z_max": -0.3951247089530621,
+   "mean_matches": 0.5972222222222222
+  },
+  "cold top-6, base 19": {
+   "strategy": "cold top-6",
+   "base": "base 19",
+   "z_mean": 0.826702332088874,
+   "z_min": 0.826702332088874,
+   "z_max": 0.826702332088874,
+   "mean_matches": 0.6365740740740741
+  },
+  "most overdue, base 19": {
+   "strategy": "most overdue",
+   "base": "base 19",
+   "z_mean": 0.7036761766742087,
+   "z_min": 0.7036761766742087,
+   "z_max": 0.7036761766742087,
+   "mean_matches": 0.6342592592592593
+  },
+  "repeat digits, base 19": {
+   "strategy": "repeat digits",
+   "base": "base 19",
+   "z_mean": -2.6820579864959306,
+   "z_min": -2.6820579864959306,
+   "z_max": -2.6820579864959306,
+   "mean_matches": 0.5254629629629629
+  },
+  "hot-weighted, base 23": {
+   "strategy": "hot-weighted",
+   "base": "base 23",
+   "z_mean": -0.7627374682659488,
+   "z_min": -1.52839355813232,
+   "z_max": 0.6203579488413736,
+   "mean_matches": 0.6041666666666666
+  },
+  "cold-weighted, base 23": {
+   "strategy": "cold-weighted",
+   "base": "base 23",
+   "z_mean": 0.7043289949511515,
+   "z_min": 0.402598923912779,
+   "z_max": 0.9139334333471473,
+   "mean_matches": 0.6155864197530864
+  },
+  "hot top-6, base 23": {
+   "strategy": "hot top-6",
+   "base": "base 23",
+   "z_mean": -0.5205369406203036,
+   "z_min": -0.5205369406203036,
+   "z_max": -0.5205369406203036,
+   "mean_matches": 0.5925925925925926
+  },
+  "cold top-6, base 23": {
+   "strategy": "cold top-6",
+   "base": "base 23",
+   "z_mean": -0.2328798287560907,
+   "z_min": -0.2328798287560907,
+   "z_max": -0.2328798287560907,
+   "mean_matches": 0.6018518518518519
+  },
+  "most overdue, base 23": {
+   "strategy": "most overdue",
+   "base": "base 23",
+   "z_mean": 0.7579860366772757,
+   "z_min": 0.7579860366772757,
+   "z_max": 0.7579860366772757,
+   "mean_matches": 0.6365740740740741
+  },
+  "repeat digits, base 23": {
+   "strategy": "repeat digits",
+   "base": "base 23",
+   "z_mean": -1.4533392492090789,
+   "z_min": -1.4533392492090789,
+   "z_max": -1.4533392492090789,
+   "mean_matches": 0.5625
+  },
+  "hot-weighted, base 29": {
+   "strategy": "hot-weighted",
+   "base": "base 29",
+   "z_mean": -1.3650287526689409,
+   "z_min": -2.400533797505997,
+   "z_max": -0.3690886131105832,
+   "mean_matches": 0.5996527777777777
+  },
+  "cold-weighted, base 29": {
+   "strategy": "cold-weighted",
+   "base": "base 29",
+   "z_mean": -0.48374314122711776,
+   "z_min": -1.0806388207013655,
+   "z_max": 0.5530597554491092,
+   "mean_matches": 0.60625
+  },
+  "hot top-6, base 29": {
+   "strategy": "hot top-6",
+   "base": "base 29",
+   "z_mean": -0.244477172696566,
+   "z_min": -0.244477172696566,
+   "z_max": -0.244477172696566,
+   "mean_matches": 0.6018518518518519
+  },
+  "cold top-6, base 29": {
+   "strategy": "cold top-6",
+   "base": "base 29",
+   "z_mean": 2.2545955489885063,
+   "z_min": 2.2545955489885063,
+   "z_max": 2.2545955489885063,
+   "mean_matches": 0.6921296296296297
+  },
+  "most overdue, base 29": {
+   "strategy": "most overdue",
+   "base": "base 29",
+   "z_mean": 1.098593505814997,
+   "z_min": 1.098593505814997,
+   "z_max": 1.098593505814997,
+   "mean_matches": 0.6481481481481481
+  },
+  "repeat digits, base 29": {
+   "strategy": "repeat digits",
+   "base": "base 29",
+   "z_mean": -0.3874485482500411,
+   "z_min": -0.3874485482500411,
+   "z_max": -0.3874485482500411,
+   "mean_matches": 0.5972222222222222
+  },
+  "hot-weighted, numbers": {
+   "strategy": "hot-weighted",
+   "base": "numbers",
+   "z_mean": -0.9256934375588565,
+   "z_min": -1.5922247525630255,
+   "z_max": 0.3360039966029177,
+   "mean_matches": 0.6029706790123457
+  },
+  "cold-weighted, numbers": {
+   "strategy": "cold-weighted",
+   "base": "numbers",
+   "z_mean": 0.30898486864745506,
+   "z_min": -0.24432550276853984,
+   "z_max": 1.1693836364487693,
+   "mean_matches": 0.6126543209876544
+  },
+  "hot top-6, numbers": {
+   "strategy": "hot top-6",
+   "base": "numbers",
+   "z_mean": -0.4801642246381653,
+   "z_min": -0.4801642246381653,
+   "z_max": -0.4801642246381653,
+   "mean_matches": 0.5949074074074074
+  },
+  "cold top-6, numbers": {
+   "strategy": "cold top-6",
+   "base": "numbers",
+   "z_mean": -0.31236972000412866,
+   "z_min": -0.31236972000412866,
+   "z_max": -0.31236972000412866,
+   "mean_matches": 0.5995370370370371
+  },
+  "most overdue, numbers": {
+   "strategy": "most overdue",
+   "base": "numbers",
+   "z_mean": 0.35805269099704495,
+   "z_min": 0.35805269099704495,
+   "z_max": 0.35805269099704495,
+   "mean_matches": 0.6226851851851852
+  },
+  "repeat digits, numbers": {
+   "strategy": "repeat digits",
+   "base": "numbers",
+   "z_mean": -2.0765394406438555,
+   "z_min": -2.0765394406438555,
+   "z_max": -2.0765394406438555,
+   "mean_matches": 0.5439814814814815
+  }
+ },
+ "pairs": 60,
+ "z_cut": 3.15,
+ "best": "cold top-6, base 29",
+ "expected_best": 2.321719654444689,
+ "planted": {
+  "boost": 1.5,
+  "favoured": "numbers ending in 0 in base 5 (5, 10, ... 55)",
+  "hot_weighted_z": {
+   "base 5": 3.2506649057920227,
+   "base 7": 0.03595173288563707,
+   "numbers": 2.0316767999122725
+  }
+ },
+ "backtest": {
+  "picks": {
+   "hot-weighted, base 2": [
+    [
+     11,
+     22,
+     23,
+     29,
+     39,
+     47
+    ]
+   ],
+   "cold-weighted, base 2": [
+    [
+     11,
+     18,
+     38,
+     54,
+     55,
+     58
+    ]
+   ],
+   "hot top-6, base 2": [
+    [
+     22,
+     36,
+     38,
+     46,
+     52,
+     54
+    ]
+   ],
+   "cold top-6, base 2": [
+    [
+     1,
+     3,
+     9,
+     11,
+     25,
+     41
+    ]
+   ],
+   "most overdue, base 2": [
+    [
+     8,
+     9,
+     10,
+     11,
+     15,
+     27
+    ]
+   ],
+   "repeat digits, base 2": [
+    [
+     20,
+     21,
+     39,
+     52,
+     53,
+     54
+    ]
+   ],
+   "hot-weighted, base 3": [
+    [
+     7,
+     8,
+     10,
+     15,
+     55,
+     59
+    ]
+   ],
+   "cold-weighted, base 3": [
+    [
+     21,
+     33,
+     37,
+     44,
+     55,
+     58
+    ]
+   ],
+   "hot top-6, base 3": [
+    [
+     20,
+     23,
+     26,
+     47,
+     50,
+     53
+    ]
+   ],
+   "cold top-6, base 3": [
+    [
+     4,
+     10,
+     13,
+     16,
+     40,
+     43
+    ]
+   ],
+   "most overdue, base 3": [
+    [
+     54,
+     55,
+     56,
+     57,
+     58,
+     59
+    ]
+   ],
+   "repeat digits, base 3": [
+    [
+     14,
+     20,
+     26,
+     37,
+     41,
+     49
+    ]
+   ],
+   "hot-weighted, base 5": [
+    [
+     7,
+     11,
+     17,
+     22,
+     35,
+     52
+    ]
+   ],
+   "cold-weighted, base 5": [
+    [
+     4,
+     6,
+     17,
+     18,
+     23,
+     53
+    ]
+   ],
+   "hot top-6, base 5": [
+    [
+     2,
+     22,
+     27,
+     37,
+     47,
+     52
+    ]
+   ],
+   "cold top-6, base 5": [
+    [
+     15,
+     16,
+     18,
+     40,
+     41,
+     43
+    ]
+   ],
+   "most overdue, base 5": [
+    [
+     51,
+     52,
+     53,
+     54,
+     58,
+     59
+    ]
+   ],
+   "repeat digits, base 5": [
+    [
+     5,
+     10,
+     11,
+     12,
+     32,
+     36
+    ]
+   ],
+   "hot-weighted, base 7": [
+    [
+     8,
+     32,
+     38,
+     41,
+     49,
+     51
+    ]
+   ],
+   "cold-weighted, base 7": [
+    [
+     5,
+     6,
+     9,
+     14,
+     48,
+     51
+    ]
+   ],
+   "hot top-6, base 7": [
+    [
+     4,
+     24,
+     25,
+     45,
+     46,
+     53
+    ]
+   ],
+   "cold top-6, base 7": [
+    [
+     9,
+     13,
+     16,
+     20,
+     37,
+     58
+    ]
+   ],
+   "most overdue, base 7": [
+    [
+     10,
+     52,
+     56,
+     57,
+     58,
+     59
+    ]
+   ],
+   "repeat digits, base 7": [
+    [
+     4,
+     23,
+     27,
+     32,
+     35,
+     39
+    ]
+   ],
+   "hot-weighted, base 11": [
+    [
+     10,
+     15,
+     17,
+     37,
+     44,
+     49
+    ]
+   ],
+   "cold-weighted, base 11": [
+    [
+     6,
+     26,
+     34,
+     41,
+     42,
+     48
+    ]
+   ],
+   "hot top-6, base 11": [
+    [
+     10,
+     31,
+     32,
+     48,
+     53,
+     54
+    ]
+   ],
+   "cold top-6, base 11": [
+    [
+     8,
+     12,
+     19,
+     34,
+     41,
+     56
+    ]
+   ],
+   "most overdue, base 11": [
+    [
+     44,
+     45,
+     52,
+     53,
+     55,
+     56
+    ]
+   ],
+   "repeat digits, base 11": [
+    [
+     5,
+     6,
+     14,
+     21,
+     26,
+     37
+    ]
+   ],
+   "hot-weighted, base 13": [
+    [
+     7,
+     21,
+     30,
+     49,
+     54,
+     55
+    ]
+   ],
+   "cold-weighted, base 13": [
+    [
+     8,
+     11,
+     33,
+     38,
+     44,
+     50
+    ]
+   ],
+   "hot top-6, base 13": [
+    [
+     9,
+     35,
+     48,
+     53,
+     54,
+     58
+    ]
+   ],
+   "cold top-6, base 13": [
+    [
+     10,
+     16,
+     17,
+     20,
+     23,
+     49
+    ]
+   ],
+   "most overdue, base 13": [
+    [
+     40,
+     43,
+     53,
+     54,
+     56,
+     59
+    ]
+   ],
+   "repeat digits, base 13": [
+    [
+     5,
+     18,
+     19,
+     24,
+     31,
+     37
+    ]
+   ],
+   "hot-weighted, base 17": [
+    [
+     2,
+     3,
+     24,
+     30,
+     49,
+     51
+    ]
+   ],
+   "cold-weighted, base 17": [
+    [
+     14,
+     22,
+     27,
+     35,
+     47,
+     49
+    ]
+   ],
+   "hot top-6, base 17": [
+    [
+     22,
+     28,
+     39,
+     45,
+     56,
+     59
+    ]
+   ],
+   "cold top-6, base 17": [
+    [
+     7,
+     16,
+     24,
+     33,
+     41,
+     50
+    ]
+   ],
+   "most overdue, base 17": [
+    [
+     16,
+     26,
+     33,
+     43,
+     50,
+     51
+    ]
+   ],
+   "repeat digits, base 17": [
+    [
+     2,
+     6,
+     19,
+     36,
+     40,
+     49
+    ]
+   ],
+   "hot-weighted, base 19": [
+    [
+     4,
+     42,
+     45,
+     47,
+     48,
+     59
+    ]
+   ],
+   "cold-weighted, base 19": [
+    [
+     4,
+     6,
+     25,
+     39,
+     55,
+     56
+    ]
+   ],
+   "hot top-6, base 19": [
+    [
+     24,
+     35,
+     40,
+     43,
+     47,
+     54
+    ]
+   ],
+   "cold top-6, base 19": [
+    [
+     1,
+     19,
+     20,
+     38,
+     57,
+     58
+    ]
+   ],
+   "most overdue, base 19": [
+    [
+     38,
+     41,
+     42,
+     49,
+     50,
+     53
+    ]
+   ],
+   "repeat digits, base 19": [
+    [
+     2,
+     6,
+     24,
+     25,
+     32,
+     36
+    ]
+   ],
+   "hot-weighted, base 23": [
+    [
+     5,
+     19,
+     27,
+     33,
+     41,
+     45
+    ]
+   ],
+   "cold-weighted, base 23": [
+    [
+     13,
+     21,
+     38,
+     39,
+     49,
+     58
+    ]
+   ],
+   "hot top-6, base 23": [
+    [
+     22,
+     28,
+     31,
+     45,
+     51,
+     54
+    ]
+   ],
+   "cold top-6, base 23": [
+    [
+     4,
+     15,
+     18,
+     23,
+     41,
+     46
+    ]
+   ],
+   "most overdue, base 23": [
+    [
+     4,
+     10,
+     27,
+     33,
+     50,
+     56
+    ]
+   ],
+   "repeat digits, base 23": [
+    [
+     9,
+     13,
+     14,
+     21,
+     32,
+     44
+    ]
+   ],
+   "hot-weighted, base 29": [
+    [
+     6,
+     22,
+     54,
+     56,
+     57,
+     58
+    ]
+   ],
+   "cold-weighted, base 29": [
+    [
+     11,
+     19,
+     35,
+     38,
+     46,
+     56
+    ]
+   ],
+   "hot top-6, base 29": [
+    [
+     3,
+     22,
+     24,
+     32,
+     51,
+     53
+    ]
+   ],
+   "cold top-6, base 29": [
+    [
+     7,
+     15,
+     19,
+     36,
+     48,
+     58
+    ]
+   ],
+   "most overdue, base 29": [
+    [
+     4,
+     14,
+     27,
+     33,
+     43,
+     56
+    ]
+   ],
+   "repeat digits, base 29": [
+    [
+     3,
+     7,
+     8,
+     34,
+     36,
+     37
+    ]
+   ]
+  }
+ }
+}
