@@ -484,7 +484,16 @@ const covText = (c) => `They cover ${c.distinct} different numbers. In each roun
     const lines = e.combined.map((s, i) => `<div class="line"><span class="ln">${i + 1}</span>${e.rounds.map((r, j) => `<span class="grp"><div class="balls">${s.line.map((b) => ball(b, r)).join("")}</div><span class="tag">${e.rounds.length > 1 ? `R${r.round}: ` : ""}${s.matches[j]}${s.bonus[j] ? " + bonus" : ""}</span></span>`).join("")}</div>`).join("");
     const st = Object.entries(e.strategies).map(([k, ls]) => [k, Math.max(...ls.flatMap((s) => s.matches)), ls.length]).sort((a, b) => b[1] - a[1]);
     const best = Math.max(...e.combined.flatMap((s) => s.matches));
-    return `<div class="live-draw"><h3 class="h3">Draw ${e.draw_no} · ${dfmt(e.date)} · best combined line ${best} match${best === 1 ? "" : "es"}</h3>${res}${lines}${st.length ? `<details><summary>Best line from each strategy</summary><div class="table-wrap"><table><thead><tr><th>Strategy</th><th>Lines</th><th>Best matches</th></tr></thead><tbody>${st.map(([k, m, c]) => `<tr><td>${esc(pretty(k))}</td><td>${c}</td><td class="${m >= 3 ? "good" : ""}">${m}</td></tr>`).join("")}</tbody></table></div></details>` : ""}</div>`;
+    let wheel = "";
+    if (e.wheel_lines && e.wheel_lines.length) {  // the wheel option: its 12 candidates, and how its lines did
+      const cand = [...new Set(e.wheel_lines.flatMap((s) => s.line))].sort((a, b) => a - b);
+      wheel = `<h3 class="h3" style="font-size:0.95rem">Wheel option: ${cand.length} candidates in ${e.wheel_lines.length} lines</h3>` + e.rounds.map((r, j) => {
+        const inC = cand.filter((b) => r.numbers.includes(b)).length, bw = Math.max(...e.wheel_lines.map((s) => s.matches[j]));
+        const won = e.wheel_lines.filter((s) => s.matches[j] >= 3).length;
+        return `<div class="line"><span class="ln">${e.rounds.length > 1 ? `R${r.round}` : ""}</span><div class="balls">${cand.map((b) => ball(b, r)).join("")}</div><span class="tag">${inC} of ${cand.length} drawn · best line ${bw}${won ? ` · ${won} line${won > 1 ? "s" : ""} with 3+` : ""}</span></div>`;
+      }).join("");
+    }
+    return `<div class="live-draw"><h3 class="h3">Draw ${e.draw_no} · ${dfmt(e.date)} · best combined line ${best} match${best === 1 ? "" : "es"}</h3>${res}${lines}${wheel}${st.length ? `<details><summary>Best line from each strategy</summary><div class="table-wrap"><table><thead><tr><th>Strategy</th><th>Lines</th><th>Best matches</th></tr></thead><tbody>${st.map(([k, m, c]) => `<tr><td>${esc(pretty(k))}</td><td>${c}</td><td class="${m >= 3 ? "good" : ""}">${m}</td></tr>`).join("")}</tbody></table></div></details>` : ""}</div>`;
   }).join("");
   $("#live-note").textContent = `Filled balls in a line are numbers that came up in that round; a dashed outline is the bonus ball. Figures in brackets are how many line-rounds random tickets would put in each column on average. The lowest prize needs 3 matching numbers. These results are expected to track chance: the backtests over ${D.test_rounds} past rounds found no method that beats it, and a handful of live draws is far too few to tell any method apart from random.`;
 })();
