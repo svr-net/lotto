@@ -85,6 +85,13 @@ details summary:focus-visible, button:focus-visible { outline: 2px solid var(--s
 .h3 { margin: 8px 0 0; font: 600 1.05rem/1.3 var(--body); }
 td.good { color: var(--good); font-weight: 600; }
 td.flag { font-weight: 600; }
+nav.tabs { position: sticky; top: 0; z-index: 20; background: var(--bg); display: flex; gap: 6px; overflow-x: auto; scrollbar-width: thin;
+  padding: 10px 0; margin: -24px 0 -24px; border-bottom: 1px solid var(--rule); -webkit-overflow-scrolling: touch; }
+nav.tabs a { flex: none; font: 600 0.82rem var(--body); color: var(--fg2); text-decoration: none; padding: 6px 12px; border-radius: 99px; border: 1px solid var(--rule); background: var(--surface); white-space: nowrap; }
+nav.tabs a:hover { color: var(--fg); border-color: var(--muted); }
+nav.tabs a[aria-current="page"] { color: var(--fg); border-color: var(--s2); box-shadow: inset 0 0 0 1px var(--s2); }
+nav.tabs a:focus-visible { outline: 2px solid var(--s1); outline-offset: 2px; }
+.off { display: none !important; }
 .muted { color: var(--muted); }
 .ball.hit { background: var(--s2); border-color: var(--s2); color: var(--bg); font-weight: 700; }
 .ball.bonus-hit { border-style: dashed; border-color: var(--s2); }
@@ -99,7 +106,24 @@ td.flag { font-weight: 600; }
 <header>
   <div class="eyebrow">UK National Lottery · Lotto 6/59</div>
   <h1>Strategy backtest &amp; picks for <span id="nd"></span></h1>
-  <div class="picks5" id="picks5" hidden>
+</header>
+
+<nav class="tabs" id="tabs" aria-label="Sections">
+  <a href="#next">Next draw</a>
+  <a href="#live">Live results</a>
+  <a href="#replay">3-month replay</a>
+  <a href="#players">Other players</a>
+  <a href="#backtest">Backtest</a>
+  <a href="#grammar">Grammar</a>
+  <a href="#radix">Prime radix</a>
+  <a href="#rhythms">Rhythms</a>
+  <a href="#ml">Machine learning</a>
+  <a href="#bayes">Bayesian</a>
+  <a href="#rl">Reinforcement learning</a>
+  <a href="#about">About</a>
+</nav>
+
+<div class="picks5" id="picks5" data-tab="next" hidden>
     <div class="picks5-head"><strong>Five lines for <span id="nd5"></span></strong><span class="note" id="picks5-sub"></span></div>
     <div class="picks5-lines" id="picks5-lines"></div>
     <p class="note" id="picks5-note"></p>
@@ -109,12 +133,13 @@ td.flag { font-weight: 600; }
       <p class="note" id="pop5-note"></p>
     </div>
   </div>
+<div data-tab="backtest" style="display:grid;gap:16px">
   <p id="lede"></p>
   <div class="facts" id="facts"></div>
   <div class="verdict" id="verdict"></div>
-</header>
+</div>
 
-<section id="replay-section" hidden>
+<section id="replay-section" data-tab="replay" hidden>
   <div class="eyebrow">Three-month replay</div>
   <h2>How the five lines would have done since <span id="replay-since"></span></h2>
   <p id="replay-lede"></p>
@@ -126,7 +151,7 @@ td.flag { font-weight: 600; }
   <p class="note" id="replay-note"></p>
 </section>
 
-<section id="pop-section" hidden>
+<section id="pop-section" data-tab="players" hidden>
   <div class="eyebrow">Other players</div>
   <h2>Which lines do other players pick?</h2>
   <p id="pop-lede"></p>
@@ -136,7 +161,7 @@ td.flag { font-weight: 600; }
   <p class="note" id="pop-note"></p>
 </section>
 
-<section id="live-section" hidden>
+<section id="live-section" data-tab="live" hidden>
   <div class="eyebrow">Live results</div>
   <h2>How the picks did in real draws</h2>
   <p id="live-lede"></p>
@@ -145,7 +170,7 @@ td.flag { font-weight: 600; }
   <p class="note" id="live-note"></p>
 </section>
 
-<section>
+<section data-tab="next">
   <div class="eyebrow">Next draw</div>
   <h2>Ensemble picks</h2>
   <p>These tickets combine all <span id="n-base"></span> strategies. Each strategy votes with the numbers it would play. The equal-weight ensemble counts every vote the same. The performance-weighted ensemble trusts strategies more when they matched more numbers over the last 52 rounds. Every line has the same 1 in 45,057,474 chance of a jackpot.</p>
@@ -153,7 +178,7 @@ td.flag { font-weight: 600; }
   <details><summary>Picks from each individual strategy</summary><div class="ticket-grid" id="base-tickets" style="margin-top:16px"></div></details>
 </section>
 
-<section>
+<section data-tab="backtest">
   <div class="eyebrow">Walk-forward backtest</div>
   <h2>Matches per ticket against real draws</h2>
   <p id="bt-lede"></p>
@@ -162,7 +187,7 @@ td.flag { font-weight: 600; }
   <div class="table-wrap"><table id="bt-table"></table></div>
 </section>
 
-<section>
+<section data-tab="backtest">
   <div class="eyebrow">Correlation</div>
   <h2>How the strategies relate</h2>
   <p>The left map compares how many numbers each strategy matched, round by round. If one method had real skill, the rounds it did well would differ from the rounds a random ticket did well. The right map compares which numbers each strategy picked. High values mean two strategies kept choosing the same numbers.</p>
@@ -174,7 +199,7 @@ td.flag { font-weight: 600; }
   <p class="note" id="corr-note"></p>
 </section>
 
-<section>
+<section data-tab="backtest">
   <div class="eyebrow">Draw order</div>
   <h2>Does the order the balls come out tell us anything?</h2>
   <p id="do-lede"></p>
@@ -182,7 +207,7 @@ td.flag { font-weight: 600; }
   <p class="note" id="do-note"></p>
 </section>
 
-<section id="grammar-section">
+<section id="grammar-section" data-tab="grammar">
   <div class="eyebrow">Grammar search</div>
   <h2>Is the Lotto speaking a grammar?</h2>
   <p id="gr-lede"></p>
@@ -200,7 +225,7 @@ td.flag { font-weight: 600; }
   <div class="table-wrap"><table id="gr-lags"></table></div>
 </section>
 
-<section id="radix-section">
+<section id="radix-section" data-tab="radix">
   <div class="eyebrow">Prime radix</div>
   <h2>Conditional probabilities and copulas on prime-base digits</h2>
   <p id="rx-lede"></p>
@@ -213,7 +238,7 @@ td.flag { font-weight: 600; }
   <div class="table-wrap"><table id="rx-bt"></table></div>
 </section>
 
-<section id="spectral-section">
+<section id="spectral-section" data-tab="rhythms">
   <div class="eyebrow">Fourier and wavelets</div>
   <h2>Do the draws have rhythms or bursts?</h2>
   <p id="sp-lede"></p>
@@ -226,7 +251,7 @@ td.flag { font-weight: 600; }
   <div class="table-wrap"><table id="sp-bt"></table></div>
 </section>
 
-<section id="ml-section">
+<section id="ml-section" data-tab="ml">
   <div class="eyebrow">Machine learning</div>
   <h2>Can gradient boosting and friends learn the draws?</h2>
   <p id="ml-lede"></p>
@@ -237,7 +262,7 @@ td.flag { font-weight: 600; }
   <p class="note" id="ml-imp"></p>
 </section>
 
-<section id="bayes-section">
+<section id="bayes-section" data-tab="bayes">
   <div class="eyebrow">Bayesian inference</div>
   <h2>How strongly do the draws say "fair"?</h2>
   <p id="by-lede"></p>
@@ -255,7 +280,7 @@ td.flag { font-weight: 600; }
   <p class="note" id="by-bt-note"></p>
 </section>
 
-<section id="rl-section">
+<section id="rl-section" data-tab="rl">
   <div class="eyebrow">Reinforcement learning</div>
   <h2>Can an agent learn to play better than chance?</h2>
   <p id="rl-lede"></p>
@@ -267,14 +292,14 @@ td.flag { font-weight: 600; }
   <p class="note" id="rl-note"></p>
 </section>
 
-<section>
+<section data-tab="backtest">
   <div class="eyebrow">Fairness check</div>
   <h2>How often each ball came up since October 2015</h2>
   <p id="fair-lede"></p>
   <div class="chart" id="freq-chart"></div>
 </section>
 
-<section>
+<section data-tab="about">
   <div class="eyebrow">Method &amp; source</div>
   <p class="note" id="method"></p>
 </section>
@@ -782,4 +807,22 @@ new MutationObserver(drawHeatmaps).observe(document.documentElement, { attribute
 })();
 
 $("#method").textContent = `Data: the full UK Lotto history from lottery.merseyworld.com (${D.era.last_draw.toLocaleString()} draws since 1994). The most recent rounds match the official National Lottery results exactly. Only draws since ${D.era.first_date} are used, when the pool grew from 49 to 59 balls. Each round in the test period was predicted using only draws from earlier dates, and both rounds of a two-round draw count as separate targets. The transformer was retrained every 26 rounds. Performance weights use a softmax over each strategy's mean hits in its last ${D.window} rounds (τ = ${D.tau}). z-scores compare mean hits with the exact hypergeometric expectation of 36/59. Seeds used: ${D.seeds.join(", ")}. This page is a statistics exercise. Lotto draws are independent and random, and no method here changes the odds of any ticket.`;
+// ---------- menu: one tab of sections at a time, chosen by the URL hash (#live, #replay, ...)
+(function () {
+  const nav = $("#tabs"), links = [...nav.querySelectorAll("a")];
+  const parts = [...document.querySelectorAll("[data-tab]")];
+  const has = (t) => parts.some((el) => el.dataset.tab === t && !el.hidden);
+  links.forEach((a) => { if (!has(a.hash.slice(1))) a.hidden = true; });  // studies with no data yet
+  const tabs = links.filter((a) => !a.hidden).map((a) => a.hash.slice(1));
+  function show(scroll) {
+    const t = tabs.includes(location.hash.slice(1)) ? location.hash.slice(1) : tabs[0];
+    parts.forEach((el) => el.classList.toggle("off", el.dataset.tab !== t));
+    links.forEach((a) => (a.hash.slice(1) === t ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current")));
+    const cur = links.find((a) => a.hash.slice(1) === t);
+    if (cur) cur.scrollIntoView({ block: "nearest", inline: "nearest" });
+    if (scroll && window.scrollY > nav.offsetTop) window.scrollTo({ top: nav.offsetTop });
+  }
+  window.addEventListener("hashchange", () => show(true));
+  show(false);
+})();
 </script>
