@@ -208,3 +208,10 @@ most one. Any five lines average the same matches and the same number of prizes,
 don't overlap win and lose less often together, so the chance that at least one of them matches
 2+ or 3+ in a round goes up (for the five combined lines from about 42.0% to 48.2% for 2+, and from
 5.24% to 5.42% for 3+). The report shows these chances for each set.
+
+### Report on GitHub Pages
+
+The report is published at https://svr-net.github.io/lotto/ by `.github/workflows/pages.yml`
+whenever a change to `results/` lands on main (or on demand from the Actions tab). The site's
+index page is `results/report.html`, and every `results/*.json` is served under `data/`, e.g.
+https://svr-net.github.io/lotto/data/combined_picks.json for the next draw's lines.

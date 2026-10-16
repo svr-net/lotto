@@ -1,0 +1,52 @@
+# Publishes the report to GitHub Pages (https://svr-net.github.io/lotto/) whenever main changes it.
+# results/report.html becomes the site's index page, and every results/*.json is served under data/.
+name: Publish report to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "results/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Assemble the site
+        run: |
+          set -euo pipefail
+          mkdir -p _site/data
+          cp results/report.html _site/index.html
+          cp results/*.json _site/data/
+          touch _site/.nojekyll
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
