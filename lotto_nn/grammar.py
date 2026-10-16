@@ -37,26 +37,36 @@ def extract_grammar(draws_np: np.ndarray) -> dict:
           sorted draw (used for sampling)
         - "vocab": sorted list of numbers observed in the data
     """
-    start_counts: Counter = Counter()
-    transition_counts: dict = defaultdict(Counter)
-    positional_counts: dict = defaultdict(Counter)
-    vocab: set = set()
+    return grammar_from_state(update_grammar(new_grammar_state(), draws_np))
 
+
+def new_grammar_state() -> dict:
+    """Empty running counts for :func:`update_grammar`."""
+    return {"start": Counter(), "trans": defaultdict(Counter), "pos": defaultdict(Counter), "vocab": set(), "rows": 0}
+
+
+def update_grammar(state: dict, draws_np: np.ndarray) -> dict:
+    """Add draws to running grammar counts, so a growing history needs only its new rows counted.
+    Counts and their insertion order match a fresh :func:`extract_grammar` over all rows."""
     for row in draws_np:
         seq = sorted(int(n) for n in row)
         if not seq:
             continue
-        start_counts[seq[0]] += 1
-        vocab.update(seq)
+        state["start"][seq[0]] += 1
+        state["vocab"].update(seq)
         for pos, (a, b) in enumerate(zip(seq, seq[1:])):
-            transition_counts[a][b] += 1
-            positional_counts[(pos, a)][b] += 1
+            state["trans"][a][b] += 1
+            state["pos"][(pos, a)][b] += 1
+    state["rows"] += len(draws_np)
+    return state
 
+
+def grammar_from_state(state: dict) -> dict:
     return {
-        "start_counts": start_counts,
-        "transition_counts": dict(transition_counts),
-        "positional_transition_counts": dict(positional_counts),
-        "vocab": sorted(vocab),
+        "start_counts": state["start"],
+        "transition_counts": dict(state["trans"]),
+        "positional_transition_counts": dict(state["pos"]),
+        "vocab": sorted(state["vocab"]),
     }
 
 

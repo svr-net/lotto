@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse, json, math, os, sys, time
 from collections import Counter
+from concurrent.futures import ProcessPoolExecutor
 from datetime import date, timedelta
 
 import numpy as np
@@ -22,7 +23,7 @@ import pandas as pd
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from lotto_nn.backtest import chi2_sf  # noqa: E402
-from lotto_nn.grammar import extract_grammar, generate_batch as grammar_batch  # noqa: E402
+from lotto_nn.grammar import generate_batch as grammar_batch, grammar_from_state, new_grammar_state, update_grammar  # noqa: E402
 
 COLS = ["n1", "n2", "n3", "n4", "n5", "n6"]
 DRAWN = ["d1", "d2", "d3", "d4", "d5", "d6"]
@@ -61,12 +62,11 @@ def top6(score: np.ndarray, rng) -> np.ndarray:
 
 
 def gaps(hist: np.ndarray) -> np.ndarray:
-    g = np.full(POOL, len(hist), dtype=float)
-    for i, row in enumerate(hist[::-1]):
-        for n in row:
-            if g[n - 1] == len(hist):
-                g[n - 1] = i
-    return g
+    """Rounds since each number was last drawn (0 = in the last round; len(hist) if never)."""
+    seen = np.zeros((len(hist), POOL), dtype=bool)
+    np.put_along_axis(seen, np.asarray(hist) - 1, True, axis=1)
+    back = seen[::-1]
+    return np.where(back.any(0), back.argmax(0), len(hist)).astype(float)
 
 
 def s_random(hist, n, rng, ctx):
@@ -99,7 +99,12 @@ def s_repeat_last(hist, n, rng, ctx):
 
 
 def s_grammar(hist, n, rng, ctx):
-    return grammar_batch(extract_grammar(hist), num_samples=n, rng=rng)
+    # the history only ever grows by whole rounds, so count just the new ones
+    state = ctx.get("grammar_state")
+    if state is None or state["rows"] > len(hist):
+        state = ctx["grammar_state"] = new_grammar_state()
+    update_grammar(state, hist[state["rows"]:])
+    return grammar_batch(grammar_from_state(state), num_samples=n, rng=rng)
 
 
 def s_transformer(hist, n, rng, ctx):
@@ -276,6 +281,21 @@ def aux_until(aux: dict, mask, target_round: int) -> dict:
     return out
 
 
+def _init_worker(threads: int) -> None:
+    try:
+        import torch
+        torch.set_num_threads(threads)
+    except ImportError:
+        pass
+
+
+def _run_seed(args):
+    t0 = time.time()
+    out = run_backtest(*args)
+    out["seconds"] = time.time() - t0
+    return out
+
+
 def run_backtest(draws, dates, test_idx, a, seed, aux):
     """One walk-forward pass over the test rounds with every strategy plus the ensembles."""
     rng = np.random.default_rng(seed)
@@ -290,7 +310,8 @@ def run_backtest(draws, dates, test_idx, a, seed, aux):
         aux_hist = aux_until(aux, mask, int(aux["round"][i]))
         for c in ctxs.values():
             c["aux"] = aux_hist
-        actual = set(int(x) for x in draws[i])
+        actual = np.zeros(POOL + 1, dtype=bool)
+        actual[draws[i]] = True
         trailing = np.array([np.mean(round_mean[s][-a.window:]) if round_mean[s] else np.nan for s in names])
         w = perf_weights(trailing, a.tau)
         tickets = {s: STRATEGIES[s](hist, a.tickets, rng, ctxs[s]) for s in names}
@@ -298,9 +319,9 @@ def run_backtest(draws, dates, test_idx, a, seed, aux):
         pick_corr.append(np.corrcoef(vote_mat))
         tickets.update(ensemble_tickets(vote_mat, w, a.tickets, rng))
         for s, ts in tickets.items():
-            ms = [len(actual & set(int(x) for x in t)) for t in ts]
-            matches[s].extend(ms)
-            round_mean[s].append(float(np.mean(ms)))
+            ms = actual[np.asarray(ts, dtype=int)].sum(1)
+            matches[s].extend(ms.tolist())
+            round_mean[s].append(float(ms.mean()))
     perf = np.array([round_mean[s] for s in names + ENSEMBLES])
     return {
         "summary": {s: summarize(matches[s]) for s in names + ENSEMBLES},
@@ -410,6 +431,7 @@ def main():
     ap.add_argument("--predictions", type=int, default=5)
     ap.add_argument("--sims", type=int, default=2000, help="simulated fair histories for draw-order p-values")
     ap.add_argument("--seeds", type=int, nargs="+", default=[2026, 1, 2, 3, 4])
+    ap.add_argument("--workers", type=int, default=0, help="seeds run in parallel (default: one per CPU core)")
     ap.add_argument("--out", default="results")
     a = ap.parse_args()
 
@@ -424,13 +446,23 @@ def main():
     print(f"1-59 era: {len(df)} rounds {dates[0]} -> {dates[-1]}; backtesting {len(test_idx)} rounds after {split}")
 
     names = list(STRATEGIES) + ENSEMBLES
-    runs = []
-    for seed in a.seeds:
-        t0 = time.time()
-        runs.append(run_backtest(draws, dates, test_idx, a, seed, aux))
-        print(f"\nseed {seed} ({time.time() - t0:.0f}s)")
+    # seeds are independent, so they run in parallel processes, sharing the CPU cores between them
+    cores = os.cpu_count() or 1
+    workers = max(1, min(len(a.seeds), a.workers or cores))
+    threads = max(1, cores // workers)
+    jobs = [(draws, dates, test_idx, a, seed, aux) for seed in a.seeds]
+    t_all = time.time()
+    if workers > 1:
+        with ProcessPoolExecutor(workers, initializer=_init_worker, initargs=(threads,)) as ex:
+            runs = list(ex.map(_run_seed, jobs))
+    else:
+        _init_worker(threads)
+        runs = [_run_seed(j) for j in jobs]
+    print(f"{len(a.seeds)} seeds on {workers} worker(s) x {threads} thread(s): {time.time() - t_all:.0f}s")
+    for seed, run in zip(a.seeds, runs):
+        print(f"\nseed {seed} ({run['seconds']:.0f}s)")
         for s in names:
-            r = runs[-1]["summary"][s]
+            r = run["summary"][s]
             print(f"  {s:32s} tickets={r['tickets']:6d} mean={r['mean_matches']:.4f} "
                   f"z={r['z_vs_random']:+.2f} 3+={r['pct_3plus']:.2f}% chi2_p={r['chi2_p']:.3f}")
 

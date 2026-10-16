@@ -22,58 +22,58 @@
     },
     {
      "model": "number frequency",
-     "bits": 34.91712224592544,
-     "excess": 6.049525553271424e-06,
-     "z": 0.5200497328353023,
-     "p_better": 0.6984855437496638,
+     "bits": 34.917122158522616,
+     "excess": 5.962122723491137e-06,
+     "z": 0.5125226998459156,
+     "p_better": 0.6958573812159847,
      "setting": "alpha=100000"
     },
     {
      "model": "frequency by draw position",
-     "bits": 34.9171278574989,
-     "excess": 1.1661099010259099e-05,
-     "z": 2.127704683154839,
-     "p_better": 0.9833192118038492,
+     "bits": 34.91712872991901,
+     "excess": 1.2533519115931068e-05,
+     "z": 2.305065980577043,
+     "p_better": 0.9894185607924701,
      "setting": "alpha=100000"
     },
     {
      "model": "drawn-order bigram (next ball given previous ball)",
-     "bits": 34.92511899359616,
-     "excess": 0.008002797196266323,
-     "z": 1.746883252627111,
-     "p_better": 0.9596712042871602,
+     "bits": 34.92504536748027,
+     "excess": 0.007929171080384148,
+     "z": 1.7318130469308826,
+     "p_better": 0.9583465727959011,
      "setting": "alpha=50"
     },
     {
      "model": "drawn-order trigram (next ball given previous two)",
-     "bits": 34.92508464980364,
-     "excess": 0.007968453403750816,
-     "z": 1.7236379897458143,
-     "p_better": 0.9576133920524688,
+     "bits": 34.92501349414141,
+     "excess": 0.007897297741520724,
+     "z": 1.7092534461161124,
+     "p_better": 0.9562979936791263,
      "setting": "alpha=50"
     },
     {
      "model": "echo of the previous round (repeat or avoid its numbers)",
-     "bits": 34.9386772691336,
-     "excess": 0.021561072733711432,
-     "z": 3.1981307289544056,
-     "p_better": 0.999308392202359,
+     "bits": 34.938712236546166,
+     "excess": 0.02159604014627566,
+     "z": 3.203876709954091,
+     "p_better": 0.9993220473656571,
      "setting": "boost=0.15"
     },
     {
      "model": "number frequency on the machine used",
-     "bits": 34.917117406710965,
-     "excess": 1.2103110748186275e-06,
-     "z": 0.08440017199655948,
-     "p_better": 0.5336308647289262,
+     "bits": 34.91711731930813,
+     "excess": 1.1229082450383401e-06,
+     "z": 0.07830422344302362,
+     "p_better": 0.5312069710204262,
      "setting": "alpha=100000"
     },
     {
      "model": "transformer on drawn order",
-     "bits": 35.10231315758493,
-     "excess": 0.18519696118504372,
-     "z": 5.888688122158393,
-     "p_better": 0.9999999980536337,
+     "bits": 35.10424288886565,
+     "excess": 0.1871266924657591,
+     "z": 5.964746100888732,
+     "p_better": 0.9999999987749264,
      "setting": "epochs=5"
     }
    ],
@@ -117,10 +117,10 @@
      "stream": "drawn order",
      "compressor": "bz2",
      "bytes_raw": 7122,
-     "bytes": 5393,
+     "bytes": 5398,
      "fair_mean": 5397.903333333334,
      "fair_min": 5390,
-     "p_more_compressible": 0.1461794019933555
+     "p_more_compressible": 0.5647840531561462
     },
     {
      "stream": "drawn order",
@@ -262,7 +262,7 @@
        "count": 8
       },
       {
-       "rule": "28 then 58",
+       "rule": "31 then 15",
        "count": 7
       },
       {
@@ -270,11 +270,11 @@
        "count": 7
       },
       {
-       "rule": "26 then 39",
+       "rule": "28 then 58",
        "count": 7
       },
       {
-       "rule": "39 then 31",
+       "rule": "26 then 39",
        "count": 7
       }
      ],
