@@ -229,3 +229,10 @@ base. All 170 base and strategy pairs are replayed walk-forward and checked agai
 threshold, alongside the same strategies on whole numbers. A planted-bias check shows a digit bias
 is found in the base that carries it. Every strategy's next-draw line votes within the prime-radix
 investigation.
+
+The report also offers a wheel option: the 12 numbers with the most combined support, played as a
+15-line covering design (`build_report.WHEEL_12`) in which every 3 of the 12 share a line, so if 3 drawn
+numbers are among the candidates some line matches 3 ("3 if 3"). That condition holds in about 9.2%
+of rounds. A wheel has the same average matches and prizes as any 15 lines, but bunches its wins:
+some line matches 3+ in about 9.2% of rounds, against about 15% for 15 independent lines. Live
+scoring tracks the wheel lines too.
