@@ -218,10 +218,14 @@ index page is `results/report.html` (a menu at the top switches between its sect
 its own link, e.g. https://svr-net.github.io/lotto/#live), and every `results/*.json` is served under `data/`, e.g.
 https://svr-net.github.io/lotto/data/combined_picks.json for the next draw's lines.
 
-`scripts/radix_strategies_study.py` plays the backtest's classic strategies (hot- and cold-weighted,
-hot and cold top-6, most overdue, repeat the last draw) on digits instead of numbers: each ball is
-written in the first ten prime bases and scored by how its digits, position by position, have
-behaved compared with what a fair draw gives each digit class. All 60 base and strategy pairs are
-replayed walk-forward and checked against a Bonferroni threshold, alongside the same strategies on
-whole numbers. A planted-bias check shows they find a digit bias in the base that carries it. Their
-next-draw lines vote within the prime-radix investigation.
+`scripts/radix_strategies_study.py` plays the strategies of every investigation on digits instead of
+numbers: each ball is written in the first ten prime bases and scored by how its digits, position by
+position, have behaved compared with what a fair draw gives each digit class. The 16 strategies are
+the backtest's classic ones (hot- and cold-weighted, hot and cold top-6, most overdue, repeat), a digit
+grammar over the sorted draw, the draw-order ones (early balls, a drawn-order chain, the machine, the
+bonus ball), Fourier extrapolation and 8-round smoothing, Bayesian posterior-mean and Thompson
+sampling, and logistic regression on digit features; a Hedge agent learns which to back in each
+base. All 170 base and strategy pairs are replayed walk-forward and checked against a Bonferroni
+threshold, alongside the same strategies on whole numbers. A planted-bias check shows a digit bias
+is found in the base that carries it. Every strategy's next-draw line votes within the prime-radix
+investigation.
