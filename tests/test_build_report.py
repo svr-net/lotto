@@ -53,3 +53,14 @@ def test_digit_strategy_picks_vote_within_prime_radix():
                "radix_strat": {"backtest": {"picks": {"hot top-6, base 5": [[7, 8, 9, 10, 11, 12]]}}}}
     src = dict(br.pick_sources(payload))
     assert src["Prime radix"] == [[1, 2, 3, 4, 5, 6], [7, 8, 9, 10, 11, 12]]
+
+
+def test_wheel_guarantees_three_if_three():
+    import itertools
+    assert len(br.WHEEL_12) == 15 and all(len(set(r)) == 6 and max(r) < 12 for r in br.WHEEL_12)
+    covered = {t for r in br.WHEEL_12 for t in itertools.combinations(r, 3)}
+    assert covered == set(itertools.combinations(range(12), 3))
+    w = br.wheel([1.0 / (i + 1) for i in range(59)])
+    assert w["candidates"] == list(range(1, 13)) and len(w["lines"]) == 15
+    assert all(set(l) <= set(w["candidates"]) for l in w["lines"])
+    assert abs(w["p_condition"] - 0.0918) < 0.001

@@ -132,6 +132,12 @@ nav.tabs a:focus-visible { outline: 2px solid var(--s1); outline-offset: 2px; }
       <div class="picks5-lines" id="pop5-lines"></div>
       <p class="note" id="pop5-note"></p>
     </div>
+    <div id="wheel5" hidden style="display:grid;gap:8px">
+      <div class="picks5-head"><strong>Wheel option</strong><span class="note" id="wheel-sub"></span></div>
+      <div class="picks5-lines" id="wheel-cands"></div>
+      <details><summary id="wheel-sum"></summary><div class="picks5-lines" id="wheel-lines" style="margin-top:8px"></div></details>
+      <p class="note" id="wheel-note"></p>
+    </div>
   </div>
 <div data-tab="backtest" style="display:grid;gap:16px">
   <p id="lede"></p>
@@ -432,6 +438,20 @@ const covText = (c) => `They cover ${c.distinct} different numbers. In each roun
   $("#pop-note").textContent = `Each number from 1 to 31 makes a line more popular, months (1-12) more so, and 7 most of all; consecutive numbers are played less, because people avoid them when they try to look random. Pattern tickets such as 1-2-3-4-5-6 or 7-14-21-28-35-42 are played by thousands but have never been drawn, so the data can't measure them; they are left out of the popularity-aware lines, as are lines with two or more consecutive pairs, where the model would be extrapolating. Draw 9 in January 1995 had 133 jackpot winners, far more than the model expects, possibly because the line also formed a shape on the playslip, which these features cannot see. None of this changes the chance of winning: it only affects how many people share a jackpot.`;
 })();
 
+// ---------- wheel option: 12 candidates in a covering design
+(function () {
+  const C = D.combined, W = C && C.wheel;
+  if (!W) return;
+  $("#wheel5").hidden = false;
+  const L = W.lines.length, pc = (x, d = 1) => (x * 100).toFixed(d) + "%";
+  const ind3 = 1 - Math.pow(1 - P3_LINE, L), ind2 = 1 - Math.pow(1 - P2_LINE, L);
+  $("#wheel-sub").textContent = `${W.candidates.length} numbers in ${L} lines, guaranteeing 3 matches if 3 of the drawn numbers are among them`;
+  $("#wheel-cands").innerHTML = `<div class="line"><span class="ln"></span><div class="balls">${W.candidates.map((b) => `<span class="ball">${b}</span>`).join("")}</div><span class="tag">the ${W.candidates.length} numbers with most combined support</span></div>`;
+  $("#wheel-sum").textContent = `Show the ${L} lines`;
+  $("#wheel-lines").innerHTML = W.lines.map((line, i) => `<div class="line"><span class="ln">${i + 1}</span><div class="balls">${line.map((b) => `<span class="ball">${b}</span>`).join("")}</div></div>`).join("");
+  $("#wheel-note").textContent = `Every set of 3 candidates sits together in at least one line, so whenever 3 or more of a round's numbers are among the ${W.candidates.length}, some line matches at least 3. That happens in ${pc(W.p_condition)} of rounds. Overall, some line matches 3+ in ${pc(W.coverage.p3, 2)} of rounds and 2+ in ${pc(W.coverage.p2)}, against ${pc(ind3, 2)} and ${pc(ind2)} for ${L} lines picked independently: the wheel bunches its wins together, so it wins something less often for the same cost. Its average number of matches and of prizes is exactly the same as any ${L} lines, and the candidates are no likelier to be drawn than other numbers, so the guarantee doesn't change the odds.`;
+})();
+
 // ---------- live results: committed picks scored against the real draws
 (function () {
   const LV = D.live;
@@ -443,7 +463,7 @@ const covText = (c) => `They cover ${c.distinct} different numbers. In each roun
   const row = (label, t) => { const exp = (k) => t.line_rounds * (k === 3 ? [3, 4, 5, 6].reduce((a, j) => a + P[j], 0) : P[k]);
     return `<tr><td>${label}</td><td>${t.line_rounds}</td>${[0, 1, 2].map((k) => `<td>${t.counts[k]} <span class="muted">(${exp(k).toFixed(1)})</span></td>`).join("")}<td class="${t.prize ? "good" : ""}">${t.prize} <span class="muted">(${exp(3).toFixed(1)})</span></td><td>${t.bonus}</td><td>${fmt(t.mean, 2)}</td></tr>`; };
   $("#live-table").innerHTML = `<thead><tr><th>Lines</th><th>Line-rounds</th><th>0 hits</th><th>1 hit</th><th>2 hits</th><th>3+ (a prize)</th><th>Bonus</th><th>Mean</th></tr></thead><tbody>` +
-    row("Five combined lines", Sm.combined) + (Sm.popularity_lines && Sm.popularity_lines.line_rounds ? row("Popularity-aware lines", Sm.popularity_lines) : "") + row("Every strategy and ensemble line", Sm.strategies) +
+    row("Five combined lines", Sm.combined) + (Sm.popularity_lines && Sm.popularity_lines.line_rounds ? row("Popularity-aware lines", Sm.popularity_lines) : "") + (Sm.wheel_lines && Sm.wheel_lines.line_rounds ? row("Wheel lines", Sm.wheel_lines) : "") + row("Every strategy and ensemble line", Sm.strategies) +
     `<tr class="base-row"><td>Random line (chance)</td><td></td><td>${fmt(P[0] * 100, 1)}%</td><td>${fmt(P[1] * 100, 1)}%</td><td>${fmt(P[2] * 100, 1)}%</td><td>${fmt([3, 4, 5, 6].reduce((a, j) => a + P[j], 0) * 100, 2)}%</td><td></td><td>${fmt(Sm.chance_mean, 2)}</td></tr></tbody>`;
   const ball = (b, r) => `<span class="ball${r.numbers.includes(b) ? " hit" : b === r.bonus ? " bonus-hit" : ""}">${b}</span>`;
   $("#live-draws").innerHTML = LV.draws.slice().reverse().map((e) => {

@@ -62,6 +62,23 @@ def lines_from_score(score, seed: int, n_lines: int = 5) -> list:
     return lines
 
 
+# A 15-line covering design on 12 numbers: every 3 of the 12 sit together in at least one line, so if 3
+# drawn numbers are among the candidates, some line matches all 3 ("3 if 3"). 15 is the smallest known.
+WHEEL_12 = [(0, 1, 2, 3, 4, 5), (0, 1, 6, 7, 8, 9), (2, 3, 6, 7, 10, 11), (4, 5, 8, 9, 10, 11), (0, 1, 2, 8, 10, 11),
+            (0, 3, 4, 6, 9, 10), (1, 3, 5, 7, 9, 11), (2, 4, 5, 6, 7, 8), (0, 2, 5, 6, 9, 11), (0, 3, 4, 7, 8, 11),
+            (1, 2, 4, 7, 9, 10), (1, 3, 5, 6, 8, 10), (0, 2, 5, 7, 8, 10), (1, 2, 4, 6, 8, 11), (0, 1, 2, 3, 8, 9)]
+
+
+def wheel(score) -> dict:
+    """The 12 numbers with the most combined support, played as the WHEEL_12 lines."""
+    from math import comb
+    cand = sorted(int(x) + 1 for x in np.argsort(-np.asarray(score), kind="stable")[:12])
+    lines = [sorted(cand[i] for i in row) for row in WHEEL_12]
+    p_cond = sum(comb(12, k) * comb(POOL - 12, PICK - k) for k in range(3, PICK + 1)) / comb(POOL, PICK)
+    return {"candidates": cand, "lines": lines, "guarantee": "3 if 3", "p_condition": p_cond,
+            "coverage": coverage(lines)}
+
+
 def coverage(lines: list, n: int = 1_000_000, seed: int = 0, chunk: int = 100_000) -> dict:
     """Chance, per round, that at least one of the lines matches 2+ and 3+ numbers (simulated draws)."""
     rng = np.random.default_rng(seed)
@@ -121,6 +138,7 @@ def main():
         C["coverage"] = {"combined": coverage(C["lines"])}
         if C.get("popularity_lines"):
             C["coverage"]["popularity"] = coverage(C["popularity_lines"])
+        C["wheel"] = wheel(C["score"])
         with open("results/combined_picks.json", "w") as fh:
             json.dump(payload["combined"], fh, indent=1)
     data = json.dumps(payload, separators=(",", ":")).replace("</", "<\\/")
