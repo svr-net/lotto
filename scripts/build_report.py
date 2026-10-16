@@ -40,18 +40,37 @@ def pick_sources(payload: dict) -> list:
 
 def lines_from_score(score, seed: int, n_lines: int = 5) -> list:
     """Line 1 is the six numbers with the most support (the seed only breaks exact ties); the other
-    lines are drawn in proportion to support, using the seed."""
+    lines are drawn in proportion to support, using the seed, from numbers no earlier line uses.
+
+    Every line matches 36/59 numbers on average whatever it holds, but lines that share numbers win
+    and lose together. With no number shared, the five lines cover 30 numbers and the chance that at
+    least one of them matches 2+ (or 3+, a prize) in a round is as high as five lines can make it."""
     score = np.asarray(score, dtype=float)
     rng = np.random.default_rng(seed)
     top = np.argsort(-(score + rng.random(POOL) * 1e-9))[:PICK] + 1
     lines = [sorted(int(x) for x in top)]
     p = score + score.mean() * 0.2  # every number keeps some chance
-    p /= p.sum()
+    free = np.ones(POOL, dtype=bool)
+    free[top - 1] = False
     while len(lines) < n_lines:
-        line = sorted(int(x) for x in rng.choice(np.arange(1, POOL + 1), PICK, replace=False, p=p))
-        if line not in lines:
-            lines.append(line)
+        q = p * free
+        line = sorted(int(x) for x in rng.choice(np.arange(1, POOL + 1), PICK, replace=False, p=q / q.sum()))
+        free[np.array(line) - 1] = False
+        lines.append(line)
     return lines
+
+
+def coverage(lines: list, n: int = 1_000_000, seed: int = 0, chunk: int = 100_000) -> dict:
+    """Chance, per round, that at least one of the lines matches 2+ and 3+ numbers (simulated draws)."""
+    rng = np.random.default_rng(seed)
+    c2 = c3 = 0
+    for _ in range(n // chunk):
+        hits = np.zeros((chunk, POOL + 1), dtype=bool)
+        np.put_along_axis(hits, np.argsort(rng.random((chunk, POOL)), axis=1)[:, :PICK] + 1, True, axis=1)
+        best = np.max([hits[:, l].sum(1) for l in lines], axis=0)
+        c2 += int((best >= 2).sum())
+        c3 += int((best >= 3).sum())
+    return {"distinct": len({x for l in lines for x in l}), "p2": c2 / n, "p3": c3 / n}
 
 
 def combine(sources: list, seed: int, n_lines: int = 5) -> dict:
@@ -96,6 +115,10 @@ def main():
         payload["combined"]["next_draw_date"] = payload.get("next_draw_date")
         if payload.get("popularity"):
             add_popularity_lines(payload["combined"], payload["popularity"], payload.get("latest") or [], seed)
+        C = payload["combined"]
+        C["coverage"] = {"combined": coverage(C["lines"])}
+        if C.get("popularity_lines"):
+            C["coverage"]["popularity"] = coverage(C["popularity_lines"])
         with open("results/combined_picks.json", "w") as fh:
             json.dump(payload["combined"], fh, indent=1)
     data = json.dumps(payload, separators=(",", ":")).replace("</", "<\\/")
