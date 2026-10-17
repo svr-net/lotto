@@ -3,120 +3,120 @@
   {
    "label": "59-ball era (Oct 2015 - now)",
    "pool": 59,
-   "rounds": 1187,
+   "rounds": 1189,
    "first_date": "2015-10-10",
-   "last_date": "2026-10-14",
+   "last_date": "2026-10-17",
    "tests": [
     {
      "test": "a number reappears with a regular period",
      "key": "number_period_g",
-     "observed": 0.015446033577371253,
-     "fair_mean": 0.018277623388004,
-     "p": 0.9600399600399601,
-     "detail": "strongest: ball 47, every 4.5 rounds"
+     "observed": 0.018020901258045414,
+     "fair_mean": 0.018208912505307318,
+     "p": 0.4855144855144855,
+     "detail": "strongest: ball 22, every 4.7 rounds"
     },
     {
      "test": "numbers run hot and cold in slow cycles",
      "key": "number_lowfreq",
-     "observed": 1.0039542982026433,
-     "fair_mean": 1.0005105861465324,
-     "p": 0.4355644355644356,
+     "observed": 1.0022148173426098,
+     "fair_mean": 1.0007776866278857,
+     "p": 0.4725274725274725,
      "detail": ""
     },
     {
      "test": "variability concentrates at some time scale (Haar)",
      "key": "wavelet_energy",
-     "observed": 2.034816379184431,
-     "fair_mean": 6.99999998742263,
-     "p": 0.929070929070929,
-     "detail": "scale shares 0.505, 0.251, 0.128, 0.062, 0.031, 0.016, 0.008 (fair 0.504, 0.252, 0.126, 0.063, 0.031, 0.016, 0.008)"
+     "observed": 4.536706898061161,
+     "fair_mean": 6.999999987480456,
+     "p": 0.6693306693306693,
+     "detail": "scale shares 0.505, 0.254, 0.126, 0.060, 0.031, 0.016, 0.008 (fair 0.504, 0.252, 0.126, 0.063, 0.031, 0.016, 0.008)"
     },
     {
      "test": "a localized burst or level shift (Haar)",
      "key": "wavelet_burst",
-     "observed": 3.7198297743844533,
-     "fair_mean": 4.534279575322786,
-     "p": 0.9690309690309691,
+     "observed": 4.6769652922095855,
+     "fair_mean": 4.527671497509993,
+     "p": 0.4305694305694306,
      "detail": ""
     },
     {
      "test": "the drawn-ball stream has a periodicity",
      "key": "stream_g",
-     "observed": 0.002280888345699296,
-     "fair_mean": 0.002471519569651747,
-     "p": 0.6453546453546454,
+     "observed": 0.0026331079112821777,
+     "fair_mean": 0.0024448097971298175,
+     "p": 0.24075924075924077,
      "detail": ""
     },
     {
      "test": "the drawn-ball stream has a period-6 rhythm",
      "key": "stream_period6",
-     "observed": 2.775938483353271,
-     "fair_mean": 1.0341172522484574,
-     "p": 0.07592407592407592,
+     "observed": 2.971039119700216,
+     "fair_mean": 1.0331055107385274,
+     "p": 0.060939060939060936,
      "detail": ""
     },
     {
      "test": "the draw sum has a localized periodicity (Morlet)",
      "key": "morlet_max",
-     "observed": 8.34619796006287,
-     "fair_mean": 8.10330694601837,
-     "p": 0.36063936063936064,
+     "observed": 8.383055426524693,
+     "fair_mean": 8.082942691458287,
+     "p": 0.3306693306693307,
      "detail": "period ~67 rounds around round 516"
     },
     {
      "test": "sum of the six balls: periodicity",
      "key": "series_g:sum of the six balls",
-     "observed": 0.013330643027256615,
-     "fair_mean": 0.011788902012579792,
-     "p": 0.19480519480519481,
+     "observed": 0.009312503498954567,
+     "fair_mean": 0.011715825421873806,
+     "p": 0.9230769230769231,
      "detail": "strongest period 3.3 rounds"
     },
     {
      "test": "number of odd balls: periodicity",
      "key": "series_g:number of odd balls",
-     "observed": 0.012904734498844685,
-     "fair_mean": 0.011643875945215041,
-     "p": 0.22477522477522477,
+     "observed": 0.012022064570764776,
+     "fair_mean": 0.011727623409354003,
+     "p": 0.37662337662337664,
      "detail": "strongest period 2.7 rounds"
     },
     {
      "test": "balls in the low half: periodicity",
      "key": "series_g:balls in the low half",
-     "observed": 0.008738048817198703,
-     "fair_mean": 0.01176317980659218,
-     "p": 0.973026973026973,
+     "observed": 0.008468034806966701,
+     "fair_mean": 0.01177918431928928,
+     "p": 0.99000999000999,
      "detail": "strongest period 2.1 rounds"
     },
     {
      "test": "smallest ball: periodicity",
      "key": "series_g:smallest ball",
-     "observed": 0.009916905132510607,
-     "fair_mean": 0.011625578590820746,
-     "p": 0.8011988011988012,
-     "detail": "strongest period 2.3 rounds"
+     "observed": 0.011573835652443168,
+     "fair_mean": 0.011664099875609157,
+     "p": 0.4695304695304695,
+     "detail": "strongest period 2.7 rounds"
     },
     {
      "test": "largest ball: periodicity",
      "key": "series_g:largest ball",
-     "observed": 0.01241917134439825,
-     "fair_mean": 0.011809117237201074,
-     "p": 0.3016983016983017,
-     "detail": "strongest period 3.4 rounds"
+     "observed": 0.013505638220748862,
+     "fair_mean": 0.011851662016312861,
+     "p": 0.1848151848151848,
+     "detail": "strongest period 7.5 rounds"
     },
     {
      "test": "first ball out: periodicity",
      "key": "series_g:first ball out",
-     "observed": 0.012718448617144372,
-     "fair_mean": 0.011811750364665844,
-     "p": 0.2707292707292707,
-     "detail": "strongest period 3.5 rounds"
+     "observed": 0.009097340515385587,
+     "fair_mean": 0.01156612966911989,
+     "p": 0.9300699300699301,
+     "detail": "strongest period 14.7 rounds"
     },
     {
      "test": "bonus ball: periodicity",
      "key": "series_g:bonus ball",
-     "observed": 0.012676772868755385,
-     "fair_mean": 0.011755502994652625,
-     "p": 0.27672327672327673,
+     "observed": 0.015229612877388238,
+     "fair_mean": 0.01176339089080776,
+     "p": 0.06993006993006994,
      "detail": "strongest period 16.5 rounds"
     }
    ],
@@ -248,32 +248,32 @@
  "backtest": {
   "strategies": {
    "random (baseline)": {
-    "z_mean": -0.8340127787656806,
-    "z_min": -1.882905587648926,
-    "z_max": -0.2107576314582422
+    "z_mean": -0.8321916935195388,
+    "z_min": -1.7785674700258423,
+    "z_max": -0.18610823071234436
    },
    "Fourier extrapolation, 3 strongest harmonics": {
-    "z_mean": 0.15103438088119214,
-    "z_min": -1.2140464051726467,
-    "z_max": 1.8718266412519635
+    "z_mean": 0.16271617408965328,
+    "z_min": -1.156750052770101,
+    "z_max": 1.8158405272817648
    },
    "Fourier extrapolation, 10 strongest harmonics": {
-    "z_mean": -1.3508585106791606,
-    "z_min": -2.262939214055895,
-    "z_max": -0.013140145726619487
+    "z_mean": -1.4267098095299178,
+    "z_min": -2.279054659524377,
+    "z_max": -0.09511055989443562
    },
    "wavelet-smoothed hotness, ~8-round scale": {
-    "z_mean": -0.21075763145824214,
-    "z_min": -2.1109257634931016,
-    "z_max": 1.3397795642822012
+    "z_mean": -0.1042103269762221,
+    "z_min": -1.8998976977830637,
+    "z_max": 1.3911847301315046
    },
    "wavelet-smoothed hotness, ~32-round scale": {
-    "z_mean": -1.6366437977372101,
-    "z_min": -3.068610502038677,
-    "z_max": -0.4539791523587087
+    "z_mean": -1.626904685329329,
+    "z_min": -2.9767034691283927,
+    "z_max": -0.41360240775713814
    }
   },
-  "test_rounds": 432,
+  "test_rounds": 434,
   "seeds": [
    2026,
    1,
@@ -285,80 +285,80 @@
   "picks": {
    "Fourier extrapolation, 3 strongest harmonics": [
     [
-     10,
-     20,
+     9,
      21,
-     24,
+     23,
+     30,
      35,
-     44
+     43
     ],
     [
-     10,
-     17,
+     9,
+     14,
      36,
-     55,
-     57,
-     58
+     51,
+     53,
+     57
     ],
     [
-     20,
-     24,
-     28,
+     18,
+     27,
+     31,
      35,
      42,
-     50
+     45
     ]
    ],
    "Fourier extrapolation, 10 strongest harmonics": [
     [
-     1,
-     16,
-     17,
-     24,
-     28,
-     36
-    ],
-    [
-     12,
+     2,
      13,
-     18,
-     22,
-     24,
-     30
+     20,
+     27,
+     31,
+     35
     ],
     [
+     11,
+     13,
      20,
-     29,
-     30,
-     50,
-     53,
-     57
+     23,
+     27,
+     33
+    ],
+    [
+     22,
+     31,
+     33,
+     43,
+     47,
+     56
     ]
    ],
    "wavelet-smoothed hotness, ~8-round scale": [
     [
      18,
+     19,
      21,
-     32,
+     31,
      44,
-     45,
      53
     ],
     [
      12,
      15,
-     35,
+     32,
      37,
-     39,
-     46
+     44,
+     45
     ],
     [
-     29,
+     28,
+     30,
      32,
      35,
-     39,
-     42,
-     44
+     38,
+     45
     ]
    ],
    "wavelet-smoothed hotness, ~32-round scale": [
@@ -366,25 +366,25 @@
      1,
      21,
      27,
-     32,
      33,
-     48
+     37,
+     47
     ],
     [
      4,
      6,
-     23,
-     45,
+     24,
+     32,
      53,
      59
     ],
     [
-     21,
+     20,
      27,
      36,
+     45,
      47,
-     53,
-     57
+     56
     ]
    ]
   }
