@@ -1,0 +1,148 @@
+{
+ "split": "2022-12-31",
+ "test_rounds": 438,
+ "tickets": 20,
+ "seeds": 5,
+ "chance_mean": 0.6101694915254238,
+ "tests": [
+  {
+   "test": "numbers differ between ball sets (11 ball sets, 1193 rounds)",
+   "stat": 503.7100558660644,
+   "p": 0.8081918081918081
+  },
+  {
+   "test": "the least fair ball set on its own (ball set 4, 122 rounds)",
+   "stat": 0.11888111888111888,
+   "p": 1.0,
+   "note": "Bonferroni over 11 ball sets"
+  },
+  {
+   "test": "numbers differ between machines (7 machines, 1167 rounds)",
+   "stat": 319.9615453494639,
+   "p": 0.45454545454545453
+  },
+  {
+   "test": "the least fair machine on its own (machine Lotto 4, 42 rounds)",
+   "stat": 0.023976023976023976,
+   "p": 0.16783216783216784,
+   "note": "Bonferroni over 7 machines"
+  },
+  {
+   "test": "some pairs come up together more often than chance (dispersion of 1,711 pair counts)",
+   "stat": 10.06712163636059,
+   "p": 0.7475083056478405
+  },
+  {
+   "test": "the two rounds of a night share numbers (40 nights)",
+   "stat": 0.575,
+   "p": 0.7532983685707257,
+   "note": "mean overlap 0.575 vs 0.610, z -0.31"
+  }
+ ],
+ "test_alpha": 0.008333333333333333,
+ "strategies": {
+  "random (baseline)": {
+   "mean": 0.6061872146118722,
+   "z_mean": -0.5299101315186882,
+   "z_min": -1.02493515491499,
+   "z_max": 0.193555400052737,
+   "hits3": 93.2,
+   "hits3_expected": 95.16953480348234,
+   "seeds": 5,
+   "seconds": 0
+  },
+  "shrunk frequencies (learnt Dirichlet)": {
+   "mean": 0.5993378995433789,
+   "z_mean": -0.396104660560518,
+   "z_min": -0.6903500326493945,
+   "z_max": -0.1708978623748762,
+   "hits3": 108.2,
+   "hits3_expected": 95.16953480348234,
+   "seeds": 5,
+   "seconds": 2
+  },
+  "decayed frequencies (learnt half-life)": {
+   "mean": 0.6063698630136986,
+   "z_mean": -0.14786520593081703,
+   "z_min": -0.33997259752479947,
+   "z_max": 0.1121820064174453,
+   "hits3": 109.6,
+   "hits3_expected": 95.16953480348234,
+   "seeds": 5,
+   "seconds": 25
+  },
+  "ball-set mixture": {
+   "mean": 0.6082648401826484,
+   "z_mean": -0.2498562221789396,
+   "z_min": -1.1722195729063798,
+   "z_max": 1.6663409378054241,
+   "hits3": 91.6,
+   "hits3_expected": 95.16953480348234,
+   "seeds": 5,
+   "seconds": 3
+  },
+  "machine mixture": {
+   "mean": 0.6098401826484018,
+   "z_mean": -0.033089760569258365,
+   "z_min": -1.1332248251177632,
+   "z_max": 1.879002613758095,
+   "hits3": 95.0,
+   "hits3_expected": 95.16953480348234,
+   "seeds": 5,
+   "seconds": 2
+  },
+  "pair cohesion": {
+   "mean": 0.6072374429223744,
+   "z_mean": -0.2399410862888851,
+   "z_min": -1.7033332873520548,
+   "z_max": 0.33742585766872524,
+   "hits3": 90.0,
+   "hits3_expected": 95.16953480348234,
+   "seeds": 5,
+   "seconds": 17
+  },
+  "nearest-neighbour analogues": {
+   "mean": 0.5850456621004566,
+   "z_mean": -1.0224274455722644,
+   "z_min": -1.9358001275096193,
+   "z_max": -0.11158585714870502,
+   "hits3": 74.2,
+   "hits3_expected": 95.16953480348234,
+   "seeds": 5,
+   "seconds": 1
+  },
+  "Thompson sampling": {
+   "mean": 0.5969406392694065,
+   "z_mean": -0.7913330868537234,
+   "z_min": -1.1448139543406224,
+   "z_max": -0.39242126987986325,
+   "hits3": 100.6,
+   "hits3_expected": 95.16953480348234,
+   "seeds": 5,
+   "seconds": 1
+  },
+  "gradient-boosted trees": {
+   "mean": 0.5958904109589042,
+   "z_mean": -0.6044447422302119,
+   "z_min": -0.6044447422302119,
+   "z_max": -0.6044447422302119,
+   "hits3": 79.0,
+   "hits3_expected": 95.16953480348234,
+   "seeds": 1,
+   "seconds": 5
+  },
+  "ORACLE: the round's own ball set (not playable)": {
+   "mean": 0.6243835616438356,
+   "z_mean": 0.5462568557900611,
+   "z_min": 0.45940459178779103,
+   "z_max": 0.6645203277056001,
+   "hits3": 123.2,
+   "hits3_expected": 95.16953480348234,
+   "seeds": 5,
+   "seconds": 1
+  }
+ },
+ "z_cut": 2.4977054744123732,
+ "expected_best": 1.2206403488473496,
+ "best": "machine mixture"
+}
