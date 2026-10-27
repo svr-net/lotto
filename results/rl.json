@@ -3,106 +3,106 @@
   {
    "label": "59-ball era (Oct 2015 - now)",
    "pool": 59,
-   "rounds": 1189,
+   "rounds": 1193,
    "split": "2022-12-31",
-   "test_rounds": 434,
+   "test_rounds": 438,
    "agents": {
     "epsilon-greedy over strategies": {
-     "z_mean": 0.277871611811948,
-     "z_min": -0.40129683389336035,
-     "z_max": 1.3726740010990606
+     "z_mean": 0.21748218272451827,
+     "z_min": -0.5517633576244508,
+     "z_max": 1.3662182704715944
     },
     "UCB1 over strategies": {
-     "z_mean": 0.17820274625704013,
-     "z_min": -1.083613422010812,
-     "z_max": 1.47381716321094
+     "z_mean": 0.15944634784196157,
+     "z_min": -1.0732965743295702,
+     "z_max": 1.4625338237415753
     },
     "Thompson sampling over strategies": {
-     "z_mean": 0.011161076328120188,
-     "z_min": -0.4350079799649536,
-     "z_max": 0.4294650652072606
+     "z_mean": 0.10993326108816093,
+     "z_min": -0.36389400756683,
+     "z_max": 0.4532622775067138
     },
     "EXP3 over strategies (adversarial bandit)": {
-     "z_mean": -1.009054611443712,
-     "z_min": -1.7022944154571056,
-     "z_max": -0.15382616609649694
+     "z_mean": -1.136261736902121,
+     "z_min": -1.929685284931433,
+     "z_max": -0.2321164490678431
     },
     "Hedge over strategies (sees every strategy's result)": {
-     "z_mean": -1.2045968048732134,
-     "z_min": -1.484844863786951,
-     "z_max": -0.7607034315248397
+     "z_mean": -1.2016580976824185,
+     "z_min": -1.4353696518081949,
+     "z_max": -0.7479304359823477
     },
     "linear Thompson sampling over numbers (contextual)": {
-     "z_mean": -0.5323472551366758,
-     "z_min": -0.7710546646058343,
-     "z_max": -0.2501183543043186
+     "z_mean": -0.5002766108330476,
+     "z_min": -0.7620582122278988,
+     "z_max": -0.2545479614616022
     },
     "REINFORCE policy gradient over numbers": {
-     "z_mean": 0.492557022342004,
-     "z_min": -0.05663987335313671,
-     "z_max": 1.5121088750959506
+     "z_mean": 0.5320759185018991,
+     "z_min": -0.06519022518714586,
+     "z_max": 1.619764986053931
     }
    },
    "arms": {
     "random": {
-     "z_mean": -0.40285252078224154,
-     "z_min": -0.9103353702009049,
-     "z_max": 0.275348480824901
+     "z_mean": -0.2610341965733308,
+     "z_min": -0.7403092259512067,
+     "z_max": 0.4309816559214149
     },
     "hot-weighted (last 100)": {
-     "z_mean": 0.20431305297695337,
-     "z_min": -0.0500002891859942,
-     "z_max": 0.6522232312901226
+     "z_mean": 0.21522123377128435,
+     "z_min": -0.1327680158369791,
+     "z_max": 0.7797257783022388
     },
     "cold-weighted (last 100)": {
-     "z_mean": -0.027228619161233092,
-     "z_min": -1.3882355192929139,
-     "z_max": 0.6751139513736716
+     "z_mean": -0.043915339697451095,
+     "z_min": -1.3403800614048826,
+     "z_max": 0.6302482729866022
     },
     "hot top-6 (last 50)": {
-     "z_mean": 0.6225400315492827,
-     "z_min": 0.3719089987136679,
-     "z_max": 1.0585286357221768
+     "z_mean": 0.564043804226786,
+     "z_min": 0.26770923866224733,
+     "z_max": 1.0901363601337302
     },
     "cold top-6 (last 50)": {
-     "z_mean": -0.02456931091011268,
-     "z_min": -0.8152175248160404,
-     "z_max": 0.8648717260497092
+     "z_mean": -0.07699586192870271,
+     "z_min": -0.9120588099296187,
+     "z_max": 0.8340407615836789
     },
     "most overdue top-6": {
-     "z_mean": 0.29842377864908215,
-     "z_min": 0.20963459040977525,
-     "z_max": 0.40764561826072876
+     "z_mean": 0.20272603759551733,
+     "z_min": 0.1145353197175758,
+     "z_max": 0.3118330575775963
     },
     "repeat last draw": {
-     "z_mean": -2.0897711469381735,
-     "z_min": -2.0897711469381735,
-     "z_max": -2.0897711469381735
+     "z_mean": -2.2598398178360934,
+     "z_min": -2.2598398178360934,
+     "z_max": -2.2598398178360934
     },
     "n-gram grammar": {
-     "z_mean": -0.16326233702129442,
-     "z_min": -1.2318612200787553,
-     "z_max": 1.2995244769697076
+     "z_mean": -0.21739589591328526,
+     "z_min": -1.2850459046496474,
+     "z_max": 1.1970941088704214
     },
     "early balls (1st/2nd out)": {
-     "z_mean": 0.582425274361381,
-     "z_min": -0.5095475519184989,
-     "z_max": 1.435432403524489
+     "z_mean": 0.6346781231433184,
+     "z_min": -0.33255797655235153,
+     "z_max": 1.3726586133219747
     },
     "drawn-order Markov chain": {
-     "z_mean": -1.230471381158108,
-     "z_min": -2.1602199562975413,
-     "z_max": -0.5350476212909334
+     "z_mean": -1.2403950620676472,
+     "z_min": -2.219483012507579,
+     "z_max": -0.5146751678525125
     },
     "machine-matched hot": {
-     "z_mean": 0.9697105148734524,
-     "z_min": 0.276452255245494,
-     "z_max": 1.4865745943931752
+     "z_mean": 0.8692077529590078,
+     "z_min": 0.2643730561070045,
+     "z_max": 1.3828238897540641
     },
     "recent bonus balls": {
-     "z_mean": -1.7557193116429735,
-     "z_min": -1.7557193116429735,
-     "z_max": -1.7557193116429735
+     "z_mean": -1.7122831914138492,
+     "z_min": -1.7122831914138492,
+     "z_max": -1.7122831914138492
     }
    },
    "paths": {
@@ -540,7 +540,11 @@
      -1.0831,
      -1.3932,
      -1.4034,
-     -1.4136
+     -1.4136,
+     -1.7237,
+     -1.7339,
+     -1.9441,
+     -1.9542
     ],
     "UCB1 over strategies": [
      0.3898,
@@ -976,7 +980,11 @@
      0.5669,
      0.7068,
      0.8966,
-     1.2864
+     1.2864,
+     0.6763,
+     0.6161,
+     0.7559,
+     0.7958
     ],
     "Thompson sampling over strategies": [
      0.0898,
@@ -1412,7 +1420,11 @@
      -1.5331,
      -1.5932,
      -1.5534,
-     -1.6136
+     -1.6136,
+     -1.6237,
+     -1.5839,
+     -1.2941,
+     -1.3542
     ],
     "EXP3 over strategies (adversarial bandit)": [
      -0.0102,
@@ -1848,7 +1860,11 @@
      -5.5331,
      -5.4932,
      -5.2534,
-     -5.1136
+     -5.1136,
+     -5.3237,
+     -5.2839,
+     -5.2941,
+     -5.4542
     ],
     "Hedge over strategies (sees every strategy's result)": [
      0.1898,
@@ -2284,7 +2300,11 @@
      -8.6831,
      -8.6432,
      -8.6034,
-     -8.4636
+     -8.4636,
+     -8.5237,
+     -8.4839,
+     -8.0941,
+     -8.2042
     ],
     "linear Thompson sampling over numbers (contextual)": [
      -0.5602,
@@ -2720,7 +2740,11 @@
      -3.6331,
      -4.0432,
      -4.2534,
-     -4.5136
+     -4.5136,
+     -4.2237,
+     -4.2339,
+     -3.7941,
+     -3.8042
     ],
     "REINFORCE policy gradient over numbers": [
      0.2898,
@@ -3156,7 +3180,11 @@
      6.3169,
      6.3568,
      6.3466,
-     6.1364
+     6.1364,
+     6.4763,
+     6.4661,
+     6.5559,
+     6.5958
     ]
    },
    "chance_band": [
@@ -3593,285 +3621,289 @@
     6.5707,
     6.5784,
     6.586,
-    6.5936
+    6.5936,
+    6.6012,
+    6.6088,
+    6.6163,
+    6.6239
    ],
    "shares": {
     "epsilon-greedy over strategies": {
-     "random": 0.0703,
-     "hot-weighted (last 100)": 0.0087,
-     "cold-weighted (last 100)": 0.0093,
+     "random": 0.07,
+     "hot-weighted (last 100)": 0.0088,
+     "cold-weighted (last 100)": 0.0094,
      "hot top-6 (last 50)": 0.0082,
-     "cold top-6 (last 50)": 0.165,
+     "cold top-6 (last 50)": 0.1644,
      "most overdue top-6": 0.0092,
      "repeat last draw": 0.0102,
-     "n-gram grammar": 0.0282,
-     "early balls (1st/2nd out)": 0.0492,
+     "n-gram grammar": 0.0281,
+     "early balls (1st/2nd out)": 0.0491,
      "drawn-order Markov chain": 0.009,
-     "machine-matched hot": 0.6229,
-     "recent bonus balls": 0.0098
+     "machine-matched hot": 0.6239,
+     "recent bonus balls": 0.0097
     },
     "UCB1 over strategies": {
-     "random": 0.0913,
-     "hot-weighted (last 100)": 0.0799,
-     "cold-weighted (last 100)": 0.0799,
-     "hot top-6 (last 50)": 0.091,
-     "cold top-6 (last 50)": 0.0864,
-     "most overdue top-6": 0.0607,
-     "repeat last draw": 0.0506,
-     "n-gram grammar": 0.0882,
-     "early balls (1st/2nd out)": 0.0937,
-     "drawn-order Markov chain": 0.0937,
-     "machine-matched hot": 0.0882,
-     "recent bonus balls": 0.0965
+     "random": 0.0919,
+     "hot-weighted (last 100)": 0.0806,
+     "cold-weighted (last 100)": 0.0796,
+     "hot top-6 (last 50)": 0.0915,
+     "cold top-6 (last 50)": 0.086,
+     "most overdue top-6": 0.0604,
+     "repeat last draw": 0.0504,
+     "n-gram grammar": 0.0888,
+     "early balls (1st/2nd out)": 0.0934,
+     "drawn-order Markov chain": 0.0934,
+     "machine-matched hot": 0.0879,
+     "recent bonus balls": 0.0961
     },
     "Thompson sampling over strategies": {
-     "random": 0.0315,
+     "random": 0.0314,
      "hot-weighted (last 100)": 0.0754,
-     "cold-weighted (last 100)": 0.0395,
-     "hot top-6 (last 50)": 0.0309,
+     "cold-weighted (last 100)": 0.0398,
+     "hot top-6 (last 50)": 0.0312,
      "cold top-6 (last 50)": 0.0317,
-     "most overdue top-6": 0.0061,
-     "repeat last draw": 0.0128,
+     "most overdue top-6": 0.006,
+     "repeat last draw": 0.0129,
      "n-gram grammar": 0.0165,
-     "early balls (1st/2nd out)": 0.3333,
-     "drawn-order Markov chain": 0.0893,
-     "machine-matched hot": 0.1602,
-     "recent bonus balls": 0.1727
+     "early balls (1st/2nd out)": 0.3334,
+     "drawn-order Markov chain": 0.0894,
+     "machine-matched hot": 0.16,
+     "recent bonus balls": 0.1722
     },
     "EXP3 over strategies (adversarial bandit)": {
-     "random": 0.083,
-     "hot-weighted (last 100)": 0.0848,
-     "cold-weighted (last 100)": 0.0777,
-     "hot top-6 (last 50)": 0.0871,
+     "random": 0.0831,
+     "hot-weighted (last 100)": 0.0846,
+     "cold-weighted (last 100)": 0.0779,
+     "hot top-6 (last 50)": 0.0872,
      "cold top-6 (last 50)": 0.083,
-     "most overdue top-6": 0.0851,
+     "most overdue top-6": 0.085,
      "repeat last draw": 0.0777,
      "n-gram grammar": 0.0829,
      "early balls (1st/2nd out)": 0.0842,
-     "drawn-order Markov chain": 0.0876,
+     "drawn-order Markov chain": 0.0875,
      "machine-matched hot": 0.0837,
-     "recent bonus balls": 0.0833
+     "recent bonus balls": 0.0832
     },
     "Hedge over strategies (sees every strategy's result)": {
      "random": 0.0972,
      "hot-weighted (last 100)": 0.0502,
-     "cold-weighted (last 100)": 0.0536,
-     "hot top-6 (last 50)": 0.053,
+     "cold-weighted (last 100)": 0.0535,
+     "hot top-6 (last 50)": 0.0533,
      "cold top-6 (last 50)": 0.1904,
      "most overdue top-6": 0.0132,
      "repeat last draw": 0.025,
      "n-gram grammar": 0.0826,
-     "early balls (1st/2nd out)": 0.0964,
+     "early balls (1st/2nd out)": 0.0967,
      "drawn-order Markov chain": 0.0876,
      "machine-matched hot": 0.0903,
-     "recent bonus balls": 0.1605
+     "recent bonus balls": 0.1601
     }
    },
-   "reinforce_entropy_share": 0.979233323591472,
+   "reinforce_entropy_share": 0.9793171094058304,
    "reinforce_theta": {
-    "freq_10": -0.0008,
-    "freq_25": -0.0287,
-    "freq_50": -0.0912,
-    "freq_100": 0.0294,
-    "freq_all": 0.0164,
-    "gap": -0.1279,
-    "mean_gap": -0.0176,
-    "gap_ratio": -0.1349,
-    "in_last": -0.0598,
-    "in_last_2": -0.0813,
-    "last_bonus": -0.056,
-    "mean_position": -0.0759,
-    "machine_rate": 0.0317,
-    "value": 0.167,
-    "odd": 0.0172,
-    "decade": 0.1639,
-    "mod3": -0.1273,
-    "mod5": -0.0823,
-    "mod7": -0.0362,
+    "freq_10": -0.0097,
+    "freq_25": -0.0349,
+    "freq_50": -0.0938,
+    "freq_100": 0.0214,
+    "freq_all": 0.0192,
+    "gap": -0.1165,
+    "mean_gap": -0.0205,
+    "gap_ratio": -0.1219,
+    "in_last": -0.0565,
+    "in_last_2": -0.065,
+    "last_bonus": -0.0684,
+    "mean_position": -0.0779,
+    "machine_rate": -0.004,
+    "value": 0.164,
+    "odd": 0.0192,
+    "decade": 0.1582,
+    "mod3": -0.1139,
+    "mod5": -0.0632,
+    "mod7": -0.0666,
     "last_sum": 0.0,
     "bias": 0.0
    },
    "picks": {
     "epsilon-greedy over strategies": [
      [
-      22,
-      32,
-      42,
-      45,
-      53,
-      54
-     ],
-     [
-      12,
-      14,
-      19,
-      20,
-      25,
-      26
-     ],
-     [
       5,
-      9,
-      13,
+      18,
+      31,
       36,
-      44,
-      56
+      53,
+      59
+     ],
+     [
+      15,
+      18,
+      22,
+      40,
+      49,
+      50
+     ],
+     [
+      17,
+      47,
+      50,
+      52,
+      57,
+      58
      ]
     ],
     "UCB1 over strategies": [
      [
-      22,
-      32,
-      42,
-      45,
-      53,
-      54
+      1,
+      13,
+      23,
+      34,
+      41,
+      50
      ],
      [
-      22,
-      32,
-      42,
-      45,
-      53,
-      54
+      1,
+      13,
+      23,
+      34,
+      41,
+      50
      ],
      [
-      22,
-      32,
-      42,
-      45,
-      53,
-      54
+      1,
+      13,
+      23,
+      34,
+      41,
+      50
      ]
     ],
     "Thompson sampling over strategies": [
      [
-      1,
-      7,
-      13,
-      23,
-      41,
-      58
+      32,
+      42,
+      45,
+      47,
+      53,
+      54
      ],
      [
-      1,
-      10,
-      19,
-      22,
-      23,
-      27
+      16,
+      18,
+      29,
+      35,
+      36,
+      54
      ],
      [
       3,
-      20,
-      43,
-      44,
-      45,
-      57
+      7,
+      17,
+      36,
+      47,
+      55
      ]
     ],
     "EXP3 over strategies (adversarial bandit)": [
      [
-      1,
-      7,
-      13,
-      23,
-      41,
-      58
-     ],
-     [
-      22,
-      32,
-      42,
-      45,
+      10,
+      18,
+      27,
+      28,
       53,
-      54
+      56
      ],
      [
-      2,
-      21,
-      34,
-      50,
-      51,
-      59
+      15,
+      18,
+      22,
+      40,
+      49,
+      50
+     ],
+     [
+      3,
+      7,
+      17,
+      36,
+      47,
+      55
      ]
     ],
     "Hedge over strategies (sees every strategy's result)": [
      [
+      10,
+      18,
+      27,
+      28,
+      53,
+      56
+     ],
+     [
       1,
-      7,
       13,
       23,
       41,
+      56,
       58
      ],
      [
-      2,
-      21,
-      34,
-      50,
-      51,
-      59
-     ],
-     [
-      9,
-      11,
-      12,
+      1,
+      13,
       23,
-      24,
-      38
+      41,
+      56,
+      58
      ]
     ],
     "linear Thompson sampling over numbers (contextual)": [
      [
+      4,
       12,
-      18,
       23,
-      48,
-      53,
-      54
-     ],
-     [
       32,
       34,
-      48,
-      52,
-      53,
-      54
+      55
      ],
      [
-      2,
-      18,
+      4,
+      12,
+      21,
       32,
-      46,
-      53,
+      43,
       56
+     ],
+     [
+      6,
+      34,
+      45,
+      47,
+      48,
+      59
      ]
     ],
     "REINFORCE policy gradient over numbers": [
      [
+      24,
+      33,
+      54,
+      55,
+      56,
+      57
+     ],
+     [
+      3,
+      25,
+      40,
+      43,
+      52,
+      54
+     ],
+     [
+      18,
       21,
-      35,
-      39,
-      42,
-      48,
-      52
-     ],
-     [
-      7,
-      8,
-      10,
-      39,
-      49,
-      52
-     ],
-     [
+      24,
       29,
-      35,
       37,
-      45,
-      47,
-      56
+      59
      ]
     ]
    }
@@ -8105,184 +8137,184 @@
   "picks": {
    "epsilon-greedy over strategies": [
     [
-     22,
-     32,
-     42,
-     45,
-     53,
-     54
-    ],
-    [
-     12,
-     14,
-     19,
-     20,
-     25,
-     26
-    ],
-    [
      5,
-     9,
-     13,
+     18,
+     31,
      36,
-     44,
-     56
+     53,
+     59
+    ],
+    [
+     15,
+     18,
+     22,
+     40,
+     49,
+     50
+    ],
+    [
+     17,
+     47,
+     50,
+     52,
+     57,
+     58
     ]
    ],
    "UCB1 over strategies": [
     [
-     22,
-     32,
-     42,
-     45,
-     53,
-     54
+     1,
+     13,
+     23,
+     34,
+     41,
+     50
     ],
     [
-     22,
-     32,
-     42,
-     45,
-     53,
-     54
+     1,
+     13,
+     23,
+     34,
+     41,
+     50
     ],
     [
-     22,
-     32,
-     42,
-     45,
-     53,
-     54
+     1,
+     13,
+     23,
+     34,
+     41,
+     50
     ]
    ],
    "Thompson sampling over strategies": [
     [
-     1,
-     7,
-     13,
-     23,
-     41,
-     58
+     32,
+     42,
+     45,
+     47,
+     53,
+     54
     ],
     [
-     1,
-     10,
-     19,
-     22,
-     23,
-     27
+     16,
+     18,
+     29,
+     35,
+     36,
+     54
     ],
     [
      3,
-     20,
-     43,
-     44,
-     45,
-     57
+     7,
+     17,
+     36,
+     47,
+     55
     ]
    ],
    "EXP3 over strategies (adversarial bandit)": [
     [
-     1,
-     7,
-     13,
-     23,
-     41,
-     58
-    ],
-    [
-     22,
-     32,
-     42,
-     45,
+     10,
+     18,
+     27,
+     28,
      53,
-     54
+     56
     ],
     [
-     2,
-     21,
-     34,
-     50,
-     51,
-     59
+     15,
+     18,
+     22,
+     40,
+     49,
+     50
+    ],
+    [
+     3,
+     7,
+     17,
+     36,
+     47,
+     55
     ]
    ],
    "Hedge over strategies (sees every strategy's result)": [
     [
+     10,
+     18,
+     27,
+     28,
+     53,
+     56
+    ],
+    [
      1,
-     7,
      13,
      23,
      41,
+     56,
      58
     ],
     [
-     2,
-     21,
-     34,
-     50,
-     51,
-     59
-    ],
-    [
-     9,
-     11,
-     12,
+     1,
+     13,
      23,
-     24,
-     38
+     41,
+     56,
+     58
     ]
    ],
    "linear Thompson sampling over numbers (contextual)": [
     [
+     4,
      12,
-     18,
      23,
-     48,
-     53,
-     54
-    ],
-    [
      32,
      34,
-     48,
-     52,
-     53,
-     54
+     55
     ],
     [
-     2,
-     18,
+     4,
+     12,
+     21,
      32,
-     46,
-     53,
+     43,
      56
+    ],
+    [
+     6,
+     34,
+     45,
+     47,
+     48,
+     59
     ]
    ],
    "REINFORCE policy gradient over numbers": [
     [
+     24,
+     33,
+     54,
+     55,
+     56,
+     57
+    ],
+    [
+     3,
+     25,
+     40,
+     43,
+     52,
+     54
+    ],
+    [
+     18,
      21,
-     35,
-     39,
-     42,
-     48,
-     52
-    ],
-    [
-     7,
-     8,
-     10,
-     39,
-     49,
-     52
-    ],
-    [
+     24,
      29,
-     35,
      37,
-     45,
-     47,
-     56
+     59
     ]
    ]
   }
