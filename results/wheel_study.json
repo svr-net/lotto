@@ -129,13 +129,7 @@
  },
  "z_cut": 2.7130518884727177,
  "expected_best": 1.7359819282592106,
- "replay": {
-  "rounds": 54,
-  "mean_in": 1.3703703703703705,
-  "z": 1.169746896165163,
-  "rounds_3plus": 5,
-  "rounds_3plus_expected": 4.9623137329003395
- },
+ "replay": null,
  "layouts": {
   "wheel (12 candidates, 3 if 3)": {
    "lines": [
