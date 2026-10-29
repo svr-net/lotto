@@ -142,6 +142,10 @@ nav.tabs a:focus-visible { outline: 2px solid var(--s1); outline-offset: 2px; }
   <div class="table-wrap"><table id="replay-table"></table></div>
   <div class="table-wrap"><table id="replay-draws"></table></div>
   <p class="note" id="replay-note"></p>
+  <h3 class="h3" id="real-head" hidden>The wheel on every draw since 2017</h3>
+  <p id="real-lede"></p>
+  <div class="table-wrap"><table id="real-table"></table></div>
+  <p class="note" id="real-note"></p>
 </section>
 
 <section id="pop-section" data-tab="players" hidden>
@@ -364,6 +368,24 @@ const P3_LINE = 0.0108641, P2_LINE = 0.1083479;
   $("#replay-note").textContent = `Figures in brackets are what random lines average. z compares the mean with the 36/59 chance rate; anything inside about ±2.5 is chance. Bold numbers are 3-match hits, worth the lowest prize.`;
 })();
 
+// ---------- both wheels on every real draw since the wheel study's split
+(function () {
+  const WS = D.wheel_study, R = WS && WS.real;
+  if (!R) return;
+  const w59 = R["spread (59 numbers, no shared pair)"], w12 = R["wheel (12 candidates, 3 if 3)"];
+  const s59 = WS.layouts["spread (59 numbers, no shared pair)"], s12 = WS.layouts["wheel (12 candidates, 3 if 3)"];
+  if (!w59 || !s59) return;
+  $("#replay-section").hidden = false;
+  $("#real-head").hidden = false;
+  const pc = (x, d = 1) => (x * 100).toFixed(d) + "%", yr = new Date(WS.split + "T12:00:00Z").getUTCFullYear() + 1;
+  const z = (o, sim) => (o.rounds_3plus - o.rounds * sim.p3) / Math.sqrt(o.rounds * sim.p3 * (1 - sim.p3));
+  $("#real-lede").textContent = `The replay above rebuilds every investigation, which takes too long to run over years of draws. Here both wheels are played on all ${w59.rounds.toLocaleString()} rounds (${w59.nights} draws) since ${yr} instead, each laid out from support the earlier draws give (recent frequencies; which support is used makes no difference, since no way of choosing numbers beats chance), and compared with the rates simulated on ${WS.sims.toLocaleString()} fair draws. The wheel on all 59 numbers won something (3+) in ${w59.rounds_3plus} rounds, ${pc(w59.p3)} against ${pc(s59.p3)} simulated (z ${(z(w59, s59) >= 0 ? "+" : "") + z(w59, s59).toFixed(2)}), and the 12-number wheel in ${w12.rounds_3plus}, ${pc(w12.p3)} against ${pc(s12.p3)}: the real draws behave like fair ones, so the 59-number wheel's lead holds.`;
+  const row = (label, o, sim) => `<tr><td>${label}</td><td>${o.rounds.toLocaleString()}</td><td>${o.rounds_2plus} <span class="muted">(${(o.rounds * sim.p2).toFixed(0)})</span></td><td class="good">${o.rounds_3plus} <span class="muted">(${(o.rounds * sim.p3).toFixed(0)})</span></td><td>${o.rounds_4plus} <span class="muted">(${(o.rounds * sim.p4).toFixed(1)})</span></td><td>${fmt(o.line_mean, 3)}</td><td>${o.money_mean.toFixed(2)} <span class="muted">(${sim.money_mean.toFixed(2)})</span></td></tr>`;
+  $("#real-table").innerHTML = `<thead><tr><th>Wheel</th><th>Rounds</th><th>2+</th><th>3+</th><th>4+</th><th>Mean</th><th>Prizes</th></tr></thead><tbody>` +
+    row("All 59 numbers, no pair in two lines", w59, s59) + row("12 numbers, 3 if 3", w12, s12) + "</tbody>";
+  $("#real-note").textContent = `2+, 3+ and 4+ count the rounds in which some line matched that many; figures in brackets are what the simulated fair draws give. Mean is matches per line (36/59 = 0.610 by chance), and prizes are the fixed prizes won per round with 15 lines (a free Lucky Dip counted as 2, 3 matches 30, 4 matches 140, 5 matches 1,750).`;
+})();
+
 // ---------- classic strategies on prime-base digits
 (function () {
   const RS = D.radix_strat;
@@ -424,44 +446,41 @@ const P3_LINE = 0.0108641, P2_LINE = 0.1083479;
   }
 })();
 
-// ---------- live results: the committed wheel scored against the real draws
+// ---------- live results: the wheel on all 59 numbers scored against the real draws
 (function () {
   const LV = D.live;
   if (!LV) return;
-  // only draws played with the wheel on all 59 numbers (from 31 October 2026); earlier wheels used 12 numbers
-  const WD = LV.draws.filter((e) => e.wheel_lines && new Set(e.wheel_lines.flatMap((s) => s.line)).size === 59);
+  const WD = LV.draws.filter((e) => e.wheel59 && e.wheel59.lines.length);
+  if (!WD.length) return;
   $("#live-section").hidden = false;
   const Sm = LV.summary, P = LV.summary.chance, dfmt = (d) => new Date(d + "T12:00:00Z").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
-  if (!WD.length) {
-    const nd = D.combined && D.combined.next_draw_date;
-    $("#live-lede").textContent = `Before each draw the report commits the wheel's 15 lines on all 59 numbers, and after the draw they are scored against the real numbers. The first draw played with this wheel is ${nd ? dfmt(nd) : "the next one"}; its results appear here once it has been drawn.`;
-    $("#live-table").innerHTML = ""; $("#live-draws").innerHTML = ""; $("#live-note").textContent = "";
-    return;
-  }
   const n = WD.length, p3 = [3, 4, 5, 6].reduce((a, j) => a + P[j], 0);
-  const t = (() => { const counts = [0, 0, 0, 0, 0, 0, 0]; let bonus = 0;
-    WD.forEach((e) => e.wheel_lines.forEach((s) => s.matches.forEach((m, j) => { counts[m]++; bonus += s.bonus[j] ? 1 : 0; })));
-    const lr = counts.reduce((a, b) => a + b, 0);
-    return { line_rounds: lr, counts, bonus, mean: counts.reduce((a, c, k) => a + k * c, 0) / lr, prize: counts.slice(3).reduce((a, b) => a + b, 0) }; })();
-  $("#live-lede").textContent = `Before each draw the report commits the wheel's 15 lines. After the draw they are scored against the real numbers. Each line is checked against every round, so a two-round draw scores each line twice. ${n} draw${n > 1 ? "s" : ""} scored so far, from ${dfmt(WD[0].date)} to ${dfmt(WD[n - 1].date)}.`;
+  const counts = [0, 0, 0, 0, 0, 0, 0]; let bonus = 0;
+  WD.forEach((e) => e.wheel59.lines.forEach((s) => s.matches.forEach((m, j) => { counts[m]++; bonus += s.bonus[j] ? 1 : 0; })));
+  const lr = counts.reduce((a, b) => a + b, 0);
+  const t = { line_rounds: lr, counts, bonus, mean: counts.reduce((a, c, k) => a + k * c, 0) / lr, prize: counts.slice(3).reduce((a, b) => a + b, 0) };
+  const rounds = WD.flatMap((e) => e.rounds.map((_, j) => Math.max(...e.wheel59.lines.map((s) => s.matches[j]))));
+  const r3 = rounds.filter((b) => b >= 3).length, r2 = rounds.filter((b) => b >= 2).length;
+  const cov = D.combined && D.combined.wheel && D.combined.wheel.coverage;
+  const rebuilt = WD.filter((e) => e.wheel59.source !== "committed").length, fromReplay = WD.filter((e) => e.wheel59.source === "rebuilt from the replay");
+  $("#live-lede").textContent = `The wheel's 15 lines on all 59 numbers, scored against every draw since ${dfmt(WD[0].date)}: ${n} draw${n > 1 ? "s" : ""} and ${rounds.length} rounds. Each line is checked against every round, so a two-round draw scores each line twice.` +
+    (rebuilt ? ` The wheel was first committed for 31 October 2026, so for the ${rebuilt} draw${rebuilt > 1 ? "s" : ""} before that its lines are rebuilt exactly as today's wheel makes them, from the combined support committed on main before each draw${fromReplay.length ? ` (for ${fromReplay.map((e) => dfmt(e.date)).join(", ")}, when no picks were committed in time, from the support the three-month replay rebuilt from the earlier draws)` : ""}. Nothing after the draw is used.` : "") +
+    ` Some line matched 3 or more (a prize) in ${r3} of ${rounds.length} rounds${cov ? `, about ${(rounds.length * cov.p3).toFixed(1)} expected` : ""}, and 2 or more in ${r2}${cov ? `, about ${(rounds.length * cov.p2).toFixed(1)} expected` : ""}.`;
   const exp = (k) => t.line_rounds * (k === 3 ? p3 : P[k]);
   $("#live-table").innerHTML = `<thead><tr><th>Lines</th><th>Line-rounds</th><th>0 hits</th><th>1 hit</th><th>2 hits</th><th>3+ (a prize)</th><th>Bonus</th><th>Mean</th></tr></thead><tbody>` +
     `<tr><td>Wheel lines</td><td>${t.line_rounds}</td>${[0, 1, 2].map((k) => `<td>${t.counts[k]} <span class="muted">(${exp(k).toFixed(1)})</span></td>`).join("")}<td class="${t.prize ? "good" : ""}">${t.prize} <span class="muted">(${exp(3).toFixed(1)})</span></td><td>${t.bonus}</td><td>${fmt(t.mean, 2)}</td></tr>` +
     `<tr class="base-row"><td>Random line (chance)</td><td></td><td>${fmt(P[0] * 100, 1)}%</td><td>${fmt(P[1] * 100, 1)}%</td><td>${fmt(P[2] * 100, 1)}%</td><td>${fmt(p3 * 100, 2)}%</td><td></td><td>${fmt(Sm.chance_mean, 2)}</td></tr></tbody>`;
   const ball = (b, r) => `<span class="ball${r.numbers.includes(b) ? " hit" : b === r.bonus ? " bonus-hit" : ""}">${b}</span>`;
-  $("#live-draws").innerHTML = WD.slice().reverse().map((e) => {
-    const res = e.rounds.map((r) => `<div class="line"><span class="ln">R${r.round}</span><div class="balls">${r.numbers.map((b) => `<span class="ball lead">${b}</span>`).join("")}<span class="ball bonus-hit" title="Bonus ball">${r.bonus}</span></div><span class="tag">drawn</span></div>`).join("");
-    const cand = [...new Set(e.wheel_lines.flatMap((s) => s.line))].sort((a, b) => a - b);
-    const best = Math.max(...e.wheel_lines.flatMap((s) => s.matches));
-    const cands = cand.length > 20 ? "" : e.rounds.map((r, j) => {
-      const inC = cand.filter((b) => r.numbers.includes(b)).length, bw = Math.max(...e.wheel_lines.map((s) => s.matches[j]));
-      const won = e.wheel_lines.filter((s) => s.matches[j] >= 3).length;
-      return `<div class="line"><span class="ln">${e.rounds.length > 1 ? `R${r.round}` : ""}</span><div class="balls">${cand.map((b) => ball(b, r)).join("")}</div><span class="tag">${inC} of ${cand.length} drawn · best line ${bw}${won ? ` · ${won} line${won > 1 ? "s" : ""} with 3+` : ""}</span></div>`;
-    }).join("");
-    const lines = e.wheel_lines.map((s, i) => `<div class="line"><span class="ln">${i + 1}</span>${e.rounds.map((r, j) => `<span class="grp"><div class="balls">${s.line.map((b) => ball(b, r)).join("")}</div><span class="tag">${e.rounds.length > 1 ? `R${r.round}: ` : ""}${s.matches[j]}${s.bonus[j] ? " + bonus" : ""}</span></span>`).join("")}</div>`).join("");
-    return `<div class="live-draw"><h3 class="h3">Draw ${e.draw_no} · ${dfmt(e.date)} · best wheel line ${best} match${best === 1 ? "" : "es"}</h3>${res}${cands ? `<h3 class="h3" style="font-size:0.95rem">The ${cand.length} candidates</h3>${cands}` : ""}<details${cands ? "" : " open"}><summary>The ${e.wheel_lines.length} lines</summary><div style="display:grid;gap:8px;margin-top:8px">${lines}</div></details></div>`;
+  $("#live-draws").innerHTML = WD.slice().reverse().map((e, k) => {
+    const L = e.wheel59.lines;
+    const res = e.rounds.map((r, j) => { const bw = Math.max(...L.map((s) => s.matches[j])), won = L.filter((s) => s.matches[j] >= 3).length;
+      return `<div class="line"><span class="ln">R${r.round}</span><div class="balls">${r.numbers.map((b) => `<span class="ball lead">${b}</span>`).join("")}<span class="ball bonus-hit" title="Bonus ball">${r.bonus}</span></div><span class="tag">drawn · best line ${bw}${won ? ` · ${won} line${won > 1 ? "s" : ""} with 3+` : ""}</span></div>`; }).join("");
+    const best = Math.max(...L.flatMap((s) => s.matches));
+    const lines = L.map((s, i) => `<div class="line"><span class="ln">${i + 1}</span>${e.rounds.map((r, j) => `<span class="grp"><div class="balls">${s.line.map((b) => ball(b, r)).join("")}</div><span class="tag">${e.rounds.length > 1 ? `R${r.round}: ` : ""}${s.matches[j]}${s.bonus[j] ? " + bonus" : ""}</span></span>`).join("")}</div>`).join("");
+    const src = e.wheel59.source === "committed" ? "committed before the draw" : "rebuilt from the support committed before the draw";
+    return `<div class="live-draw"><h3 class="h3">Draw ${e.draw_no} · ${dfmt(e.date)} · best wheel line ${best} match${best === 1 ? "" : "es"}</h3>${res}<details${k === 0 ? " open" : ""}><summary>The ${L.length} lines (${src})</summary><div style="display:grid;gap:8px;margin-top:8px">${lines}</div></details></div>`;
   }).join("");
-  $("#live-note").textContent = `Filled balls are numbers that came up in that round; a dashed outline is the bonus ball. Figures in brackets are how many line-rounds random tickets would put in each column on average. The lowest prize needs 3 matching numbers. These results are expected to track chance: the backtests over ${D.test_rounds} past rounds found no method that beats it, and a handful of live draws is far too few to tell any method apart from random.`;
+  $("#live-note").textContent = `Filled balls are numbers that came up in that round; a dashed outline is the bonus ball. Figures in brackets are how many line-rounds random tickets would put in each column on average. The lowest prize needs 3 matching numbers. These results are expected to track chance: the backtests over ${D.test_rounds} past rounds found no method that beats it, and the wheel's layout changes how often something is won, not how much on average.`;
 })();
 
 // ---------- stacking's learned weights

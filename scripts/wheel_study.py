@@ -14,6 +14,11 @@ the same matches and the same prize money; what changes is how the wins are spre
     pair, so their 2+ and 3+ matches almost never come together and some line wins in as many
     rounds as 15 lines can;
   - random: 15 lines drawn independently.
+Part C plays the report's wheel (15 lines on all 59 numbers) and the 12-number wheel on every real
+night from --split on, each laid out from support the draws before that night give (decayed
+frequencies, half-life 52 rounds; support carries no information, Part A, so it only decides which
+numbers are played twice), and compares how often some line won with the simulated rates of Part B.
+
 Prize money counts the fixed tiers: 2 matches a free Lucky Dip (2), 3 matches 30, 4 matches 140 and
 5 matches 1,750 (5 plus the bonus and the jackpot are left out).
 
@@ -182,6 +187,41 @@ def layout_stats(lines, n=1_000_000, seed=0, chunk=100_000):
             "lines_won_per_3plus_round": wins3 / max(rounds3, 1)}
 
 
+def real_draws(e, split):
+    """Part C: both wheels on the real rounds since split."""
+    e = e.sort_values(["draw_no", "round"]).reset_index(drop=True)
+    sets = e[N_COLS].to_numpy(int)
+    x = onehot(sets)
+    dates = e.date.to_numpy()
+    nights = sorted(set(dates[dates > split]))
+    out = {}
+    for name in ("wheel (12 candidates, 3 if 3)", "spread (59 numbers, no shared pair)"):
+        best, money, means = [], [], []
+        for d in nights:
+            h = dates < d
+            score = decay(x[h], 52)
+            seed = int(d.replace("-", ""))
+            if name.startswith("spread"):
+                lines = br.spread_lines(score, seed)
+            else:
+                top = sorted(int(v) for v in top12(score, np.random.default_rng(seed)))
+                lines = [sorted(top[i] for i in r) for r in br.WHEEL_12]
+            L = np.array(lines)
+            for r in np.where(dates == d)[0]:
+                m = np.isin(L, sets[r]).sum(1)
+                best.append(int(m.max()))
+                money.append(int(PRIZE[m].sum()))
+                means.append(float(m.mean()))
+        best = np.array(best)
+        out[name] = {"nights": len(nights), "rounds": len(best), "p2": float((best >= 2).mean()), "p3": float((best >= 3).mean()),
+                     "p4": float((best >= 4).mean()), "rounds_2plus": int((best >= 2).sum()), "rounds_3plus": int((best >= 3).sum()),
+                     "rounds_4plus": int((best >= 4).sum()), "money_mean": float(np.mean(money)), "line_mean": float(np.mean(means))}
+        o = out[name]
+        print(f"  {name:38s} {o['rounds']} rounds  2+ {o['p2']:.3f}  3+ {o['p3']:.4f} ({o['rounds_3plus']})  4+ {o['rounds_4plus']}  "
+              f"prize {o['money_mean']:.2f}  line mean {o['line_mean']:.4f}", flush=True)
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--csv", default="data/uk_lotto_full.csv")
@@ -217,7 +257,9 @@ def main():
         s = stats[name]
         print(f"  {name:38s} {s['distinct']:2d} numbers  2+ {s['p2']:.3f}  3+ {s['p3']:.4f}  4+ {s['p4']:.5f}  "
               f"prize {s['money_mean']:.2f} (sd {s['money_sd']:.1f})  lines won per 3+ round {s['lines_won_per_3plus_round']:.2f}", flush=True)
-    out = {"split": a.split, "nights": n_nights, "rounds": n_rounds, "candidates": CAND, "chance_in": IN_MEAN,
+    print(f"Part C: both wheels on the real draws from {a.split}", flush=True)
+    real = real_draws(e, a.split)
+    out = {"split": a.split, "real": real, "nights": n_nights, "rounds": n_rounds, "candidates": CAND, "chance_in": IN_MEAN,
            "p_condition": P_COND, "rules": rules, "z_cut": z_cut, "expected_best": expected_best, "replay": replay,
            "layouts": stats, "prizes": PRIZE.tolist(), "sims": a.sims}
     with open(a.out, "w") as fh:

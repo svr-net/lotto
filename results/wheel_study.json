@@ -1,5 +1,31 @@
 {
  "split": "2016-12-31",
+ "real": {
+  "wheel (12 candidates, 3 if 3)": {
+   "nights": 1025,
+   "rounds": 1066,
+   "p2": 0.35553470919324576,
+   "p3": 0.09287054409005628,
+   "p4": 0.006566604127579738,
+   "rounds_2plus": 379,
+   "rounds_3plus": 99,
+   "rounds_4plus": 7,
+   "money_mean": 8.562851782363978,
+   "line_mean": 0.6037523452157597
+  },
+  "spread (59 numbers, no shared pair)": {
+   "nights": 1025,
+   "rounds": 1066,
+   "p2": 0.9136960600375235,
+   "p3": 0.17636022514071295,
+   "p4": 0.010318949343339587,
+   "rounds_2plus": 974,
+   "rounds_3plus": 188,
+   "rounds_4plus": 11,
+   "money_mean": 10.870544090056285,
+   "line_mean": 0.6102564102564102
+  }
+ },
  "nights": 1025,
  "rounds": 1066,
  "candidates": 12,

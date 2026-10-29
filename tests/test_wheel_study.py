@@ -43,3 +43,10 @@ def test_spread_lines_share_no_pair_and_cover_every_number():
     assert len(pairs) == len(set(pairs))
     uses = Counter(v for l in lines for v in l)
     assert len(uses) == 59 and {v for v, c in uses.items() if c == 2} == set(range(1, 32))
+
+
+def test_real_draws_plays_both_wheels():
+    out = ws.real_draws(fake_era(), "2016-12-31")
+    assert set(out) == {"wheel (12 candidates, 3 if 3)", "spread (59 numbers, no shared pair)"}
+    for o in out.values():
+        assert o["rounds"] == 2 * o["nights"] and 0 <= o["p3"] <= o["p2"] <= 1
