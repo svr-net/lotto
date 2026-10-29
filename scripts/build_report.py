@@ -62,12 +62,6 @@ def lines_from_score(score, seed: int, n_lines: int = 5) -> list:
     return lines
 
 
-# A 15-line covering design on 12 numbers: every 3 of the 12 sit together in at least one line, so if 3
-# drawn numbers are among the candidates, some line matches all 3 ("3 if 3"). 15 is the smallest known.
-WHEEL_12 = [(0, 1, 2, 3, 4, 5), (0, 1, 6, 7, 8, 9), (2, 3, 6, 7, 10, 11), (4, 5, 8, 9, 10, 11), (0, 1, 2, 8, 10, 11),
-            (0, 3, 4, 6, 9, 10), (1, 3, 5, 7, 9, 11), (2, 4, 5, 6, 7, 8), (0, 2, 5, 6, 9, 11), (0, 3, 4, 7, 8, 11),
-            (1, 2, 4, 7, 9, 10), (1, 3, 5, 6, 8, 10), (0, 2, 5, 7, 8, 10), (1, 2, 4, 6, 8, 11), (0, 1, 2, 3, 8, 9)]
-
 WHEEL_LINES = 15
 
 
@@ -109,13 +103,12 @@ def wheel_lines(score, seed: int = 0) -> tuple:
 
 
 def wheel(score, seed: int = 0, prev=()) -> dict:
-    """The wheel option with its odds, and the usual 12-number 3-if-3 wheel's for comparison."""
+    """The wheel option with its odds."""
     from collections import Counter
     cand, lines = wheel_lines(score, seed)
     uses = Counter(v for l in lines for v in l)
     return {"candidates": cand, "lines": lines, "layout": "no pair of numbers in two lines",
-            "twice": sorted(v for v, c in uses.items() if c == 2), "coverage": coverage(lines),
-            "classic": coverage([sorted(i + 1 for i in r) for r in WHEEL_12])}
+            "twice": sorted(v for v, c in uses.items() if c == 2), "coverage": coverage(lines)}
 
 
 def coverage(lines: list, n: int = 1_000_000, seed: int = 0, chunk: int = 100_000) -> dict:

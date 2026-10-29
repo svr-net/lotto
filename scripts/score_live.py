@@ -9,6 +9,11 @@ is skipped, so running it again is harmless.
 
     python scripts/score_live.py                     # after a draw: score main's picks
     python scripts/score_live.py 80dd700 ef73d8e     # backfill from older commits
+
+Every draw also gets the wheel on all 59 numbers ("wheel59"): the committed wheel's lines once it is
+the one committed, and before that the lines today's wheel makes from the combined support committed
+for that draw (or, for a draw with no committed picks, the support the three-month replay rebuilt
+from the draws before it), so the wheel's record runs back to the first scored draw.
 """
 import json, os, subprocess, sys
 from math import comb
@@ -17,6 +22,7 @@ import pandas as pd
 
 POOL, PICK = 59, 6
 OUT = "results/live_scores.json"
+REPLAY = "results/replay_five_lines.json"
 
 
 def git_json(ref: str, path: str):
@@ -73,7 +79,56 @@ def summarise(entries: list) -> dict:
             "strategies": tally([s for e in entries for ls in e["strategies"].values() for s in ls]),
             "popularity_lines": tally([s for e in entries for s in e.get("popularity_lines", [])]),
             "wheel_lines": tally([s for e in entries for s in e.get("wheel_lines", [])]),
+            "wheel59_lines": tally([s for e in entries for s in (e.get("wheel59") or {}).get("lines", [])]),
             "chance": chance(), "chance_mean": PICK * PICK / POOL}
+
+
+def committed_scores() -> dict:
+    """{next_draw_date: (commit, combined support)} from the history of results/combined_picks.json,
+    keeping the latest commit for each date (the picks as they stood before that draw)."""
+    out = {}
+    log = subprocess.run(["git", "log", "--format=%h", "--", "results/combined_picks.json"],
+                         capture_output=True, text=True).stdout.split()
+    for sha in log:  # newest first
+        c = git_json(sha, "results/combined_picks.json")
+        if c and c.get("score") and c.get("next_draw_date") not in out:
+            out[c["next_draw_date"]] = (sha, c["score"])
+    return out
+
+
+def backfill_wheel59(record: dict, df: pd.DataFrame) -> None:
+    """Give every scored draw (and any replayed draw since the first one missing from the record) the
+    wheel on all 59 numbers; see the module docstring."""
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import build_report as br
+    if not record["draws"]:
+        return
+    first = min(e["date"] for e in record["draws"])
+    replay = {d["date"]: d["score"] for d in (json.load(open(REPLAY))["draws"] if os.path.exists(REPLAY) else [])}
+    have = {e["date"] for e in record["draws"]}
+    for date in sorted(d for d in replay if d >= first and d not in have):
+        rounds = draw_rounds(df, date)
+        if rounds:  # a draw nobody committed picks for (the routine ran after it)
+            record["draws"].append({"date": date, "draw_no": rounds[0]["draw_no"], "ref": None, "rounds": rounds,
+                                    "combined": [], "popularity_lines": [], "wheel_lines": [], "strategies": {}})
+    commits = None
+    for e in record["draws"]:
+        if "wheel59" in e:
+            continue
+        committed = e.get("wheel_lines") or []
+        if len({v for s in committed for v in s["line"]}) == POOL:
+            e["wheel59"] = {"source": "committed", "lines": committed}
+            continue
+        if commits is None:
+            commits = committed_scores()
+        if e["date"] in commits:
+            source, score = f"rebuilt from {commits[e['date']][0]}", commits[e["date"]][1]
+        elif e["date"] in replay:
+            source, score = "rebuilt from the replay", replay[e["date"]]
+        else:
+            continue
+        _, lines = br.wheel_lines(score, int(e["date"].replace("-", "")))
+        e["wheel59"] = {"source": source, "lines": [score_line(l, e["rounds"]) for l in lines]}
 
 
 def main(refs: list):
@@ -100,6 +155,7 @@ def main(refs: list):
         done.add(date)
         best = max(m for s in record["draws"][-1]["combined"] for m in s["matches"])
         print(f"{ref}: scored {date} (draw {rounds[0]['draw_no']}), best combined line {best} matches")
+    backfill_wheel59(record, df)
     record["draws"].sort(key=lambda e: e["date"])
     record["summary"] = summarise(record["draws"])
     with open(OUT, "w") as fh:
