@@ -120,6 +120,7 @@ def replay_one(args):
            "combined": [sl.score_line(l, rounds) for l in combined["lines"]],
            "popularity_lines": [sl.score_line(l, rounds) for l in combined["popularity_lines"]],
            "wheel": wheel_entry(br, combined["score"], rounds, sl),
+           "spread": [sl.score_line(l, rounds) for l in br.spread_lines(combined["score"], seed)],
            "popularity": combined["popularity"], "score": combined["score"],
            "window": hist[hist.draw_no >= 2066].sort_values(["draw_no", "round"])
                      [["n1", "n2", "n3", "n4", "n5", "n6"]].tail(104).to_numpy().tolist(),
@@ -174,7 +175,8 @@ def main():
     print(f"replaying {len(dates)} draws from {dates[0]} to {dates[-1]} with {a.workers} workers", flush=True)
     with Pool(a.workers) as pool:
         draws = pool.map(replay_one, [(d, a.csv) for d in dates], chunksize=1)
-    summary = sl.summarise([{**d, "strategies": {}, "wheel_lines": d["wheel"]["lines"]} for d in draws])
+    summary = sl.summarise([{**d, "strategies": {}, "wheel_lines": d["wheel"]["lines"],
+                           "spread_lines": d.get("spread", [])} for d in draws])
     del summary["strategies"]
     seeds = seed_study(draws)
     for d in draws:

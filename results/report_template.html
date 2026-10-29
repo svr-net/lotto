@@ -138,6 +138,11 @@ nav.tabs a:focus-visible { outline: 2px solid var(--s1); outline-offset: 2px; }
       <details><summary id="wheel-sum"></summary><div class="picks5-lines" id="wheel-lines" style="margin-top:8px"></div></details>
       <p class="note" id="wheel-note"></p>
     </div>
+    <div id="spread5" hidden style="display:grid;gap:8px">
+      <div class="picks5-head"><strong>Spread option</strong><span class="note" id="spread-sub"></span></div>
+      <details><summary id="spread-sum"></summary><div class="picks5-lines" id="spread-lines" style="margin-top:8px"></div></details>
+      <p class="note" id="spread-note"></p>
+    </div>
   </div>
 <div data-tab="backtest" style="display:grid;gap:16px">
   <p id="lede"></p>
@@ -382,6 +387,7 @@ const covText = (c) => `They cover ${c.distinct} different numbers. In each roun
   $("#replay-table").innerHTML = `<thead><tr><th>Lines</th><th>Line-rounds</th><th>0 hits</th><th>1 hit</th><th>2 hits</th><th>3+ (a prize)</th><th>Mean</th><th>z</th></tr></thead><tbody>` +
     row("Five combined lines", Sm.combined) + row("Popularity-aware lines", Sm.popularity_lines) +
     (Sm.wheel_lines && Sm.wheel_lines.line_rounds ? row("Wheel lines (15 per round)", Sm.wheel_lines, wZ) : "") +
+    (Sm.spread_lines && Sm.spread_lines.line_rounds ? row("Spread lines (15 per round)", Sm.spread_lines) : "") +
     `<tr class="base-row"><td>Random line (chance)</td><td></td><td>${fmt(P[0] * 100, 1)}%</td><td>${fmt(P[1] * 100, 1)}%</td><td>${fmt(P[2] * 100, 1)}%</td><td>${fmt(p3 * 100, 2)}%</td><td>${fmt(Sm.chance_mean, 3)}</td><td></td></tr></tbody>`;
   const anyHit = (k, t) => RP.draws.reduce((a, d) => a + d.rounds.filter((_, j) => d[k].some((s) => s.matches[j] >= t)).length, 0);
   const nr = RP.draws.reduce((a, d) => a + d.rounds.length, 0);
@@ -392,6 +398,11 @@ const covText = (c) => `They cover ${c.distinct} different numbers. In each roun
     const cond = wr.filter((r) => r.inC >= 3), any3 = wr.filter((r) => r.best >= 3).length, any2 = wr.filter((r) => r.best >= 2).length;
     const multi = wr.filter((r) => r.hits > 1).length;
     $("#replay-lede").textContent += ` The wheel option (the 12 most-supported numbers in 15 lines) had 3 or more of a round's numbers among its candidates in ${cond.length} of ${wr.length} rounds, about ${(wr.length * 0.0919).toFixed(1)} expected, and ${cond.every((r) => r.best >= 3) ? "its guarantee delivered a 3-match every time" : "its guarantee failed"}. Some wheel line matched 3+ in ${any3} rounds and 2+ in ${any2}; ${multi} of those rounds had more than one winning line, which is how a wheel bunches its wins.`;
+  }
+  const SD = RP.draws.filter((d) => d.spread && d.spread.length);
+  if (SD.length) {
+    const sr = SD.flatMap((d) => d.rounds.map((_, j) => d.spread.map((l) => l.matches[j])));
+    $("#replay-lede").textContent += ` The spread option (15 lines on all 59 numbers, no pair shared) had some line with 3+ in ${sr.filter((m) => Math.max(...m) >= 3).length} of ${sr.length} rounds and 2+ in ${sr.filter((m) => Math.max(...m) >= 2).length}.`;
   }
   const cell = (ls) => ls.map((s) => s.matches.map((m) => m >= 3 ? `<b>${m}</b>` : m).join("/")).join(" ");
   const wcell = (d) => d.wheel ? d.rounds.map((_, j) => { const b = Math.max(...d.wheel.lines.map((l) => l.matches[j])); return `${d.wheel.in_candidates[j]}→${b >= 3 ? `<b>${b}</b>` : b}`; }).join(" / ") : "–";
@@ -465,6 +476,27 @@ const covText = (c) => `They cover ${c.distinct} different numbers. In each roun
   $("#wheel-note").textContent = `Every set of 3 candidates sits together in at least one line, so whenever 3 or more of a round's numbers are among the ${W.candidates.length}, some line matches at least 3. That happens in ${pc(W.p_condition)} of rounds. Overall, some line matches 3+ in ${pc(W.coverage.p3, 2)} of rounds and 2+ in ${pc(W.coverage.p2)}, against ${pc(ind3, 2)} and ${pc(ind2)} for ${L} lines picked independently: the wheel bunches its wins together, so it wins something less often for the same cost. Its average number of matches and of prizes is exactly the same as any ${L} lines, and the candidates are no likelier to be drawn than other numbers, so the guarantee doesn't change the odds.`;
 })();
 
+// ---------- spread option: the same 15 lines' cost, laid out so no two lines share a pair
+(function () {
+  const C = D.combined, S = C && C.spread, W = C && C.wheel, WS = D.wheel_study;
+  if (!S) return;
+  $("#spread5").hidden = false;
+  const L = S.lines.length, pc = (x, d = 1) => (x * 100).toFixed(d) + "%";
+  $("#spread-sub").textContent = `${L} lines on all ${S.coverage.distinct} numbers, no pair of numbers in two lines: some line wins in as many rounds as ${L} lines can`;
+  $("#spread-sum").textContent = `Show the ${L} lines`;
+  $("#spread-lines").innerHTML = S.lines.map((line, i) => `<div class="line"><span class="ln">${i + 1}</span><div class="balls">${line.map((b) => `<span class="ball">${b}</span>`).join("")}</div></div>`).join("");
+  let note = `Some line matches 3+ (a prize) in ${pc(S.coverage.p3, 2)} of rounds and 2+ in ${pc(S.coverage.p2)}` + (W ? `, against ${pc(W.coverage.p3, 2)} and ${pc(W.coverage.p2)} for the wheel` : "") +
+    `, for the same cost and the same average matches and prize money. Because no two lines share a pair, two lines can only win together if four or more numbers are drawn across them, so the wins are spread over rounds instead of bunched. The numbers with the most combined support are the ones played twice.`;
+  if (WS) {
+    const LW = WS.layouts, lw = LW["wheel (12 candidates, 3 if 3)"], ls = LW["spread (59 numbers, no shared pair)"];
+    const best = Object.entries(WS.rules).filter(([k]) => k !== "random").sort((a, b) => b[1].z_mean - a[1].z_mean)[0];
+    note += ` The wheel study tested ${Object.keys(WS.rules).length} ways of choosing the wheel's 12 candidates on the ${WS.rounds} rounds since ${new Date(WS.split + "T12:00:00Z").getUTCFullYear() + 1}: the best, ${best[0]}, put ${fmt(best[1].mean_in, 3)} drawn numbers among its 12 against ${fmt(WS.chance_in, 3)} by chance (z ${(best[1].z_mean >= 0 ? "+" : "") + best[1].z_mean.toFixed(2)}, below the cut of ${WS.z_cut.toFixed(2)} and close to the ${WS.expected_best.toFixed(2)} the best of that many is expected to reach by luck)` +
+      (WS.replay ? `; the combined support itself scored ${fmt(WS.replay.mean_in, 3)} over the ${WS.replay.rounds} replayed rounds (z ${(WS.replay.z >= 0 ? "+" : "") + WS.replay.z.toFixed(2)})` : "") +
+      `. With no way to make the candidates likelier, the wheel's guarantee buys nothing, and on ${WS.sims.toLocaleString()} simulated draws its prize money per round varies more (sd ${lw.money_sd.toFixed(1)} against ${ls.money_sd.toFixed(1)}) for the same mean (${lw.money_mean.toFixed(2)} against ${ls.money_mean.toFixed(2)}, counting the fixed prizes for 2 to 5 matches).`;
+  }
+  $("#spread-note").textContent = note;
+})();
+
 // ---------- live results: committed picks scored against the real draws
 (function () {
   const LV = D.live;
@@ -476,7 +508,7 @@ const covText = (c) => `They cover ${c.distinct} different numbers. In each roun
   const row = (label, t) => { const exp = (k) => t.line_rounds * (k === 3 ? [3, 4, 5, 6].reduce((a, j) => a + P[j], 0) : P[k]);
     return `<tr><td>${label}</td><td>${t.line_rounds}</td>${[0, 1, 2].map((k) => `<td>${t.counts[k]} <span class="muted">(${exp(k).toFixed(1)})</span></td>`).join("")}<td class="${t.prize ? "good" : ""}">${t.prize} <span class="muted">(${exp(3).toFixed(1)})</span></td><td>${t.bonus}</td><td>${fmt(t.mean, 2)}</td></tr>`; };
   $("#live-table").innerHTML = `<thead><tr><th>Lines</th><th>Line-rounds</th><th>0 hits</th><th>1 hit</th><th>2 hits</th><th>3+ (a prize)</th><th>Bonus</th><th>Mean</th></tr></thead><tbody>` +
-    row("Five combined lines", Sm.combined) + (Sm.popularity_lines && Sm.popularity_lines.line_rounds ? row("Popularity-aware lines", Sm.popularity_lines) : "") + (Sm.wheel_lines && Sm.wheel_lines.line_rounds ? row("Wheel lines", Sm.wheel_lines) : "") + row("Every strategy and ensemble line", Sm.strategies) +
+    row("Five combined lines", Sm.combined) + (Sm.popularity_lines && Sm.popularity_lines.line_rounds ? row("Popularity-aware lines", Sm.popularity_lines) : "") + (Sm.wheel_lines && Sm.wheel_lines.line_rounds ? row("Wheel lines", Sm.wheel_lines) : "") + (Sm.spread_lines && Sm.spread_lines.line_rounds ? row("Spread lines", Sm.spread_lines) : "") + row("Every strategy and ensemble line", Sm.strategies) +
     `<tr class="base-row"><td>Random line (chance)</td><td></td><td>${fmt(P[0] * 100, 1)}%</td><td>${fmt(P[1] * 100, 1)}%</td><td>${fmt(P[2] * 100, 1)}%</td><td>${fmt([3, 4, 5, 6].reduce((a, j) => a + P[j], 0) * 100, 2)}%</td><td></td><td>${fmt(Sm.chance_mean, 2)}</td></tr></tbody>`;
   const ball = (b, r) => `<span class="ball${r.numbers.includes(b) ? " hit" : b === r.bonus ? " bonus-hit" : ""}">${b}</span>`;
   $("#live-draws").innerHTML = LV.draws.slice().reverse().map((e) => {
