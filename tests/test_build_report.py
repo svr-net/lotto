@@ -60,7 +60,19 @@ def test_wheel_guarantees_three_if_three():
     assert len(br.WHEEL_12) == 15 and all(len(set(r)) == 6 and max(r) < 12 for r in br.WHEEL_12)
     covered = {t for r in br.WHEEL_12 for t in itertools.combinations(r, 3)}
     assert covered == set(itertools.combinations(range(12), 3))
-    w = br.wheel([1.0 / (i + 1) for i in range(59)])
-    assert w["candidates"] == list(range(1, 13)) and len(w["lines"]) == 15
-    assert all(set(l) <= set(w["candidates"]) for l in w["lines"])
-    assert abs(w["p_condition"] - 0.0918) < 0.001
+
+
+def test_played_wheel_guarantees_three_if_four():
+    import itertools
+    from popularity_study import pattern_line
+    W, n = br.WHEEL, br.WHEEL_N
+    assert len(W) == 15 and all(len(set(r)) == 6 and max(r) < n for r in W)
+    assert all(any(len(set(r) & set(q)) >= 3 for r in W) for q in itertools.combinations(range(n), br.WHEEL_IF))
+    prev = [33, 36, 40, 44, 51, 56]
+    w = br.wheel([1.0 / (i + 1) for i in range(59)], prev)
+    assert len(w["candidates"]) == n and all(c > 31 and c not in prev for c in w["candidates"])
+    assert len(w["lines"]) == 15 and all(set(l) <= set(w["candidates"]) for l in w["lines"])
+    assert not any(pattern_line(l) for l in w["lines"])
+    assert w["coverage"]["p3"] > w["classic"]["p3"] + 0.015
+    cand, lines = br.wheel_lines([1.0 / (i + 1) for i in range(59)])  # 32-46 in a row: some must give way
+    assert len(cand) == n and not any(pattern_line(l) for l in lines)

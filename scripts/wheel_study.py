@@ -9,7 +9,9 @@ many rules with no edge. The combined support the report uses is scored on the r
 
 Part B compares ways of laying out the same 15 lines on simulated fair draws. Every layout averages
 the same matches and the same prize money; what changes is how the wins are spread over rounds:
-  - wheel: the 12 candidates in a covering design (every 3 of the 12 in some line, "3 if 3");
+  - wheel 12: 12 candidates in a covering design (every 3 of the 12 in some line, "3 if 3");
+  - wheel 15, the one the report plays: 15 candidates in which any 4 share 3 numbers with some line
+    ("3 if 4"), chosen as the numbers above 31 with most support;
   - spread: 15 lines on all 59 numbers in which no two lines share a pair, so their 2+ and 3+
     matches almost never come together and some line wins in as many rounds as 15 lines can;
   - random: 15 lines drawn independently.
@@ -138,12 +140,14 @@ def replay_check(path="results/replay_five_lines.json"):
     """The report's own candidates (the 12 numbers with most combined support) in the replayed draws."""
     if not os.path.exists(path):
         return None
-    ins = [k for d in json.load(open(path))["draws"] if d.get("wheel") for k in d["wheel"]["in_candidates"]]
-    if not ins:
+    rows = [(len(d["wheel"]["candidates"]), k) for d in json.load(open(path))["draws"] if d.get("wheel") for k in d["wheel"]["in_candidates"]]
+    if not rows:
         return None
-    m = float(np.mean(ins))
-    return {"rounds": len(ins), "mean_in": m, "z": (m - IN_MEAN) / math.sqrt(IN_VAR / len(ins)),
-            "rounds_3plus": int(sum(k >= 3 for k in ins)), "rounds_3plus_expected": len(ins) * P_COND}
+    mean = lambda v: PICK * v / POOL
+    var = lambda v: PICK * (v / POOL) * ((POOL - v) / POOL) * ((POOL - PICK) / (POOL - 1))
+    z = sum(k - mean(v) for v, k in rows) / math.sqrt(sum(var(v) for v, _ in rows))
+    return {"rounds": len(rows), "candidates": sorted({v for v, _ in rows}), "mean_in": float(np.mean([k for _, k in rows])),
+            "chance_in": float(np.mean([mean(v) for v, _ in rows])), "z": z}
 
 
 # ---------------------------------------------------------------- Part B: laying out 15 lines
@@ -225,14 +229,17 @@ def main():
     expected_best = float(np.mean(rng.standard_normal((20000, S)).max(1)))
     replay = replay_check()
     if replay:
-        print(f"  combined support (replayed draws): in 12: {replay['mean_in']:.3f} over {replay['rounds']} rounds, z {replay['z']:+.2f}")
+        print(f"  combined support (replayed draws): {replay['mean_in']:.3f} among its {replay['candidates']} candidates "
+              f"(chance {replay['chance_in']:.3f}) over {replay['rounds']} rounds, z {replay['z']:+.2f}")
     print(f"  z_cut {z_cut:.2f}, expected best {expected_best:.2f}")
     print("Part B: laying out 15 lines (simulated fair draws)", flush=True)
     score = np.ones(POOL)
     if os.path.exists("results/combined_picks.json"):
         score = np.array(json.load(open("results/combined_picks.json"))["score"])
+    top12 = sorted(int(x) + 1 for x in np.argsort(-score, kind="stable")[:CAND])
     _, wheel = br.wheel_lines(score)
-    layouts = {"wheel (12 candidates, 3 if 3)": wheel, "spread (59 numbers, no shared pair)": spread_lines(score),
+    layouts = {"wheel (12 candidates, 3 if 3)": [sorted(top12[i] for i in r) for r in br.WHEEL_12],
+               f"wheel ({br.WHEEL_N} candidates, 3 if {br.WHEEL_IF})": wheel, "spread (59 numbers, no shared pair)": spread_lines(score),
                "random (15 independent lines)": random_lines(1)}
     stats = {}
     for name, lines in layouts.items():

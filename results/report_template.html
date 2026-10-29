@@ -329,6 +329,9 @@ $("#verdict").innerHTML = `<strong>${standout.length ? esc(`${pretty(standout[0]
 
 // chance a single line matches 3+ / 2+ (exact)
 const P3_LINE = 0.0108641, P2_LINE = 0.1083479;
+// chance that exactly k of a round's six numbers are among v candidates (hypergeometric)
+const choose = (n, k) => { let r = 1; for (let i = 0; i < k; i++) r = r * (n - i) / (i + 1); return r; };
+const hyp = (v, k) => choose(v, k) * choose(59 - v, 6 - k) / choose(59, 6);
 
 // ---------- the wheel at the top
 (function () {
@@ -348,14 +351,15 @@ const P3_LINE = 0.0108641, P2_LINE = 0.1083479;
   const dfmt = (d, y) => new Date(d + "T12:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "long", ...(y ? { year: "numeric" } : {}), timeZone: "UTC" });
   const n = WD.length, Sm = RP.summary, P = Sm.chance, p3 = [3, 4, 5, 6].reduce((a, j) => a + P[j], 0);
   $("#replay-since").textContent = dfmt(WD[0].date, false);
-  // the wheel's 15 lines all use the same 12 numbers, so its rounds, not its lines, are the independent trials:
-  // z compares how many drawn numbers fell among the 12 candidates with the hypergeometric 12*6/59
-  const wIn = WD.flatMap((d) => d.wheel.in_candidates);
-  const wZ = (wIn.reduce((a, b) => a + b, 0) / wIn.length - 72 / 59) / Math.sqrt(6 * (12 / 59) * (47 / 59) * (53 / 58) / wIn.length);
-  const wr = WD.flatMap((d) => d.rounds.map((_, j) => ({ inC: d.wheel.in_candidates[j], best: Math.max(...d.wheel.lines.map((l) => l.matches[j])), hits: d.wheel.lines.filter((l) => l.matches[j] >= 3).length })));
-  const cond = wr.filter((r) => r.inC >= 3), any3 = wr.filter((r) => r.best >= 3).length, any2 = wr.filter((r) => r.best >= 2).length;
+  // the wheel's lines all use the same candidates, so its rounds, not its lines, are the independent trials:
+  // z compares how many drawn numbers fell among the v candidates with the hypergeometric 6v/59
+  const wr = WD.flatMap((d) => d.rounds.map((_, j) => ({ v: d.wheel.candidates.length, t: d.wheel.guarantee_if || 3, inC: d.wheel.in_candidates[j], best: Math.max(...d.wheel.lines.map((l) => l.matches[j])), hits: d.wheel.lines.filter((l) => l.matches[j] >= 3).length })));
+  const wZ = wr.reduce((a, r) => a + r.inC - 6 * r.v / 59, 0) / Math.sqrt(wr.reduce((a, r) => a + 6 * (r.v / 59) * ((59 - r.v) / 59) * (53 / 58), 0));
+  const condExp = wr.reduce((a, r) => a + [0, 1, 2, 3, 4, 5, 6].filter((k) => k >= r.t).reduce((b, k) => b + hyp(r.v, k), 0), 0);
+  const V = wr[wr.length - 1].v, TG = wr[wr.length - 1].t;
+  const cond = wr.filter((r) => r.inC >= r.t), any3 = wr.filter((r) => r.best >= 3).length, any2 = wr.filter((r) => r.best >= 2).length;
   const multi = wr.filter((r) => r.hits > 1).length;
-  $("#replay-lede").textContent = `For each of the ${n} draws from ${dfmt(WD[0].date, true)} to ${dfmt(WD[n - 1].date, true)}, every investigation's picks were rebuilt from the draws before it only, using the same code and seeds as the routine, combined into the wheel's 12 candidates and scored against both rounds. It uses today's method for every draw, so its lines can differ from the ones committed at the time; the live results score what was actually committed. The candidates held 3 or more of a round's numbers in ${cond.length} of ${wr.length} rounds, about ${(wr.length * 0.0919).toFixed(1)} expected, and ${cond.every((r) => r.best >= 3) ? "the guarantee delivered a 3-match every time" : "the guarantee failed"}. Some line matched 3+ in ${any3} rounds and 2+ in ${any2}; ${multi} of those rounds had more than one winning line, which is how a wheel bunches its wins.`;
+  $("#replay-lede").textContent = `For each of the ${n} draws from ${dfmt(WD[0].date, true)} to ${dfmt(WD[n - 1].date, true)}, every investigation's picks were rebuilt from the draws before it only, using the same code and seeds as the routine, combined into the wheel's ${V} candidates and scored against both rounds. It uses today's method for every draw, so its lines can differ from the ones committed at the time; the live results score what was actually committed. The candidates held ${TG} or more of a round's numbers in ${cond.length} of ${wr.length} rounds, about ${condExp.toFixed(1)} expected, and ${cond.every((r) => r.best >= 3) ? "the guarantee delivered a 3-match every time" : "the guarantee failed"}. Some line matched 3+ in ${any3} rounds and 2+ in ${any2}; ${multi} of those rounds had more than one winning line, which is how a wheel bunches its wins.`;
   const t = Sm.wheel_lines;
   $("#replay-table").innerHTML = `<thead><tr><th>Lines</th><th>Line-rounds</th><th>0 hits</th><th>1 hit</th><th>2 hits</th><th>3+ (a prize)</th><th>Mean</th><th>z</th></tr></thead><tbody>` +
     `<tr><td>Wheel lines (15 per round)</td><td>${t.line_rounds}</td>${[0, 1, 2].map((k) => `<td>${t.counts[k]} <span class="muted">(${(t.line_rounds * P[k]).toFixed(1)})</span></td>`).join("")}<td class="${t.prize ? "good" : ""}">${t.prize} <span class="muted">(${(t.line_rounds * p3).toFixed(1)})</span></td><td>${fmt(t.mean, 3)}</td><td>${(wZ >= 0 ? "+" : "") + wZ.toFixed(2)}</td></tr>` +
@@ -365,7 +369,7 @@ const P3_LINE = 0.0108641, P2_LINE = 0.1083479;
   $("#replay-draws").innerHTML = `<thead><tr><th>Draw</th><th>Candidates drawn → best line (R1 / R2)</th><th>Lines with 3+</th></tr></thead><tbody>` +
     WD.slice().reverse().map((d) => { const w = d.rounds.map((_, j) => won(d, j)).reduce((a, b) => a + b, 0);
       return `<tr><td>${d.draw_no} · ${dfmt(d.date, false)}</td><td>${d.rounds.map((_, j) => wcell(d, j)).join(" / ")}</td><td class="${w ? "good" : ""}">${w}</td></tr>`; }).join("") + "</tbody>";
-  $("#replay-note").textContent = `Figures in brackets are what random lines average. Because the wheel's lines share the same 12 numbers, z compares how many drawn numbers fell among the 12 with the 1.22 chance gives; anything inside about ±2.5 is chance. Bold numbers are 3-match hits, worth the lowest prize.`;
+  $("#replay-note").textContent = `Figures in brackets are what random lines average. Because the wheel's lines share the same ${V} numbers, z compares how many drawn numbers fell among them with the ${fmt(6 * V / 59, 2)} chance gives; anything inside about ±2.5 is chance. Bold numbers are 3-match hits, worth the lowest prize.`;
 })();
 
 // ---------- classic strategies on prime-base digits
@@ -404,22 +408,34 @@ const P3_LINE = 0.0108641, P2_LINE = 0.1083479;
   $("#pop-note").textContent = `Each number from 1 to 31 makes a line more popular, months (1-12) more so, and 7 most of all; consecutive numbers are played less, because people avoid them when they try to look random. Pattern tickets such as 1-2-3-4-5-6 or 7-14-21-28-35-42 are played by thousands but have never been drawn, so the data can't measure them; they are left out of the popularity-aware lines, as are lines with two or more consecutive pairs, where the model would be extrapolating. Draw 9 in January 1995 had 133 jackpot winners, far more than the model expects, possibly because the line also formed a shape on the playslip, which these features cannot see. None of this changes the chance of winning: it only affects how many people share a jackpot.`;
 })();
 
-// ---------- wheel option: 12 candidates in a covering design
+// ---------- wheel option: the candidates in a covering design
 (function () {
   const C = D.combined, W = C && C.wheel;
   if (!W) return;
-  const L = W.lines.length, n = C.sources.length, pc = (x, d = 1) => (x * 100).toFixed(d) + "%";
+  const L = W.lines.length, V = W.candidates.length, TG = W.guarantee_if || 3, n = C.sources.length;
+  const pc = (x, d = 1) => (x * 100).toFixed(d) + "%", pv = (v) => (v >= 1 ? "+" : "") + ((v - 1) * 100).toFixed(1) + "%";
   const ind3 = 1 - Math.pow(1 - P3_LINE, L), ind2 = 1 - Math.pow(1 - P2_LINE, L);
-  $("#wheel-sub").textContent = `${W.candidates.length} numbers in ${L} lines, guaranteeing 3 matches if 3 of the drawn numbers are among them`;
-  $("#wheel-cands").innerHTML = `<div class="line"><span class="ln"></span><div class="balls">${W.candidates.map((b) => `<span class="ball">${b}</span>`).join("")}</div><span class="tag">the ${W.candidates.length} numbers with most support from ${n} investigations</span></div>`;
+  const above31 = W.candidates.every((b) => b > 31);
+  $("#wheel-sub").textContent = `${V} numbers in ${L} lines, guaranteeing 3 matches if ${TG} of the drawn numbers are among them`;
+  $("#wheel-cands").innerHTML = `<div class="line"><span class="ln"></span><div class="balls">${W.candidates.map((b) => `<span class="ball">${b}</span>`).join("")}</div><span class="tag">the ${V} numbers${above31 ? " above 31" : ""} with most support from ${n} investigations</span></div>`;
   $("#wheel-sum").textContent = `Show the ${L} lines`;
-  $("#wheel-lines").innerHTML = W.lines.map((line, i) => `<div class="line"><span class="ln">${i + 1}</span><div class="balls">${line.map((b) => `<span class="ball">${b}</span>`).join("")}</div></div>`).join("");
-  $("#wheel-note").textContent = `The candidates are the ${W.candidates.length} numbers with the most combined support: each investigation gets one equal vote, spread over its own next-draw lines (${C.sources.map((s) => `${s.investigation}, ${s.lines} lines`).join("; ")}). Every set of 3 candidates sits together in at least one line, so whenever 3 or more of a round's numbers are among the ${W.candidates.length}, some line matches at least 3. That happens in ${pc(W.p_condition)} of rounds. Overall, some line matches 3+ in ${pc(W.coverage.p3, 2)} of rounds and 2+ in ${pc(W.coverage.p2)}, against ${pc(ind3, 2)} and ${pc(ind2)} for ${L} lines picked independently: the wheel bunches its wins together, so it wins something less often for the same cost. Its average number of matches and of prizes is exactly the same as any ${L} lines, and the candidates are no likelier to be drawn than other numbers, so the guarantee doesn't change the odds.`;
+  $("#wheel-lines").innerHTML = W.lines.map((line, i) => `<div class="line"><span class="ln">${i + 1}</span><div class="balls">${line.map((b) => `<span class="ball">${b}</span>`).join("")}</div>${W.popularity ? `<span class="tag">${W.popularity[i].popularity.toFixed(2)}× as popular · jackpot ${pv(W.popularity[i].value)}</span>` : ""}</div>`).join("");
+  let note = `The candidates are the ${V} numbers${above31 ? " above 31" : ""} with the most combined support${above31 ? ", leaving out the last draw's numbers" : ""}: each investigation gets one equal vote, spread over its own next-draw lines (${C.sources.map((s) => `${s.investigation}, ${s.lines} lines`).join("; ")}). `;
+  note += TG === 3 ? `Every set of 3 candidates sits together in at least one line, so whenever 3 or more of a round's numbers are among the ${V}, some line matches at least 3.`
+    : `Any ${TG} of the candidates share at least 3 numbers with some line, so whenever ${TG} or more of a round's numbers are among the ${V}, some line matches at least 3.`;
+  note += ` That happens in ${pc(W.p_condition)} of rounds. Overall, some line matches 3+ in ${pc(W.coverage.p3, 2)} of rounds and 2+ in ${pc(W.coverage.p2)}`;
+  if (W.classic && TG !== 3) note += `, against ${pc(W.classic.p3, 2)} and ${pc(W.classic.p2)} for the usual 12-number wheel that guarantees 3 if 3: spreading the same ${L} lines over ${V} numbers with a slightly weaker guarantee wins something in more rounds`;
+  note += `. ${L} lines picked independently reach ${pc(ind3, 2)} and ${pc(ind2)}, because a wheel bunches its wins together. Its average number of matches and of prizes is exactly the same as any ${L} lines, and the candidates are no likelier to be drawn than other numbers, so the guarantee doesn't change the odds.`;
+  if (W.popularity && above31) {
+    const avg = W.popularity.reduce((a, r) => a + r.value, 0) / W.popularity.length;
+    note += ` Leaving out 1 to 31 (the birthday numbers) and the last draw's numbers doesn't change the odds either, but other players crowd onto those, so a jackpot won with these lines would be shared with fewer people: worth ${pv(avg)} on average against a typical line. No line is a pattern ticket or has two consecutive pairs.`;
+  }
+  $("#wheel-note").textContent = note;
   const WS = D.wheel_study;
   if (WS) {
     const best = Object.entries(WS.rules).filter(([k]) => k !== "random").sort((a, b) => b[1].z_mean - a[1].z_mean)[0];
-    $("#wheel-note").textContent += ` The wheel study tried ${Object.keys(WS.rules).length} ways of choosing the 12 candidates on the ${WS.rounds} rounds since ${new Date(WS.split + "T12:00:00Z").getUTCFullYear() + 1}: the best, ${best[0]}, put ${fmt(best[1].mean_in, 3)} drawn numbers among its 12 against ${fmt(WS.chance_in, 3)} by chance (z ${(best[1].z_mean >= 0 ? "+" : "") + best[1].z_mean.toFixed(2)}, below the cut of ${WS.z_cut.toFixed(2)} and close to the ${WS.expected_best.toFixed(2)} the best of that many reaches by luck)` +
-      (WS.replay ? `, and the combined support used here put ${fmt(WS.replay.mean_in, 3)} among its 12 over ${WS.replay.rounds} replayed rounds (z ${(WS.replay.z >= 0 ? "+" : "") + WS.replay.z.toFixed(2)})` : "") + `.`;
+    $("#wheel-note").textContent += ` The wheel study tried ${Object.keys(WS.rules).length} ways of choosing ${WS.candidates} candidates on the ${WS.rounds} rounds since ${new Date(WS.split + "T12:00:00Z").getUTCFullYear() + 1}: the best, ${best[0]}, put ${fmt(best[1].mean_in, 3)} drawn numbers among its ${WS.candidates} against ${fmt(WS.chance_in, 3)} by chance (z ${(best[1].z_mean >= 0 ? "+" : "") + best[1].z_mean.toFixed(2)}, below the cut of ${WS.z_cut.toFixed(2)} and close to the ${WS.expected_best.toFixed(2)} the best of that many reaches by luck)` +
+      (WS.replay ? `, and the combined support used here did no better over ${WS.replay.rounds} replayed rounds (z ${(WS.replay.z >= 0 ? "+" : "") + WS.replay.z.toFixed(2)})` : "") + `.`;
   }
 })();
 

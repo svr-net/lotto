@@ -68,20 +68,73 @@ WHEEL_12 = [(0, 1, 2, 3, 4, 5), (0, 1, 6, 7, 8, 9), (2, 3, 6, 7, 10, 11), (4, 5,
             (0, 3, 4, 6, 9, 10), (1, 3, 5, 7, 9, 11), (2, 4, 5, 6, 7, 8), (0, 2, 5, 6, 9, 11), (0, 3, 4, 7, 8, 11),
             (1, 2, 4, 7, 9, 10), (1, 3, 5, 6, 8, 10), (0, 2, 5, 7, 8, 10), (1, 2, 4, 6, 8, 11), (0, 1, 2, 3, 8, 9)]
 
+# The wheel played: 15 lines on 15 numbers in which any 4 of the 15 share at least 3 numbers with some line,
+# so if 4 drawn numbers are among the candidates, some line matches 3 ("3 if 4"); found by simulated
+# annealing on the exact chance of a 3-match. For the same 15 lines it wins something in more rounds
+# than the 12-number "3 if 3" wheel (some line 3+ in 11.4% of rounds against 9.2%, 2+ in 47% against 35%).
+WHEEL_15 = [(0, 1, 6, 10, 12, 14), (0, 2, 4, 9, 10, 11), (3, 8, 9, 10, 13, 14), (1, 2, 3, 4, 6, 8), (2, 5, 8, 11, 12, 14),
+            (0, 4, 5, 6, 8, 13), (5, 6, 7, 8, 9, 12), (1, 2, 5, 7, 10, 13), (3, 5, 6, 7, 10, 11), (3, 4, 7, 10, 12, 14),
+            (1, 4, 9, 11, 12, 13), (0, 1, 7, 8, 11, 14), (0, 1, 3, 5, 9, 14), (0, 2, 3, 7, 12, 13), (2, 6, 9, 11, 13, 14)]
+WHEEL, WHEEL_IF = WHEEL_15, 4
+WHEEL_N = 1 + max(max(r) for r in WHEEL)
 
-def wheel_lines(score) -> tuple:
-    """(candidates, lines): the 12 numbers with the most combined support, played as the WHEEL_12 lines."""
-    cand = sorted(int(x) + 1 for x in np.argsort(-np.asarray(score), kind="stable")[:12])
-    return cand, [sorted(cand[i] for i in row) for row in WHEEL_12]
+
+def wheel_pool(score, prev=()) -> list:
+    """Numbers above 31, leaving out the last draw's, by combined support (most first). Every number is
+    equally likely to be drawn, but players crowd onto birthday numbers (1-31) and repeat the last draw,
+    so lines without them share a jackpot with fewer winners."""
+    order = np.argsort(-np.asarray(score), kind="stable") + 1
+    return [int(x) for x in order if x > 31 and int(x) not in set(prev)]
 
 
-def wheel(score) -> dict:
+def place_wheel(cand: list, steps: int = 4000) -> tuple:
+    """(lines, how many are pattern lines): the candidates placed on the WHEEL's points, swapping pairs of
+    points from a fixed seed until no line is a pattern ticket or has two consecutive pairs."""
+    from popularity_study import pattern_line
+    rng = np.random.default_rng(len(cand))
+    perm = list(range(len(cand)))
+    place = lambda: [sorted(cand[perm[i]] for i in row) for row in WHEEL]
+    lines = place()
+    bad = sum(pattern_line(l) for l in lines)
+    for _ in range(steps):
+        if not bad:
+            break
+        i, j = rng.choice(len(cand), 2, replace=False)
+        perm[i], perm[j] = perm[j], perm[i]
+        new = place()
+        b = sum(pattern_line(l) for l in new)
+        if b <= bad:
+            lines, bad = new, b
+        else:
+            perm[i], perm[j] = perm[j], perm[i]
+    return lines, bad
+
+
+def wheel_lines(score, prev=()) -> tuple:
+    """(candidates, lines): the WHEEL_N best-supported numbers of wheel_pool played as the WHEEL lines. If
+    no placement avoids pattern lines (a long run of consecutive candidates), a candidate in the middle
+    of a run gives way to the next number in the pool."""
+    from popularity_study import pattern_line
+    pool = wheel_pool(score, prev)
+    cand, extra = pool[:WHEEL_N], pool[WHEEL_N:]
+    while True:
+        lines, bad = place_wheel(sorted(cand))
+        if not bad or not extra:
+            return sorted(cand), lines
+        # the candidate in a pattern line with most consecutive neighbours among the candidates, the least supported of those
+        worst = max((c for l in lines if pattern_line(l) for c in l), key=lambda c: ((c - 1 in cand) + (c + 1 in cand), pool.index(c)))
+        cand = [c for c in cand if c != worst] + [extra.pop(0)]
+
+
+def wheel(score, prev=()) -> dict:
     """The wheel option with its odds."""
     from math import comb
-    cand, lines = wheel_lines(score)
-    p_cond = sum(comb(12, k) * comb(POOL - 12, PICK - k) for k in range(3, PICK + 1)) / comb(POOL, PICK)
-    return {"candidates": cand, "lines": lines, "guarantee": "3 if 3", "p_condition": p_cond,
-            "coverage": coverage(lines)}
+    cand, lines = wheel_lines(score, prev)
+    n = len(cand)
+    p_cond = sum(comb(n, k) * comb(POOL - n, PICK - k) for k in range(WHEEL_IF, PICK + 1)) / comb(POOL, PICK)
+    return {"candidates": cand, "lines": lines, "guarantee": f"3 if {WHEEL_IF}", "guarantee_if": WHEEL_IF,
+            "p_condition": p_cond, "coverage": coverage(lines),
+            "classic": coverage([sorted(r) for r in WHEEL_12])}  # the 12-number 3-if-3 wheel, for comparison
 
 
 def coverage(lines: list, n: int = 1_000_000, seed: int = 0, chunk: int = 100_000) -> dict:
@@ -143,7 +196,12 @@ def main():
         C["coverage"] = {"combined": coverage(C["lines"])}
         if C.get("popularity_lines"):
             C["coverage"]["popularity"] = coverage(C["popularity_lines"])
-        C["wheel"] = wheel(C["score"])
+        prev = sorted({int(r[f"n{i}"]) for r in payload.get("latest") or [] for i in range(1, 7)})
+        C["wheel"] = wheel(C["score"], prev)
+        if payload.get("popularity"):
+            pop = ps.Popularity(payload["popularity"]["beta"], payload["popularity"]["lam"])
+            C["wheel"]["popularity"] = [{"popularity": round(pop.popularity(l, prev), 3), "value": round(pop.value(l, prev), 3)}
+                                        for l in C["wheel"]["lines"]]
         with open("results/combined_picks.json", "w") as fh:
             json.dump(payload["combined"], fh, indent=1)
     data = json.dumps(payload, separators=(",", ":")).replace("</", "<\\/")
