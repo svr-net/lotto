@@ -428,11 +428,21 @@ const P3_LINE = 0.0108641, P2_LINE = 0.1083479;
 (function () {
   const LV = D.live;
   if (!LV) return;
-  const WD = LV.draws.filter((e) => e.wheel_lines && e.wheel_lines.length);
-  if (!WD.length) return;
+  // only draws played with the wheel on all 59 numbers (from 31 October 2026); earlier wheels used 12 numbers
+  const WD = LV.draws.filter((e) => e.wheel_lines && new Set(e.wheel_lines.flatMap((s) => s.line)).size === 59);
   $("#live-section").hidden = false;
   const Sm = LV.summary, P = LV.summary.chance, dfmt = (d) => new Date(d + "T12:00:00Z").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
-  const n = WD.length, p3 = [3, 4, 5, 6].reduce((a, j) => a + P[j], 0), t = Sm.wheel_lines;
+  if (!WD.length) {
+    const nd = D.combined && D.combined.next_draw_date;
+    $("#live-lede").textContent = `Before each draw the report commits the wheel's 15 lines on all 59 numbers, and after the draw they are scored against the real numbers. The first draw played with this wheel is ${nd ? dfmt(nd) : "the next one"}; its results appear here once it has been drawn.`;
+    $("#live-table").innerHTML = ""; $("#live-draws").innerHTML = ""; $("#live-note").textContent = "";
+    return;
+  }
+  const n = WD.length, p3 = [3, 4, 5, 6].reduce((a, j) => a + P[j], 0);
+  const t = (() => { const counts = [0, 0, 0, 0, 0, 0, 0]; let bonus = 0;
+    WD.forEach((e) => e.wheel_lines.forEach((s) => s.matches.forEach((m, j) => { counts[m]++; bonus += s.bonus[j] ? 1 : 0; })));
+    const lr = counts.reduce((a, b) => a + b, 0);
+    return { line_rounds: lr, counts, bonus, mean: counts.reduce((a, c, k) => a + k * c, 0) / lr, prize: counts.slice(3).reduce((a, b) => a + b, 0) }; })();
   $("#live-lede").textContent = `Before each draw the report commits the wheel's 15 lines. After the draw they are scored against the real numbers. Each line is checked against every round, so a two-round draw scores each line twice. ${n} draw${n > 1 ? "s" : ""} scored so far, from ${dfmt(WD[0].date)} to ${dfmt(WD[n - 1].date)}.`;
   const exp = (k) => t.line_rounds * (k === 3 ? p3 : P[k]);
   $("#live-table").innerHTML = `<thead><tr><th>Lines</th><th>Line-rounds</th><th>0 hits</th><th>1 hit</th><th>2 hits</th><th>3+ (a prize)</th><th>Bonus</th><th>Mean</th></tr></thead><tbody>` +
