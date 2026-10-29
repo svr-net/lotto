@@ -64,16 +64,3 @@ def test_wheel_guarantees_three_if_three():
     assert w["candidates"] == list(range(1, 13)) and len(w["lines"]) == 15
     assert all(set(l) <= set(w["candidates"]) for l in w["lines"])
     assert abs(w["p_condition"] - 0.0918) < 0.001
-
-
-def test_spread_lines_share_no_pair_and_cover_every_number():
-    import itertools
-    from collections import Counter
-    score = [1.0 / (i + 1) for i in range(59)]
-    lines = br.spread_lines(score, seed=20261031)
-    assert len(lines) == 15 and all(len(set(l)) == 6 and 1 <= min(l) and max(l) <= 59 for l in lines)
-    pairs = [p for l in lines for p in itertools.combinations(l, 2)]
-    assert len(pairs) == len(set(pairs))
-    uses = Counter(v for l in lines for v in l)
-    assert len(uses) == 59 and {v for v, c in uses.items() if c == 2} == set(range(1, 32))
-    assert br.spread_lines(score, seed=20261031) == lines

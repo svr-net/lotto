@@ -147,6 +147,35 @@ def replay_check(path="results/replay_five_lines.json"):
 
 
 # ---------------------------------------------------------------- Part B: laying out 15 lines
+def spread_lines(score, seed: int = 0, n_lines: int = LINES, tries: int = 2000) -> list:
+    """n_lines lines on all 59 numbers in which no two lines share a pair of numbers, so their 2+ and 3+
+    matches almost never come in the same round. The numbers with the most support are the ones played
+    twice (15 lines need 90 places: 31 numbers twice, 28 once)."""
+    score = np.asarray(score, dtype=float)
+    rng = np.random.default_rng(seed)
+    order = np.argsort(-(score + rng.random(POOL) * 1e-9))
+    uses = np.ones(POOL, dtype=int)
+    uses[order[:n_lines * PICK - POOL]] = 2
+    for _ in range(tries):
+        left, used, lines = uses.copy(), np.zeros((POOL, POOL), dtype=bool), []
+        for _ in range(n_lines):
+            line = []
+            while len(line) < PICK:
+                ok = np.where((left > 0) & ~used[line].any(0))[0] if line else np.where(left > 0)[0]
+                ok = ok[~np.isin(ok, line)]
+                if not len(ok):
+                    break
+                line.append(int(ok[np.argmax(left[ok] + rng.random(len(ok)))]))  # numbers with most uses left first
+            if len(line) < PICK:
+                break
+            left[line] -= 1
+            used[np.ix_(line, line)] = True
+            lines.append(sorted(j + 1 for j in line))
+        if len(lines) == n_lines:
+            return lines
+    raise RuntimeError("no pair-free layout found")
+
+
 def random_lines(seed):
     rng = np.random.default_rng(seed)
     return [sorted(int(v) for v in rng.choice(np.arange(1, POOL + 1), PICK, replace=False)) for _ in range(LINES)]
@@ -203,7 +232,7 @@ def main():
     if os.path.exists("results/combined_picks.json"):
         score = np.array(json.load(open("results/combined_picks.json"))["score"])
     _, wheel = br.wheel_lines(score)
-    layouts = {"wheel (12 candidates, 3 if 3)": wheel, "spread (59 numbers, no shared pair)": br.spread_lines(score),
+    layouts = {"wheel (12 candidates, 3 if 3)": wheel, "spread (59 numbers, no shared pair)": spread_lines(score),
                "random (15 independent lines)": random_lines(1)}
     stats = {}
     for name, lines in layouts.items():

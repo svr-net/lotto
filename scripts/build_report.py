@@ -84,41 +84,6 @@ def wheel(score) -> dict:
             "coverage": coverage(lines)}
 
 
-def spread_lines(score, seed: int = 0, n_lines: int = 15, tries: int = 2000) -> list:
-    """n_lines lines on all 59 numbers in which no two lines share a pair of numbers, so their 2+ and 3+
-    matches almost never come in the same round. The numbers with the most support are the ones played
-    twice (15 lines need 90 places: 31 numbers twice, 28 once)."""
-    score = np.asarray(score, dtype=float)
-    rng = np.random.default_rng(seed)
-    order = np.argsort(-(score + rng.random(POOL) * 1e-9))
-    uses = np.ones(POOL, dtype=int)
-    uses[order[:n_lines * PICK - POOL]] = 2
-    for _ in range(tries):
-        left, used, lines = uses.copy(), np.zeros((POOL, POOL), dtype=bool), []
-        for _ in range(n_lines):
-            line = []
-            while len(line) < PICK:
-                ok = np.where((left > 0) & ~used[line].any(0))[0] if line else np.where(left > 0)[0]
-                ok = ok[~np.isin(ok, line)]
-                if not len(ok):
-                    break
-                line.append(int(ok[np.argmax(left[ok] + rng.random(len(ok)))]))  # numbers with most uses left first
-            if len(line) < PICK:
-                break
-            left[line] -= 1
-            used[np.ix_(line, line)] = True
-            lines.append(sorted(j + 1 for j in line))
-        if len(lines) == n_lines:
-            return lines
-    raise RuntimeError("no pair-free layout found")
-
-
-def spread(score, seed: int) -> dict:
-    """The spread option: the wheel's 15 lines laid out to win something as often as 15 lines can."""
-    lines = spread_lines(score, seed)
-    return {"lines": lines, "coverage": coverage(lines)}
-
-
 def coverage(lines: list, n: int = 1_000_000, seed: int = 0, chunk: int = 100_000) -> dict:
     """Chance, per round, that at least one of the lines matches 2+ and 3+ numbers (simulated draws)."""
     rng = np.random.default_rng(seed)
@@ -179,7 +144,6 @@ def main():
         if C.get("popularity_lines"):
             C["coverage"]["popularity"] = coverage(C["popularity_lines"])
         C["wheel"] = wheel(C["score"])
-        C["spread"] = spread(C["score"], seed)
         with open("results/combined_picks.json", "w") as fh:
             json.dump(payload["combined"], fh, indent=1)
     data = json.dumps(payload, separators=(",", ":")).replace("</", "<\\/")

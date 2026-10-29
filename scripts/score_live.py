@@ -48,7 +48,6 @@ def score_entry(combined: dict, wf: dict, rounds: list, ref: str) -> dict:
             "rounds": rounds, "combined": [score_line(l, rounds) for l in combined["lines"]],
             "popularity_lines": [score_line(l, rounds) for l in combined.get("popularity_lines", [])],
             "wheel_lines": [score_line(l, rounds) for l in (combined.get("wheel") or {}).get("lines", [])],
-            "spread_lines": [score_line(l, rounds) for l in (combined.get("spread") or {}).get("lines", [])],
             "strategies": strategies}
 
 
@@ -74,7 +73,6 @@ def summarise(entries: list) -> dict:
             "strategies": tally([s for e in entries for ls in e["strategies"].values() for s in ls]),
             "popularity_lines": tally([s for e in entries for s in e.get("popularity_lines", [])]),
             "wheel_lines": tally([s for e in entries for s in e.get("wheel_lines", [])]),
-            "spread_lines": tally([s for e in entries for s in e.get("spread_lines", [])]),
             "chance": chance(), "chance_mean": PICK * PICK / POOL}
 
 

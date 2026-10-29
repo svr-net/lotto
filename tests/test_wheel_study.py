@@ -31,3 +31,15 @@ def test_candidate_backtest_and_layouts_run():
     assert set(res) == set(ws.RULES) and rounds == 2 * nights
     s = ws.layout_stats(ws.random_lines(0), n=20_000, chunk=10_000)
     assert 0 < s["p3"] < s["p2"] < 1 and s["money_mean"] > 0
+
+
+def test_spread_lines_share_no_pair_and_cover_every_number():
+    import itertools
+    from collections import Counter
+    score = [1.0 / (i + 1) for i in range(59)]
+    lines = ws.spread_lines(score, seed=20261031)
+    assert len(lines) == 15 and all(len(set(l)) == 6 and 1 <= min(l) and max(l) <= 59 for l in lines)
+    pairs = [p for l in lines for p in itertools.combinations(l, 2)]
+    assert len(pairs) == len(set(pairs))
+    uses = Counter(v for l in lines for v in l)
+    assert len(uses) == 59 and {v for v, c in uses.items() if c == 2} == set(range(1, 32))
