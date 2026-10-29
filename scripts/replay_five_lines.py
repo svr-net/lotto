@@ -91,11 +91,10 @@ def investigation_picks(hist, mods) -> dict:
     return payload
 
 
-def wheel_entry(br, score, rounds, sl, prev=()) -> dict:
-    """The wheel option for a past draw: its candidates, how many came up in each round, its lines' scores."""
-    cand, lines = br.wheel_lines(score, prev)
-    return {"candidates": cand, "guarantee_if": br.WHEEL_IF, "in_candidates": [len(set(cand) & set(r["numbers"])) for r in rounds],
-            "lines": [sl.score_line(l, rounds) for l in lines]}
+def wheel_entry(br, score, rounds, sl, seed: int) -> dict:
+    """The wheel option for a past draw: its lines' scores."""
+    _, lines = br.wheel_lines(score, seed)
+    return {"lines": [sl.score_line(l, rounds) for l in lines]}
 
 
 def replay_one(args):
@@ -119,8 +118,7 @@ def replay_one(args):
     out = {"date": date, "draw_no": rounds[0]["draw_no"], "rounds": rounds,
            "combined": [sl.score_line(l, rounds) for l in combined["lines"]],
            "popularity_lines": [sl.score_line(l, rounds) for l in combined["popularity_lines"]],
-           "wheel": wheel_entry(br, combined["score"], rounds, sl,
-                                sorted({int(r[f"n{i}"]) for r in payload["latest"] for i in range(1, 7)})),
+           "wheel": wheel_entry(br, combined["score"], rounds, sl, seed),
            "popularity": combined["popularity"], "score": combined["score"],
            "window": hist[hist.draw_no >= 2066].sort_values(["draw_no", "round"])
                      [["n1", "n2", "n3", "n4", "n5", "n6"]].tail(104).to_numpy().tolist(),

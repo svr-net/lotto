@@ -68,73 +68,54 @@ WHEEL_12 = [(0, 1, 2, 3, 4, 5), (0, 1, 6, 7, 8, 9), (2, 3, 6, 7, 10, 11), (4, 5,
             (0, 3, 4, 6, 9, 10), (1, 3, 5, 7, 9, 11), (2, 4, 5, 6, 7, 8), (0, 2, 5, 6, 9, 11), (0, 3, 4, 7, 8, 11),
             (1, 2, 4, 7, 9, 10), (1, 3, 5, 6, 8, 10), (0, 2, 5, 7, 8, 10), (1, 2, 4, 6, 8, 11), (0, 1, 2, 3, 8, 9)]
 
-# The wheel played: 15 lines on 15 numbers in which any 4 of the 15 share at least 3 numbers with some line,
-# so if 4 drawn numbers are among the candidates, some line matches 3 ("3 if 4"); found by simulated
-# annealing on the exact chance of a 3-match. For the same 15 lines it wins something in more rounds
-# than the 12-number "3 if 3" wheel (some line 3+ in 11.4% of rounds against 9.2%, 2+ in 47% against 35%).
-WHEEL_15 = [(0, 1, 6, 10, 12, 14), (0, 2, 4, 9, 10, 11), (3, 8, 9, 10, 13, 14), (1, 2, 3, 4, 6, 8), (2, 5, 8, 11, 12, 14),
-            (0, 4, 5, 6, 8, 13), (5, 6, 7, 8, 9, 12), (1, 2, 5, 7, 10, 13), (3, 5, 6, 7, 10, 11), (3, 4, 7, 10, 12, 14),
-            (1, 4, 9, 11, 12, 13), (0, 1, 7, 8, 11, 14), (0, 1, 3, 5, 9, 14), (0, 2, 3, 7, 12, 13), (2, 6, 9, 11, 13, 14)]
-WHEEL, WHEEL_IF = WHEEL_15, 4
-WHEEL_N = 1 + max(max(r) for r in WHEEL)
+WHEEL_LINES = 15
 
 
-def wheel_pool(score, prev=()) -> list:
-    """Numbers above 31, leaving out the last draw's, by combined support (most first). Every number is
-    equally likely to be drawn, but players crowd onto birthday numbers (1-31) and repeat the last draw,
-    so lines without them share a jackpot with fewer winners."""
-    order = np.argsort(-np.asarray(score), kind="stable") + 1
-    return [int(x) for x in order if x > 31 and int(x) not in set(prev)]
-
-
-def place_wheel(cand: list, steps: int = 4000) -> tuple:
-    """(lines, how many are pattern lines): the candidates placed on the WHEEL's points, swapping pairs of
-    points from a fixed seed until no line is a pattern ticket or has two consecutive pairs."""
+def spread_lines(score, seed: int = 0, n_lines: int = WHEEL_LINES, tries: int = 5000) -> list:
+    """n_lines lines on all 59 numbers in which no two lines share a pair of numbers, so their 2+ and 3+
+    matches almost never come in the same round and some line wins in as many rounds as n_lines lines
+    can. The numbers with the most combined support are the ones played twice (15 lines need 90 places:
+    31 numbers twice, 28 once). Layouts with a pattern ticket or a line with two consecutive pairs are
+    skipped (the popularity model can't price those)."""
     from popularity_study import pattern_line
-    rng = np.random.default_rng(len(cand))
-    perm = list(range(len(cand)))
-    place = lambda: [sorted(cand[perm[i]] for i in row) for row in WHEEL]
-    lines = place()
-    bad = sum(pattern_line(l) for l in lines)
-    for _ in range(steps):
-        if not bad:
-            break
-        i, j = rng.choice(len(cand), 2, replace=False)
-        perm[i], perm[j] = perm[j], perm[i]
-        new = place()
-        b = sum(pattern_line(l) for l in new)
-        if b <= bad:
-            lines, bad = new, b
-        else:
-            perm[i], perm[j] = perm[j], perm[i]
-    return lines, bad
+    score = np.asarray(score, dtype=float)
+    rng = np.random.default_rng(seed)
+    order = np.argsort(-(score + rng.random(POOL) * 1e-9))
+    uses = np.ones(POOL, dtype=int)
+    uses[order[:n_lines * PICK - POOL]] = 2
+    for _ in range(tries):
+        left, used, lines = uses.copy(), np.zeros((POOL, POOL), dtype=bool), []
+        for _ in range(n_lines):
+            line = []
+            while len(line) < PICK:
+                ok = np.where((left > 0) & ~used[line].any(0))[0] if line else np.where(left > 0)[0]
+                ok = ok[~np.isin(ok, line)]
+                if not len(ok):
+                    break
+                line.append(int(ok[np.argmax(left[ok] + rng.random(len(ok)))]))  # numbers with most uses left first
+            if len(line) < PICK or pattern_line(np.array(line) + 1):
+                break
+            left[line] -= 1
+            used[np.ix_(line, line)] = True
+            lines.append(sorted(j + 1 for j in line))
+        if len(lines) == n_lines:
+            return lines
+    raise RuntimeError("no pair-free layout found")
 
 
-def wheel_lines(score, prev=()) -> tuple:
-    """(candidates, lines): the WHEEL_N best-supported numbers of wheel_pool played as the WHEEL lines. If
-    no placement avoids pattern lines (a long run of consecutive candidates), a candidate in the middle
-    of a run gives way to the next number in the pool."""
-    from popularity_study import pattern_line
-    pool = wheel_pool(score, prev)
-    cand, extra = pool[:WHEEL_N], pool[WHEEL_N:]
-    while True:
-        lines, bad = place_wheel(sorted(cand))
-        if not bad or not extra:
-            return sorted(cand), lines
-        # the candidate in a pattern line with most consecutive neighbours among the candidates, the least supported of those
-        worst = max((c for l in lines if pattern_line(l) for c in l), key=lambda c: ((c - 1 in cand) + (c + 1 in cand), pool.index(c)))
-        cand = [c for c in cand if c != worst] + [extra.pop(0)]
+def wheel_lines(score, seed: int = 0) -> tuple:
+    """(candidates, lines): the wheel plays all 59 numbers in pair-free lines (spread_lines)."""
+    return list(range(1, POOL + 1)), spread_lines(score, seed)
 
 
-def wheel(score, prev=()) -> dict:
-    """The wheel option with its odds."""
-    from math import comb
-    cand, lines = wheel_lines(score, prev)
-    n = len(cand)
-    p_cond = sum(comb(n, k) * comb(POOL - n, PICK - k) for k in range(WHEEL_IF, PICK + 1)) / comb(POOL, PICK)
-    return {"candidates": cand, "lines": lines, "guarantee": f"3 if {WHEEL_IF}", "guarantee_if": WHEEL_IF,
-            "p_condition": p_cond, "coverage": coverage(lines),
-            "classic": coverage([sorted(r) for r in WHEEL_12])}  # the 12-number 3-if-3 wheel, for comparison
+def wheel(score, seed: int = 0, prev=()) -> dict:
+    """The wheel option with its odds, and the usual 12-number 3-if-3 wheel's for comparison."""
+    from collections import Counter
+    cand, lines = wheel_lines(score, seed)
+    uses = Counter(v for l in lines for v in l)
+    return {"candidates": cand, "lines": lines, "layout": "no pair of numbers in two lines",
+            "twice": sorted(v for v, c in uses.items() if c == 2), "coverage": coverage(lines),
+            "classic": coverage([sorted(i + 1 for i in r) for r in WHEEL_12])}
 
 
 def coverage(lines: list, n: int = 1_000_000, seed: int = 0, chunk: int = 100_000) -> dict:
@@ -197,7 +178,7 @@ def main():
         if C.get("popularity_lines"):
             C["coverage"]["popularity"] = coverage(C["popularity_lines"])
         prev = sorted({int(r[f"n{i}"]) for r in payload.get("latest") or [] for i in range(1, 7)})
-        C["wheel"] = wheel(C["score"], prev)
+        C["wheel"] = wheel(C["score"], seed, prev)
         if payload.get("popularity"):
             pop = ps.Popularity(payload["popularity"]["beta"], payload["popularity"]["lam"])
             C["wheel"]["popularity"] = [{"popularity": round(pop.popularity(l, prev), 3), "value": round(pop.value(l, prev), 3)}

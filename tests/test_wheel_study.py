@@ -37,7 +37,7 @@ def test_spread_lines_share_no_pair_and_cover_every_number():
     import itertools
     from collections import Counter
     score = [1.0 / (i + 1) for i in range(59)]
-    lines = ws.spread_lines(score, seed=20261031)
+    lines = ws.br.spread_lines(score, seed=20261031)
     assert len(lines) == 15 and all(len(set(l)) == 6 and 1 <= min(l) and max(l) <= 59 for l in lines)
     pairs = [p for l in lines for p in itertools.combinations(l, 2)]
     assert len(pairs) == len(set(pairs))
