@@ -60,7 +60,21 @@ def test_wheel_guarantees_three_if_three():
     assert len(br.WHEEL_12) == 15 and all(len(set(r)) == 6 and max(r) < 12 for r in br.WHEEL_12)
     covered = {t for r in br.WHEEL_12 for t in itertools.combinations(r, 3)}
     assert covered == set(itertools.combinations(range(12), 3))
-    w = br.wheel([1.0 / (i + 1) for i in range(59)])
-    assert w["candidates"] == list(range(1, 13)) and len(w["lines"]) == 15
-    assert all(set(l) <= set(w["candidates"]) for l in w["lines"])
-    assert abs(w["p_condition"] - 0.0918) < 0.001
+
+
+def test_played_wheel_spreads_all_59_numbers_without_a_shared_pair():
+    import itertools
+    from collections import Counter
+    from popularity_study import pattern_line
+    score = [1.0 / (i + 1) for i in range(59)]
+    w = br.wheel(score, seed=20261031)
+    lines = w["lines"]
+    assert w["candidates"] == list(range(1, 60))
+    assert len(lines) == 15 and all(len(set(l)) == 6 and 1 <= min(l) and max(l) <= 59 for l in lines)
+    pairs = [p for l in lines for p in itertools.combinations(l, 2)]
+    assert len(pairs) == len(set(pairs))
+    uses = Counter(v for l in lines for v in l)
+    assert len(uses) == 59 and set(w["twice"]) == {v for v, c in uses.items() if c == 2} == set(range(1, 32))
+    assert not any(pattern_line(l) for l in lines)
+    assert br.wheel_lines(score, 20261031)[1] == lines
+    assert w["coverage"]["p3"] > w["classic"]["p3"] + 0.05

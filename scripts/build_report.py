@@ -68,20 +68,54 @@ WHEEL_12 = [(0, 1, 2, 3, 4, 5), (0, 1, 6, 7, 8, 9), (2, 3, 6, 7, 10, 11), (4, 5,
             (0, 3, 4, 6, 9, 10), (1, 3, 5, 7, 9, 11), (2, 4, 5, 6, 7, 8), (0, 2, 5, 6, 9, 11), (0, 3, 4, 7, 8, 11),
             (1, 2, 4, 7, 9, 10), (1, 3, 5, 6, 8, 10), (0, 2, 5, 7, 8, 10), (1, 2, 4, 6, 8, 11), (0, 1, 2, 3, 8, 9)]
 
-
-def wheel_lines(score) -> tuple:
-    """(candidates, lines): the 12 numbers with the most combined support, played as the WHEEL_12 lines."""
-    cand = sorted(int(x) + 1 for x in np.argsort(-np.asarray(score), kind="stable")[:12])
-    return cand, [sorted(cand[i] for i in row) for row in WHEEL_12]
+WHEEL_LINES = 15
 
 
-def wheel(score) -> dict:
-    """The wheel option with its odds."""
-    from math import comb
-    cand, lines = wheel_lines(score)
-    p_cond = sum(comb(12, k) * comb(POOL - 12, PICK - k) for k in range(3, PICK + 1)) / comb(POOL, PICK)
-    return {"candidates": cand, "lines": lines, "guarantee": "3 if 3", "p_condition": p_cond,
-            "coverage": coverage(lines)}
+def spread_lines(score, seed: int = 0, n_lines: int = WHEEL_LINES, tries: int = 5000) -> list:
+    """n_lines lines on all 59 numbers in which no two lines share a pair of numbers, so their 2+ and 3+
+    matches almost never come in the same round and some line wins in as many rounds as n_lines lines
+    can. The numbers with the most combined support are the ones played twice (15 lines need 90 places:
+    31 numbers twice, 28 once). Layouts with a pattern ticket or a line with two consecutive pairs are
+    skipped (the popularity model can't price those)."""
+    from popularity_study import pattern_line
+    score = np.asarray(score, dtype=float)
+    rng = np.random.default_rng(seed)
+    order = np.argsort(-(score + rng.random(POOL) * 1e-9))
+    uses = np.ones(POOL, dtype=int)
+    uses[order[:n_lines * PICK - POOL]] = 2
+    for _ in range(tries):
+        left, used, lines = uses.copy(), np.zeros((POOL, POOL), dtype=bool), []
+        for _ in range(n_lines):
+            line = []
+            while len(line) < PICK:
+                ok = np.where((left > 0) & ~used[line].any(0))[0] if line else np.where(left > 0)[0]
+                ok = ok[~np.isin(ok, line)]
+                if not len(ok):
+                    break
+                line.append(int(ok[np.argmax(left[ok] + rng.random(len(ok)))]))  # numbers with most uses left first
+            if len(line) < PICK or pattern_line(np.array(line) + 1):
+                break
+            left[line] -= 1
+            used[np.ix_(line, line)] = True
+            lines.append(sorted(j + 1 for j in line))
+        if len(lines) == n_lines:
+            return lines
+    raise RuntimeError("no pair-free layout found")
+
+
+def wheel_lines(score, seed: int = 0) -> tuple:
+    """(candidates, lines): the wheel plays all 59 numbers in pair-free lines (spread_lines)."""
+    return list(range(1, POOL + 1)), spread_lines(score, seed)
+
+
+def wheel(score, seed: int = 0, prev=()) -> dict:
+    """The wheel option with its odds, and the usual 12-number 3-if-3 wheel's for comparison."""
+    from collections import Counter
+    cand, lines = wheel_lines(score, seed)
+    uses = Counter(v for l in lines for v in l)
+    return {"candidates": cand, "lines": lines, "layout": "no pair of numbers in two lines",
+            "twice": sorted(v for v, c in uses.items() if c == 2), "coverage": coverage(lines),
+            "classic": coverage([sorted(i + 1 for i in r) for r in WHEEL_12])}
 
 
 def coverage(lines: list, n: int = 1_000_000, seed: int = 0, chunk: int = 100_000) -> dict:
@@ -143,7 +177,12 @@ def main():
         C["coverage"] = {"combined": coverage(C["lines"])}
         if C.get("popularity_lines"):
             C["coverage"]["popularity"] = coverage(C["popularity_lines"])
-        C["wheel"] = wheel(C["score"])
+        prev = sorted({int(r[f"n{i}"]) for r in payload.get("latest") or [] for i in range(1, 7)})
+        C["wheel"] = wheel(C["score"], seed, prev)
+        if payload.get("popularity"):
+            pop = ps.Popularity(payload["popularity"]["beta"], payload["popularity"]["lam"])
+            C["wheel"]["popularity"] = [{"popularity": round(pop.popularity(l, prev), 3), "value": round(pop.value(l, prev), 3)}
+                                        for l in C["wheel"]["lines"]]
         with open("results/combined_picks.json", "w") as fh:
             json.dump(payload["combined"], fh, indent=1)
     data = json.dumps(payload, separators=(",", ":")).replace("</", "<\\/")
