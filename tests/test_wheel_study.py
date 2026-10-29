@@ -16,14 +16,14 @@ def fake_era(n=300, seed=0):
     return pd.DataFrame(rows)
 
 
-def test_every_rule_picks_twelve_distinct_numbers():
+def test_every_rule_picks_31_distinct_numbers():
     e = fake_era()
     sets = e[ws.N_COLS].to_numpy(int)
     x = ws.onehot(sets)
     rng = np.random.default_rng(1)
     for name, fn in ws.RULES.items():
         c = [int(v) for v in fn(x, sets, rng)]
-        assert len(set(c)) == 12 and 1 <= min(c) and max(c) <= 59, name
+        assert len(set(c)) == ws.CAND == 31 and 1 <= min(c) and max(c) <= 59, name
 
 
 def test_candidate_backtest_and_layouts_run():
@@ -45,8 +45,7 @@ def test_spread_lines_share_no_pair_and_cover_every_number():
     assert len(uses) == 59 and {v for v, c in uses.items() if c == 2} == set(range(1, 32))
 
 
-def test_real_draws_plays_both_wheels():
-    out = ws.real_draws(fake_era(), "2016-12-31")
-    assert set(out) == {"wheel (12 candidates, 3 if 3)", "spread (59 numbers, no shared pair)"}
-    for o in out.values():
-        assert o["rounds"] == 2 * o["nights"] and 0 <= o["p3"] <= o["p2"] <= 1
+def test_real_draws_plays_the_wheel():
+    o = ws.real_draws(fake_era(), "2016-12-31")
+    assert o["rounds"] == 2 * o["nights"] and 0 <= o["p3"] <= o["p2"] <= 1
+    assert abs(o["line_mean"] - 0.61) < 0.2

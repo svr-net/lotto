@@ -142,10 +142,6 @@ nav.tabs a:focus-visible { outline: 2px solid var(--s1); outline-offset: 2px; }
   <div class="table-wrap"><table id="replay-table"></table></div>
   <div class="table-wrap"><table id="replay-draws"></table></div>
   <p class="note" id="replay-note"></p>
-  <h3 class="h3" id="real-head" hidden>The wheel on every draw since 2017</h3>
-  <p id="real-lede"></p>
-  <div class="table-wrap"><table id="real-table"></table></div>
-  <p class="note" id="real-note"></p>
 </section>
 
 <section id="pop-section" data-tab="players" hidden>
@@ -175,6 +171,14 @@ nav.tabs a:focus-visible { outline: 2px solid var(--s1); outline-offset: 2px; }
   <div class="chart" id="bt-chart"></div>
   <div class="table-wrap"><table id="bt-table"></table></div>
   <p class="note" id="stack-note"></p>
+</section>
+
+<section data-tab="backtest" id="real-section" hidden>
+  <div class="eyebrow">Wheel backtest</div>
+  <h2>The wheel on real draws</h2>
+  <p id="real-lede"></p>
+  <div class="table-wrap"><table id="real-table"></table></div>
+  <p class="note" id="real-note"></p>
 </section>
 
 <section data-tab="backtest">
@@ -368,22 +372,20 @@ const P3_LINE = 0.0108641, P2_LINE = 0.1083479;
   $("#replay-note").textContent = `Figures in brackets are what random lines average. z compares the mean with the 36/59 chance rate; anything inside about ±2.5 is chance. Bold numbers are 3-match hits, worth the lowest prize.`;
 })();
 
-// ---------- both wheels on every real draw since the wheel study's split
+// ---------- the wheel on every real draw of the backtest periods
 (function () {
-  const WS = D.wheel_study, R = WS && WS.real;
-  if (!R) return;
-  const w59 = R["spread (59 numbers, no shared pair)"], w12 = R["wheel (12 candidates, 3 if 3)"];
-  const s59 = WS.layouts["spread (59 numbers, no shared pair)"], s12 = WS.layouts["wheel (12 candidates, 3 if 3)"];
-  if (!w59 || !s59) return;
-  $("#replay-section").hidden = false;
-  $("#real-head").hidden = false;
-  const pc = (x, d = 1) => (x * 100).toFixed(d) + "%", yr = new Date(WS.split + "T12:00:00Z").getUTCFullYear() + 1;
-  const z = (o, sim) => (o.rounds_3plus - o.rounds * sim.p3) / Math.sqrt(o.rounds * sim.p3 * (1 - sim.p3));
-  $("#real-lede").textContent = `The replay above rebuilds every investigation, which takes too long to run over years of draws. Here both wheels are played on all ${w59.rounds.toLocaleString()} rounds (${w59.nights} draws) since ${yr} instead, each laid out from support the earlier draws give (recent frequencies; which support is used makes no difference, since no way of choosing numbers beats chance), and compared with the rates simulated on ${WS.sims.toLocaleString()} fair draws. The wheel on all 59 numbers won something (3+) in ${w59.rounds_3plus} rounds, ${pc(w59.p3)} against ${pc(s59.p3)} simulated (z ${(z(w59, s59) >= 0 ? "+" : "") + z(w59, s59).toFixed(2)}), and the 12-number wheel in ${w12.rounds_3plus}, ${pc(w12.p3)} against ${pc(s12.p3)}: the real draws behave like fair ones, so the 59-number wheel's lead holds.`;
-  const row = (label, o, sim) => `<tr><td>${label}</td><td>${o.rounds.toLocaleString()}</td><td>${o.rounds_2plus} <span class="muted">(${(o.rounds * sim.p2).toFixed(0)})</span></td><td class="good">${o.rounds_3plus} <span class="muted">(${(o.rounds * sim.p3).toFixed(0)})</span></td><td>${o.rounds_4plus} <span class="muted">(${(o.rounds * sim.p4).toFixed(1)})</span></td><td>${fmt(o.line_mean, 3)}</td><td>${o.money_mean.toFixed(2)} <span class="muted">(${sim.money_mean.toFixed(2)})</span></td></tr>`;
-  $("#real-table").innerHTML = `<thead><tr><th>Wheel</th><th>Rounds</th><th>2+</th><th>3+</th><th>4+</th><th>Mean</th><th>Prizes</th></tr></thead><tbody>` +
-    row("All 59 numbers, no pair in two lines", w59, s59) + row("12 numbers, 3 if 3", w12, s12) + "</tbody>";
-  $("#real-note").textContent = `2+, 3+ and 4+ count the rounds in which some line matched that many; figures in brackets are what the simulated fair draws give. Mean is matches per line (36/59 = 0.610 by chance), and prizes are the fixed prizes won per round with 15 lines (a free Lucky Dip counted as 2, 3 matches 30, 4 matches 140, 5 matches 1,750).`;
+  const WS = D.wheel_study, R = WS && WS.real, sim = WS && WS.layouts["spread (59 numbers, no shared pair)"];
+  if (!R || !sim || !R["test period"]) return;
+  $("#real-section").hidden = false;
+  const pc = (x, d = 1) => (x * 100).toFixed(d) + "%", sg = (z) => (z >= 0 ? "+" : "") + z.toFixed(2);
+  const yr = (d) => new Date(d + "T12:00:00Z").getUTCFullYear() + 1;
+  const z3 = (o) => (o.rounds_3plus - o.rounds * sim.p3) / Math.sqrt(o.rounds * sim.p3 * (1 - sim.p3));
+  const T = R["test period"], A = R["since 2017"];
+  $("#real-lede").textContent = `The wheel's 15 lines on all 59 numbers, played walk-forward on every real round: over the backtest's ${T.rounds} rounds since ${yr(T.split)} (the same test period as the strategies above) and over all ${A.rounds.toLocaleString()} rounds since ${yr(A.split)}. Before each draw the lines are laid out from support the earlier draws give (recent frequencies); the 31 best-supported numbers are played twice. Since ${yr(T.split)}, some line won something (3+) in ${T.rounds_3plus} rounds, ${pc(T.p3)} against ${pc(sim.p3)} on ${WS.sims.toLocaleString()} simulated fair draws (z ${sg(z3(T))}), and matched 2+ in ${pc(T.p2)}. Its lines averaged ${fmt(T.line_mean, 3)} matches against ${fmt(36 / 59, 3)} by chance (z ${sg(T.line_z)}): like every strategy, the wheel doesn't make numbers likelier; it wins in more rounds because its lines don't overlap.`;
+  const row = (label, o) => `<tr><td>${label}</td><td>${o.rounds.toLocaleString()}</td><td>${o.rounds_2plus} <span class="muted">(${(o.rounds * sim.p2).toFixed(0)})</span></td><td class="good">${o.rounds_3plus} <span class="muted">(${(o.rounds * sim.p3).toFixed(0)})</span></td><td>${o.rounds_4plus} <span class="muted">(${(o.rounds * sim.p4).toFixed(1)})</span></td><td>${fmt(o.line_mean, 3)}</td><td>${sg(o.line_z)}</td><td>${o.money_mean.toFixed(2)} <span class="muted">(${sim.money_mean.toFixed(2)})</span></td></tr>`;
+  $("#real-table").innerHTML = `<thead><tr><th>Period</th><th>Rounds</th><th>2+</th><th>3+</th><th>4+</th><th>Mean</th><th>z</th><th>Prizes</th></tr></thead><tbody>` +
+    row(`Test period, since ${yr(T.split)}`, T) + row(`Since ${yr(A.split)}`, A) + "</tbody>";
+  $("#real-note").textContent = `2+, 3+ and 4+ count the rounds in which some line matched that many; figures in brackets are what simulated fair draws give. Mean is matches per line (36/59 = 0.610 by chance) and z compares it with chance. Prizes are the fixed prizes won per round with the 15 lines (a free Lucky Dip counted as 2, 3 matches 30, 4 matches 140, 5 matches 1,750). The two periods overlap: the test period is the last part of the longer one.`;
 })();
 
 // ---------- classic strategies on prime-base digits
@@ -435,14 +437,14 @@ const P3_LINE = 0.0108641, P2_LINE = 0.1083479;
   $("#wheel-sum").textContent = `Show the ${L} lines`;
   $("#wheel-lines").innerHTML = W.lines.map((line, i) => `<div class="line"><span class="ln">${i + 1}</span><div class="balls">${line.map((b) => `<span class="ball${tw.includes(b) ? " lead" : ""}">${b}</span>`).join("")}</div>${W.popularity ? `<span class="tag">${W.popularity[i].popularity.toFixed(2)}× as popular · jackpot ${pv(W.popularity[i].value)}</span>` : ""}</div>`).join("");
   let note = `Every number from 1 to 59 is in at least one line, so every drawn number matches somewhere, and no two lines share a pair of numbers, so two lines can only win together if four or more drawn numbers fall across them: the wins are spread over rounds instead of bunched. Some line matches 3+ (a prize) in ${pc(W.coverage.p3, 2)} of rounds and 2+ (a free Lucky Dip) in ${pc(W.coverage.p2)}`;
-  if (W.classic) note += `, against ${pc(W.classic.p3, 2)} and ${pc(W.classic.p2)} for the usual 12-number wheel that guarantees 3 matches if 3 of its numbers are drawn`;
   note += `, and ${pc(ind3, 2)} and ${pc(ind2)} for ${L} lines picked independently. The average number of matches and of prize money is exactly the same for any ${L} lines; the layout only changes how often something is won. 15 lines need 90 places, so 31 numbers are played twice: the ones with the most combined support, where each investigation gets one equal vote spread over its own next-draw lines (${C.sources.map((s) => `${s.investigation}, ${s.lines} lines`).join("; ")}). That support is no likelier to be drawn than other numbers. No line is a pattern ticket or has two consecutive pairs.`;
   if (W.popularity) note += ` "Jackpot" is the expected jackpot payout if the line wins, compared with an average line; a wheel on all 59 numbers can't avoid the birthday numbers (1 to 31) other players crowd onto.`;
   $("#wheel-note").textContent = note;
   const WS = D.wheel_study;
   if (WS) {
     const best = Object.entries(WS.rules).filter(([k]) => k !== "random").sort((a, b) => b[1].z_mean - a[1].z_mean)[0];
-    $("#wheel-note").textContent += ` The wheel study tried ${Object.keys(WS.rules).length} ways of choosing ${WS.candidates} numbers to back on the ${WS.rounds} rounds since ${new Date(WS.split + "T12:00:00Z").getUTCFullYear() + 1}: the best, ${best[0]}, put ${fmt(best[1].mean_in, 3)} drawn numbers among its ${WS.candidates} against ${fmt(WS.chance_in, 3)} by chance (z ${(best[1].z_mean >= 0 ? "+" : "") + best[1].z_mean.toFixed(2)}, below the cut of ${WS.z_cut.toFixed(2)} and close to the ${WS.expected_best.toFixed(2)} the best of that many reaches by luck), which is why the wheel covers every number instead.`;
+    $("#wheel-note").textContent += ` The wheel study tried ${Object.keys(WS.rules).length} ways of choosing the ${WS.candidates} numbers played twice on the ${WS.rounds} rounds since ${new Date(WS.split + "T12:00:00Z").getUTCFullYear() + 1}: the best, ${best[0]}, put ${fmt(best[1].mean_in, 3)} drawn numbers among its ${WS.candidates} against ${fmt(WS.chance_in, 3)} by chance (z ${(best[1].z_mean >= 0 ? "+" : "") + best[1].z_mean.toFixed(2)}, below the cut of ${WS.z_cut.toFixed(2)} and ${best[1].z_mean < WS.expected_best ? "below" : "close to"} the ${WS.expected_best.toFixed(2)} the best of that many reaches by luck)` +
+      (WS.replay ? `, and the combined support put ${fmt(WS.replay.mean_in, 3)} among its ${WS.candidates} over ${WS.replay.rounds} replayed rounds (z ${(WS.replay.z >= 0 ? "+" : "") + WS.replay.z.toFixed(2)}, also within chance)` : "") + `.`;
   }
 })();
 

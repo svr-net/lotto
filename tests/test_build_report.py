@@ -55,13 +55,6 @@ def test_digit_strategy_picks_vote_within_prime_radix():
     assert src["Prime radix"] == [[1, 2, 3, 4, 5, 6], [7, 8, 9, 10, 11, 12]]
 
 
-def test_wheel_guarantees_three_if_three():
-    import itertools
-    assert len(br.WHEEL_12) == 15 and all(len(set(r)) == 6 and max(r) < 12 for r in br.WHEEL_12)
-    covered = {t for r in br.WHEEL_12 for t in itertools.combinations(r, 3)}
-    assert covered == set(itertools.combinations(range(12), 3))
-
-
 def test_played_wheel_spreads_all_59_numbers_without_a_shared_pair():
     import itertools
     from collections import Counter
@@ -77,4 +70,4 @@ def test_played_wheel_spreads_all_59_numbers_without_a_shared_pair():
     assert len(uses) == 59 and set(w["twice"]) == {v for v, c in uses.items() if c == 2} == set(range(1, 32))
     assert not any(pattern_line(l) for l in lines)
     assert br.wheel_lines(score, 20261031)[1] == lines
-    assert w["coverage"]["p3"] > w["classic"]["p3"] + 0.05
+    assert w["coverage"]["p3"] > 0.15 and w["coverage"]["p2"] > 0.9
