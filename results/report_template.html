@@ -463,6 +463,12 @@ const covText = (c) => `They cover ${c.distinct} different numbers. In each roun
   $("#wheel-sum").textContent = `Show the ${L} lines`;
   $("#wheel-lines").innerHTML = W.lines.map((line, i) => `<div class="line"><span class="ln">${i + 1}</span><div class="balls">${line.map((b) => `<span class="ball">${b}</span>`).join("")}</div></div>`).join("");
   $("#wheel-note").textContent = `Every set of 3 candidates sits together in at least one line, so whenever 3 or more of a round's numbers are among the ${W.candidates.length}, some line matches at least 3. That happens in ${pc(W.p_condition)} of rounds. Overall, some line matches 3+ in ${pc(W.coverage.p3, 2)} of rounds and 2+ in ${pc(W.coverage.p2)}, against ${pc(ind3, 2)} and ${pc(ind2)} for ${L} lines picked independently: the wheel bunches its wins together, so it wins something less often for the same cost. Its average number of matches and of prizes is exactly the same as any ${L} lines, and the candidates are no likelier to be drawn than other numbers, so the guarantee doesn't change the odds.`;
+  const WS = D.wheel_study;
+  if (WS) {
+    const best = Object.entries(WS.rules).filter(([k]) => k !== "random").sort((a, b) => b[1].z_mean - a[1].z_mean)[0];
+    $("#wheel-note").textContent += ` The wheel study tried ${Object.keys(WS.rules).length} ways of choosing the 12 candidates on the ${WS.rounds} rounds since ${new Date(WS.split + "T12:00:00Z").getUTCFullYear() + 1}: the best, ${best[0]}, put ${fmt(best[1].mean_in, 3)} drawn numbers among its 12 against ${fmt(WS.chance_in, 3)} by chance (z ${(best[1].z_mean >= 0 ? "+" : "") + best[1].z_mean.toFixed(2)}, below the cut of ${WS.z_cut.toFixed(2)} and close to the ${WS.expected_best.toFixed(2)} the best of that many reaches by luck)` +
+      (WS.replay ? `, and the combined support used here put ${fmt(WS.replay.mean_in, 3)} among its 12 over ${WS.replay.rounds} replayed rounds (z ${(WS.replay.z >= 0 ? "+" : "") + WS.replay.z.toFixed(2)})` : "") + `.`;
+  }
 })();
 
 // ---------- live results: committed picks scored against the real draws
