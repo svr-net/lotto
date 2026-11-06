@@ -101,6 +101,45 @@ def sample_draw_base(model: LottoTransformer, base: int, temperature: float = 0.
     return chosen
 
 
+def generate_batch_base(model: LottoTransformer, base: int, num_samples: int, temperature: float = 0.9,
+                        batch_size: int = 8192) -> np.ndarray:
+    """[num_samples, 6] draws sampled digit by digit as ``sample_draw_base`` does, but for a whole chunk
+    of draws at once (one forward pass per digit position for the chunk, not per draw): each row keeps
+    the numbers it can still complete to, and only their digits are allowed at each step."""
+    model.eval()
+    device = next(model.parameters()).device
+    width = digit_width(base)
+    digits = torch.tensor([[0] * width] + [to_base(n, base, width) for n in range(MIN_NUM, MAX_NUM + 1)],
+                          dtype=torch.long, device=device)  # [60, width]; row 0 is never a candidate
+    onehot = F.one_hot(digits, model.vocab_size).float()  # [60, width, vocab]
+    out = []
+    with torch.inference_mode():
+        for start in range(0, num_samples, batch_size):
+            n = min(batch_size, num_samples - start)
+            seq = torch.zeros(n, model.seq_len, dtype=torch.long, device=device)
+            used = torch.zeros(n, MAX_NUM + 1, dtype=torch.bool, device=device)
+            used[:, 0] = True
+            chosen = torch.zeros(n, NUMS_PER_DRAW, dtype=torch.long, device=device)
+            pos = 0
+            for i in range(NUMS_PER_DRAW):
+                cand = ~used
+                for k in range(width):
+                    inp = torch.zeros_like(seq)
+                    inp[:, 1 : pos + 1] = seq[:, :pos]
+                    logits = model(inp)[:, pos]
+                    allowed = (cand.float() @ onehot[:, k]) > 0  # digits some candidate has at place k
+                    probs = F.softmax(logits.masked_fill(~allowed, float("-inf")) / temperature, dim=1)
+                    d = torch.multinomial(probs, 1).squeeze(1)
+                    seq[:, pos] = d
+                    pos += 1
+                    cand &= digits[:, k][None, :] == d[:, None]
+                num = cand.float().argmax(1)
+                chosen[:, i] = num
+                used[torch.arange(n, device=device), num] = True
+            out.append(chosen.cpu().numpy())
+    return np.concatenate(out).astype(int) if out else np.zeros((0, NUMS_PER_DRAW), dtype=int)
+
+
 def run_base(
     draws_np: np.ndarray,
     base: int,
@@ -124,9 +163,7 @@ def run_base(
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr)
     history = train_model(model, tokens, optimizer, epochs=epochs, batch_size=batch_size, verbose=False)
 
-    generated = np.array(
-        [sample_draw_base(model, base, temperature) for _ in range(num_samples)], dtype=int
-    ).reshape(num_samples, NUMS_PER_DRAW)
+    generated = generate_batch_base(model, base, num_samples, temperature)
 
     chi = bt.chi_square_test(bt.frequency_distribution(draws_np), bt.frequency_distribution(generated))
     holdout = bt.holdout_hits(generated, test_draws_np) if test_draws_np is not None and len(test_draws_np) else None
