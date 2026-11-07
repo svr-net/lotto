@@ -189,6 +189,18 @@ nav.tabs a:focus-visible { outline: 2px solid var(--s1); outline-offset: 2px; }
   <p class="note" id="mc-cost-note"></p>
 </section>
 
+<section data-tab="backtest" id="seq-section" hidden>
+  <div class="eyebrow">Sequence over time</div>
+  <h2>The draws as one continuous sequence</h2>
+  <p id="seq-lede"></p>
+  <h3 class="h3">Do the draws remember?</h3>
+  <div class="table-wrap"><table id="seq-memory"></table></div>
+  <h3 class="h3">Choosing 15 numbers from the sequence, and when to play</h3>
+  <div class="table-wrap"><table id="seq-rules"></table></div>
+  <div class="table-wrap"><table id="seq-time"></table></div>
+  <p class="note" id="seq-note"></p>
+</section>
+
 <section data-tab="backtest" id="mc-power-section" hidden>
   <div class="eyebrow">Monte Carlo</div>
   <h2>How small a bias the tests would catch</h2>
@@ -386,6 +398,29 @@ const P3_LINE = 0.0108641, P2_LINE = 0.1083479;
     WD.slice().reverse().map((d) => { const w = d.rounds.map((_, j) => won(d, j)).reduce((a, b) => a + b, 0);
       return `<tr><td>${d.draw_no} · ${dfmt(d.date, false)}</td><td>${d.rounds.map((_, j) => bcell(d, j)).join(" / ")}</td><td class="${w ? "good" : ""}">${w}</td></tr>`; }).join("") + "</tbody>";
   $("#replay-note").textContent = `Figures in brackets are what random lines average. z compares the mean with the 36/59 chance rate; anything inside about ±2.5 is chance. Bold numbers are 3-match hits, worth the lowest prize.`;
+})();
+
+// ---------- the draws as one continuous sequence: memory, sequence-aware choice of 15, timing, waits
+(function () {
+  const Q = D.sequence;
+  if (!Q) return;
+  $("#seq-section").hidden = false;
+  const pc = (x, d = 1) => x == null ? "–" : (x * 100).toFixed(d) + "%", sg = (z) => (z >= 0 ? "+" : "") + z.toFixed(2);
+  const p = Q.p_hit_59, eras = Object.entries(Q.memory), nTests = eras.length * 3, cutP = 0.05 / nTests;
+  const flags = eras.flatMap(([label, m]) => [["hazard", m.hazard.p], ["lag1", m.lag1.p], ["lag2", m.lag2.p]].filter(([, v]) => v < cutP).map(([k]) => [label, k, m]));
+  const R = Q.rules, names = Object.keys(R), best = names.filter((n) => n !== "random").sort((a, b) => R[b].z_mean - R[a].z_mean)[0];
+  $("#seq-lede").textContent = `Each draw is one event in a sequence of ${eras.reduce((a, [, m]) => a + m.rounds, 0).toLocaleString("en-GB")} rounds since 1994. Choosing 15 numbers, the chance that 4 or more of a round's six are among them is ${pc(p, 2)} (1 in ${(1 / p).toFixed(1)}) if every round is independent of the ones before. Time could only raise it if the sequence remembers: if a number's chance depended on how long it had been away, or on the last few rounds. ` +
+    (flags.length ? `One memory shows: ${flags.map(([label, k, m]) => `in the ${label.split(" (")[0]}, numbers came back ${k === "lag2" ? "two rounds later" : k === "lag1" ? "in the next round" : "after different gaps"} ${k === "hazard" ? "unevenly" : (m[k].observed < m[k].expected ? "less" : "more") + ` often than chance (${Math.round(m[k].observed).toLocaleString("en-GB")} times against ${Math.round(m[k].expected).toLocaleString("en-GB")})`}, p ${m[k].p.toFixed(3)}`).join("; ")}, below the cut of ${cutP.toFixed(4)} for these ${nTests} tests. ${flags.every(([label]) => !label.startsWith("59")) ? "It does not carry into the 59-ball era, so it can't help choose numbers today." : ""} ` : `No memory shows in either era. `) +
+    `Walk-forward over the ${R[best].rounds.toLocaleString("en-GB")} rounds since ${new Date(Q.split + "T12:00:00Z").getUTCFullYear() + 1}, the best sequence-aware way of choosing the 15, ${best}, caught 4+ in ${R[best].hits_mean.toFixed(0)} rounds against ${R[best].expected.toFixed(0)} expected (z ${sg(R[best].z_mean)}), below the cut of ${Q.z_cut.toFixed(2)} and ${R[best].z_mean < Q.expected_best ? "below" : "close to"} the ${Q.expected_best.toFixed(2)} the best of ${names.length - 1} reaches by luck. Playing only after a hit or after a long drought doesn't help either: those rounds hit about as often as the rest, and the waits between hits look like those of independent rounds.`;
+  $("#seq-memory").innerHTML = `<thead><tr><th>Era</th><th>Rounds</th><th>Chance by gap since last drawn</th><th>Back in the next round</th><th>Back two rounds later</th></tr></thead><tbody>` +
+    eras.map(([label, m]) => { const c = (v) => `<td class="${v < cutP ? "flag" : ""}">p ${v.toFixed(3)}</td>`;
+      return `<tr><td>${label}</td><td>${m.rounds.toLocaleString("en-GB")}</td>${c(m.hazard.p)}<td class="${m.lag1.p < cutP ? "flag" : ""}">${Math.round(m.lag1.observed).toLocaleString("en-GB")} vs ${Math.round(m.lag1.expected).toLocaleString("en-GB")}, p ${m.lag1.p.toFixed(3)}</td><td class="${m.lag2.p < cutP ? "flag" : ""}">${Math.round(m.lag2.observed).toLocaleString("en-GB")} vs ${Math.round(m.lag2.expected).toLocaleString("en-GB")}, p ${m.lag2.p.toFixed(3)}</td></tr>`; }).join("") + "</tbody>";
+  $("#seq-rules").innerHTML = `<thead><tr><th>Choosing the 15</th><th>Rounds with 4+</th><th>z (range over seeds)</th><th>After a hit</th><th>After a drought</th><th>Otherwise</th></tr></thead><tbody>` +
+    names.map((n) => { const r = R[n], t = Q.timing[n]; return `<tr><td>${n}</td><td>${r.hits_mean.toFixed(0)} <span class="muted">(${r.expected.toFixed(0)})</span></td><td class="${r.z_mean >= Q.z_cut ? "good" : ""}">${sg(r.z_mean)} <span class="muted">(${sg(r.z_min)} to ${sg(r.z_max)})</span></td><td>${pc(t.after_hit[0])} <span class="muted">(${t.after_hit[1]})</span></td><td>${pc(t.after_drought[0])} <span class="muted">(${t.after_drought[1]})</span></td><td>${pc(t.otherwise[0])} <span class="muted">(${t.otherwise[1]})</span></td></tr>`; }).join("") + "</tbody>";
+  const W = Q.over_time.random || Q.over_time[names[0]];
+  $("#seq-time").innerHTML = `<thead><tr><th>Choosing the 15</th>${Object.keys(W.windows).map((n) => `<th>${n} rounds</th>`).join("")}<th>Mean wait</th><th>Waits</th></tr></thead><tbody>` +
+    names.map((n) => { const o = Q.over_time[n]; return `<tr><td>${n}</td>${Object.values(o.windows).map((w) => `<td>${pc(w.real, 0)} <span class="muted">(${pc(w.theory, 0)})</span></td>`).join("")}<td>${o.waits ? `${o.waits.mean.toFixed(1)} <span class="muted">(${o.waits.theory_mean.toFixed(1)})</span>` : "–"}</td><td>${o.waits ? "p " + o.waits.p.toFixed(2) : "–"}</td></tr>`; }).join("") + "</tbody>";
+  $("#seq-note").textContent = `Memory: the chance of a number by how many rounds it has been away (a chi-square over gap buckets) and how often numbers repeat one or two rounds later, each against ${Q.sims.toLocaleString("en-GB")} simulated fair histories of the same length; flagged cells are below ${cutP.toFixed(4)}, the 0.05 cut over the ${nTests} tests. Choosing the 15: each night's 15 numbers are picked from the rounds before only, and play both of the night's rounds; "hazard" picks the numbers whose current gap has had the highest drawn rate, "transitions" those most often drawn after rounds holding the last round's numbers, "momentum" those whose last 26 rounds beat their last 208, "due" those away longest against their own typical gap. Rounds with 4+ count the rounds in which 4 or more of the six drawn were among the 15 (expected in brackets). "After a hit", "after a drought" (more than 32 rounds without one) and "otherwise" give the hit rate of the next round, with how many such rounds in brackets; with independent rounds all three are ${pc(p, 2)}. The "n rounds" columns give how often the real sequence held at least one hit in a window of n rounds (independent rounds in brackets); waits are the rounds between hits (mean ${(1 / p).toFixed(1)} for independent rounds), and the p-value compares their spread with independent rounds'.`;
 })();
 
 // ---------- Monte Carlo: what the wheel costs, and how small a bias the tests would catch
