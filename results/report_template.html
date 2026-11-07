@@ -129,6 +129,18 @@ nav.tabs a:focus-visible { outline: 2px solid var(--s1); outline-offset: 2px; }
     <details open><summary id="wheel-sum"></summary><div class="picks5-lines" id="wheel-lines" style="margin-top:8px"></div></details>
     <p class="note" id="wheel-note"></p>
   </div>
+<div class="picks5" id="cons5" data-tab="next" hidden>
+    <div class="picks5-head"><strong>Consensus 15: hindsight as reality</strong><span class="note" id="cons-sub"></span></div>
+    <div class="picks5-lines" id="cons-nums"></div>
+    <p class="note" id="cons-lede"></p>
+    <div class="picks5-head"><strong>"3 if 4" wheel</strong><span class="note" id="w34-sub"></span></div>
+    <details open><summary id="w34-sum"></summary><div class="picks5-lines" id="w34-lines" style="margin-top:8px"></div></details>
+    <div class="picks5-head"><strong>"4 if 4" wheel</strong><span class="note" id="w44-sub"></span></div>
+    <details><summary id="w44-sum"></summary><div class="picks5-lines" id="w44-lines" style="margin-top:8px"></div></details>
+    <div class="table-wrap"><table id="cons-odds"></table></div>
+    <details><summary>The 15 numbers each model names</summary><div class="table-wrap" style="margin-top:8px"><table id="cons-models"></table></div></details>
+    <p class="note" id="cons-note"></p>
+  </div>
 <div data-tab="backtest" style="display:grid;gap:16px">
   <p id="lede"></p>
   <div class="facts" id="facts"></div>
@@ -372,6 +384,31 @@ const P3_LINE = 0.0108641, P2_LINE = 0.1083479;
   if (!C || !C.wheel) return;
   $("#picks5").hidden = false;
   $("#nd5").textContent = ndDate.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
+})();
+
+// ---------- consensus 15 (hindsight as reality) and its two wheels
+(function () {
+  const K = D.consensus;
+  if (!K || !K.wheels) return;
+  $("#cons5").hidden = false;
+  const pc = (x, d = 1) => (x * 100).toFixed(d) + "%", one = (x) => `1 in ${Math.round(1 / x).toLocaleString("en-GB")}`;
+  const pv = (v) => (v >= 1 ? "+" : "") + ((v - 1) * 100).toFixed(1) + "%", gbp = (x) => "£" + Math.round(x).toLocaleString("en-GB");
+  const nModels = Object.keys(K.models).length, W3 = K.wheels["3 if 4"], W4 = K.wheels["4 if 4"];
+  $("#cons-sub").textContent = `the 15 numbers named most often by ${nModels} models fitted to all ${K.rounds.toLocaleString("en-GB")} rounds`;
+  $("#cons-nums").innerHTML = `<div class="line"><span class="ln"></span><div class="balls">${K.consensus.map((b) => `<span class="ball lead" title="named by ${K.votes[b]} of ${nModels} models">${b}</span>`).join("")}</div></div>`;
+  $("#cons-lede").textContent = `Every model here is fitted to the whole history as if the past draws showed how the machine truly behaves: the 15 numbers that would have caught 4+ most often, the most likely biased machine, the combined support, the strategies' vote, the sequence rules and the frequency rules. Each names 15 numbers and the consensus keeps the 15 named most often. In the past draws, 4 or more of a round's six fell among them in ${pc(K.consensus_history_rate, 2)} of rounds, against ${pc(K.fair_4plus, 2)} for any 15 numbers; but sets fitted this way drop back to about ${pc(K.fair_4plus, 2)} on draws they weren't fitted to (see the Backtest tab), so treat the "if the fitted machine were real" odds as a ceiling and the fair odds as what to expect.`;
+  const lines = (W) => W.lines.map((l, i) => `<div class="line"><span class="ln">${i + 1}</span><div class="balls">${l.map((b) => `<span class="ball">${b}</span>`).join("")}</div></div>`).join("");
+  $("#w34-sub").textContent = `${W3.lines.length} lines, ${gbp(W3.cost)} a draw: whenever 4 of the drawn numbers are among the 15, some line matches 3`;
+  $("#w34-sum").textContent = `Show the ${W3.lines.length} lines`;
+  $("#w34-lines").innerHTML = lines(W3);
+  $("#w44-sub").textContent = `${W4.lines.length} lines, ${gbp(W4.cost)} a draw: whenever 4 of the drawn numbers are among the 15, some line matches 4`;
+  $("#w44-sum").textContent = `Show the ${W4.lines.length} lines`;
+  $("#w44-lines").innerHTML = lines(W4);
+  const row = (name, W) => `<tr><td>${name}</td><td>${gbp(W.cost)}</td><td>${pc(W.p["2"])}</td><td>${pc(W.p["3"])} <span class="muted">(${pc(W.fitted["3"])})</span></td><td>${pc(W.p["4"], 2)} <span class="muted">(${pc(W.fitted["4"], 2)})</span></td><td>${one(W.p["5"])}</td><td>${gbp(W.fixed_prizes)}</td><td>${W.jackpot_value ? pv(W.jackpot_value[0]) + " to " + pv(W.jackpot_value[1]) : "–"}</td></tr>`;
+  $("#cons-odds").innerHTML = `<thead><tr><th>Wheel</th><th>Cost</th><th>2+</th><th>3+</th><th>4+</th><th>5+</th><th>Prizes</th><th>Jackpot</th></tr></thead><tbody>${row('"3 if 4"', W3)}${row('"4 if 4"', W4)}</tbody>`;
+  $("#cons-models").innerHTML = `<thead><tr><th>Model</th><th>15 numbers</th><th>4+ in past draws</th></tr></thead><tbody>` +
+    Object.entries(K.models).map(([m, v]) => `<tr><td>${m}</td><td style="white-space:normal">${v.numbers.join(" ")}</td><td>${pc(v.history_rate, 2)}</td></tr>`).join("") + "</tbody>";
+  $("#cons-note").textContent = `2+ to 5+ are the chances, per draw, that some line matches that many: exact for fair draws, with the chance if the fitted machine were real in brackets. Prizes are the fixed prizes won per draw on average (a free Lucky Dip counted as ${gbp(K.price)}); either wheel returns about 42p in the pound once the jackpot and 5 plus the bonus are counted. Jackpot is the range of the lines' jackpot value against an average line (shared with fewer players when it holds fewer popular numbers). Both guarantees are checked on all 1,365 sets of 4 of the 15. ${W4.pattern_lines ? `${W4.pattern_lines} of the "4 if 4" lines have two consecutive pairs, which the run of consecutive numbers in the 15 makes unavoidable; it doesn't change their odds.` : ""} Prices are per round played.`;
 })();
 
 // ---------- replay of the wheel over recent draws
