@@ -1,5 +1,6 @@
 # Publishes the report to GitHub Pages (https://svr-net.github.io/lotto/) whenever main changes it.
-# results/report.html becomes the site's index page, and every results/*.json is served under data/.
+# results/report.html becomes the site's index page, and every results/*.json and results/exports/* file
+# is served under data/.
 name: Publish report to GitHub Pages
 
 on:
@@ -35,6 +36,7 @@ jobs:
           mkdir -p _site/data
           cp results/report.html _site/index.html
           cp results/*.json _site/data/
+          if [ -d results/exports ]; then cp results/exports/* _site/data/; fi
           touch _site/.nojekyll
 
       - uses: actions/upload-pages-artifact@v3

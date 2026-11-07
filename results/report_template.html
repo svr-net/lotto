@@ -123,6 +123,12 @@ nav.tabs a:focus-visible { outline: 2px solid var(--s1); outline-offset: 2px; }
   <a href="#about">About</a>
 </nav>
 
+<div class="picks5" id="frozen5" data-tab="next" hidden>
+    <div class="picks5-head"><strong>Your frozen wheel</strong><span class="note" id="fz-sub"></span></div>
+    <div class="picks5-lines" id="fz-lines"></div>
+    <p class="note" id="fz-links"></p>
+    <p class="note" id="fz-record"></p>
+  </div>
 <div class="picks5" id="picks5" data-tab="next" hidden>
     <div class="picks5-head"><strong>Wheel for <span id="nd5"></span></strong><span class="note" id="wheel-sub"></span></div>
     <div class="picks5-lines" id="wheel-cands"></div>
@@ -384,6 +390,24 @@ const P3_LINE = 0.0108641, P2_LINE = 0.1083479;
   if (!C || !C.wheel) return;
   $("#picks5").hidden = false;
   $("#nd5").textContent = ndDate.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
+})();
+
+// ---------- the frozen wheel: the same lines every draw, for entering in the app once
+(function () {
+  const F = D.frozen;
+  if (!F) return;
+  $("#frozen5").hidden = false;
+  const pc = (x, d = 1) => (x * 100).toFixed(d) + "%", gbp = (x) => "£" + Math.round(x).toLocaleString("en-GB");
+  const dl = (d) => new Date(d + "T12:00:00Z").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+  $("#fz-sub").textContent = `"${F.wheel}" on ${F.numbers.join(" ")}: ${F.lines.length} lines, ${gbp(F.lines.length * F.price)} a draw, the same every draw from ${dl(F.first_draw)}`;
+  $("#fz-lines").innerHTML = F.lines.map((l, i) => `<div class="line"><span class="ln">${i + 1}</span><div class="balls">${l.map((b) => `<span class="ball lead">${b}</span>`).join("")}</div></div>`).join("");
+  $("#fz-links").innerHTML = `Frozen on ${dl(F.frozen_on)} from the consensus 15, so the lines can be entered in the app once (or set up as a subscription) and kept. Download: <a href="data/frozen_wheel_app.txt">lines for the app (text)</a> · <a href="data/frozen_wheel.csv">CSV</a>. Whenever 4 of the drawn numbers are among the 15, some line matches 3. For fair draws some line matches 3+ in ${pc(F.p["3"])} of draws and 4+ in ${pc(F.p["4"], 2)}; changing the lines every draw would not change these odds.`;
+  const LV = D.live, E = LV ? LV.draws.filter((e) => e.frozen_wheel) : [];
+  if (!E.length) { $("#fz-record").textContent = `Its results will show here from ${dl(F.first_draw)}, once that draw is scored.`; return; }
+  const rounds = E.flatMap((e) => e.rounds.map((_, j) => ({ best: Math.max(...e.frozen_wheel.lines.map((s) => s.matches[j])), inN: e.frozen_wheel.in_numbers[j] })));
+  const t = LV.summary.frozen_lines || { line_rounds: 0, prize: 0, mean: 0 };
+  const last = E[E.length - 1], lb = last.rounds.map((_, j) => Math.max(...last.frozen_wheel.lines.map((s) => s.matches[j])));
+  $("#fz-record").textContent = `Since ${dl(F.first_draw)}: ${E.length} draw${E.length > 1 ? "s" : ""}, ${rounds.length} rounds; some line matched 3+ in ${rounds.filter((r) => r.best >= 3).length} rounds and 2+ in ${rounds.filter((r) => r.best >= 2).length}; ${t.prize} prize-winning line${t.prize === 1 ? "" : "s"} in ${t.line_rounds} line-rounds (mean ${t.mean != null ? t.mean.toFixed(2) : "–"} matches, 0.61 by chance). Last draw (${dl(last.date)}): ${last.frozen_wheel.in_numbers.join(" / ")} of the drawn numbers among the 15, best line ${lb.join(" / ")}.`;
 })();
 
 // ---------- consensus 15 (hindsight as reality) and its two wheels
