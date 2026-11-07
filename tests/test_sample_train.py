@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 
 from lotto_nn.model import LottoTransformer
@@ -70,3 +71,34 @@ def test_unordered_sampling_allows_any_order():
         assert len(set(row.tolist())) == 6
         assert all(MIN_NUM <= n <= MAX_NUM for n in row)
     assert any(row.tolist() != sorted(row.tolist()) for row in batch)
+
+
+def _next_number_probs(model, prefix, temperature=0.9, ascending=True):
+    """Exact distribution of the next number after ``prefix``, as sample_draw computes it."""
+    import torch.nn.functional as F
+    pos = len(prefix)
+    inp = torch.tensor([([0] + prefix + [0] * model.seq_len)[: model.seq_len]])
+    with torch.no_grad():
+        logits = model(inp)[0, pos]
+    mask = torch.ones_like(logits, dtype=torch.bool)
+    if ascending:
+        mask[(prefix[-1] + 1 if prefix else 1) : 59 - (model.seq_len - pos - 1) + 1] = False
+    else:
+        mask[1:60] = False
+        mask[prefix] = True
+    return F.softmax(logits.masked_fill(mask, float("-inf")) / temperature, dim=0)
+
+
+def test_batched_sampling_follows_the_model_like_sample_draw():
+    # the batched sampler's first numbers follow the exact first-step distribution of sample_draw
+    torch.manual_seed(0)
+    model = LottoTransformer()
+    model.eval()
+    for ascending in (True, False):
+        p = _next_number_probs(model, [], ascending=ascending).numpy()
+        draws = generate_batch(model, num_samples=20000, ascending=ascending)
+        assert all(len(set(d)) == 6 and 1 <= min(d) and max(d) <= 59 for d in draws[:500])
+        freq = np.bincount(draws[:, 0], minlength=60) / len(draws)
+        assert np.abs(freq - p).max() < 0.02
+        if ascending:
+            assert (np.diff(draws, axis=1) > 0).all()

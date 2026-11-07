@@ -181,6 +181,22 @@ nav.tabs a:focus-visible { outline: 2px solid var(--s1); outline-offset: 2px; }
   <p class="note" id="real-note"></p>
 </section>
 
+<section data-tab="backtest" id="mc-cost-section" hidden>
+  <div class="eyebrow">Monte Carlo</div>
+  <h2>What playing the wheel costs and returns</h2>
+  <p id="mc-cost-lede"></p>
+  <div class="table-wrap"><table id="mc-cost-table"></table></div>
+  <p class="note" id="mc-cost-note"></p>
+</section>
+
+<section data-tab="backtest" id="mc-power-section" hidden>
+  <div class="eyebrow">Monte Carlo</div>
+  <h2>How small a bias the tests would catch</h2>
+  <p id="mc-power-lede"></p>
+  <div class="table-wrap"><table id="mc-power-table"></table></div>
+  <p class="note" id="mc-power-note"></p>
+</section>
+
 <section data-tab="backtest">
   <div class="eyebrow">Correlation</div>
   <h2>How the strategies relate</h2>
@@ -370,6 +386,31 @@ const P3_LINE = 0.0108641, P2_LINE = 0.1083479;
     WD.slice().reverse().map((d) => { const w = d.rounds.map((_, j) => won(d, j)).reduce((a, b) => a + b, 0);
       return `<tr><td>${d.draw_no} · ${dfmt(d.date, false)}</td><td>${d.rounds.map((_, j) => bcell(d, j)).join(" / ")}</td><td class="${w ? "good" : ""}">${w}</td></tr>`; }).join("") + "</tbody>";
   $("#replay-note").textContent = `Figures in brackets are what random lines average. z compares the mean with the 36/59 chance rate; anything inside about ±2.5 is chance. Bold numbers are 3-match hits, worth the lowest prize.`;
+})();
+
+// ---------- Monte Carlo: what the wheel costs, and how small a bias the tests would catch
+(function () {
+  const MC = D.monte_carlo;
+  if (!MC) return;
+  const gbp = (x) => (x < 0 ? "−" : "") + "£" + Math.abs(Math.round(x)).toLocaleString("en-GB");
+  const pc = (x, d = 1) => (x * 100).toFixed(d) + "%";
+  const odds = (p) => p > 0 ? `1 in ${Math.round(1 / p).toLocaleString("en-GB")}` : "–";
+  const W = MC.season, R = W.per_round, S = W.seasons;
+  $("#mc-cost-section").hidden = false;
+  $("#mc-cost-lede").textContent = `The wheel's ${W.lines} lines played on ${MC.rounds_sim.toLocaleString("en-GB")} simulated fair rounds, then strung into seasons of two draws a week. One round costs ${gbp(R.cost)} (${gbp(W.price)} a line). On average the lines win back £${R.fixed_mean.toFixed(2)} in fixed prizes and £${R.rare_ev.toFixed(2)} in expected value from the rare top tiers (5 plus the bonus, and the jackpot), ${R.return_pct.toFixed(0)}p of every pound: that is the lottery's payout, and no choice of lines changes it. Some line wins a cash prize (3+) in ${pc(R.p_any_prize)} of rounds and at least a free Lucky Dip (2+) in ${pc(R.p_free_line)}.`;
+  const rows = Object.entries(S).map(([label, s]) => `<tr><td>${label} <span class="muted">(${s.rounds})</span></td><td>${gbp(s.cost)}</td><td>${gbp(s.net_median)}</td><td>${gbp(s.net_p5)} to ${gbp(s.net_p95)}</td><td>${pc(1 - s.p_no_prize)} <span class="muted">(${s.prizes_mean.toFixed(1)})</span></td><td>${pc(s.p_break_even)}</td><td>${odds(s.p_five)}</td><td>${odds(s.p_jackpot)}</td></tr>`).join("");
+  $("#mc-cost-table").innerHTML = `<thead><tr><th>Playing</th><th>Cost</th><th>Net</th><th>Net, 90%</th><th>Cash prize</th><th>Break even</th><th>Any 5</th><th>Jackpot</th></tr></thead><tbody>${rows}</tbody>`;
+  $("#mc-cost-note").textContent = `Assumes ${gbp(W.price)} a line for each round played and one round per draw; playing both rounds of a two-round draw doubles the cost and the prizes. Fixed prizes: 2 matches a free Lucky Dip (counted as ${gbp(W.price)}), 3 matches £30, 4 matches £140, 5 matches £1,750, 5 plus the bonus £1,000,000. The jackpot is the median jackpot of the era shared with the expected number of other winners (${gbp(W.jackpot)}). Net excludes the rare tiers, whose chances are given separately: they almost never happen, and when they do they outweigh everything else. Rounds played are in brackets. Net is the median result and "Net, 90%" the range of 90% of seasons; "Cash prize" is the chance of at least one 3+ win, with the average number of them in brackets; "Break even" is the share of seasons whose fixed prizes cover the cost; "Any 5" and "Jackpot" are the chances of at least one 5-match and of the jackpot.`;
+
+  const PW = MC.power, one = PW["one number"], six = PW["six numbers"];
+  $("#mc-power-section").hidden = false;
+  const d90 = (x) => x == null ? "not within +100%" : `+${Math.round(x * 100)}%`;
+  $("#mc-power-lede").textContent = `Finding no pattern only means something if the tests could have found one. Here ${MC.sims} simulated histories as long as the real era (${MC.rounds.toLocaleString("en-GB")} rounds) are drawn with a planted bias, one number or a set of six made likelier, and each is put through the report's fairness test, a most-drawn-number test and a walk-forward hot-numbers strategy like the backtest's. A set of six numbers would be caught nine times in ten if it were ${d90(Math.min(six.detect90.chi_square ?? 9, six.detect90.max_count ?? 9))} likelier than the rest; a single number only if it were ${d90(Math.min(one.detect90.chi_square ?? 9, one.detect90.max_count ?? 9))} likelier. The real draws pass every test, so a bias that large is very unlikely; a smaller one could go unseen. For scale, six numbers ${d90(six.detect90.chi_square)} likelier would lift a line holding all of them from ${fmt(MC.chance_line, 3)} matches to about ${fmt(interp(six.rows, six.detect90.chi_square), 3)}; anything the tests could miss would lift it by less.`;
+  function interp(rows, d) { if (d == null) return NaN; for (let i = 1; i < rows.length; i++) if (rows[i].delta >= d) { const a = rows[i - 1], b = rows[i]; return a.line_mean + (d - a.delta) / (b.delta - a.delta) * (b.line_mean - a.line_mean); } return rows[rows.length - 1].line_mean; }
+  const cell = (v) => `<td class="${v >= 0.9 ? "good" : ""}">${pc(v, 0)}</td>`;
+  const body = (label, sc) => sc.rows.map((r, i) => `<tr><td>${i === 0 ? label : ""}</td><td>${r.delta ? "+" + Math.round(r.delta * 100) + "%" : "none (fair)"}</td>${cell(r.chi_square)}${cell(r.max_count)}${cell(r.strategy)}<td>${fmt(r.line_mean, 3)}</td></tr>`).join("");
+  $("#mc-power-table").innerHTML = `<thead><tr><th>Planted bias</th><th>Likelier by</th><th>Fairness test</th><th>Most-drawn number</th><th>Hot-numbers strategy</th><th>Line on them</th></tr></thead><tbody>${body("One number", one)}${body("Six numbers", six)}</tbody>`;
+  $("#mc-power-note").textContent = `Each cell is the share of biased histories a test flags (power); with no bias it should be about 5% for the two tests (their false-alarm rate) and lower for the strategy, whose cut is stricter. The fairness test is the chi-square of the 59 numbers' counts, calibrated on fair histories; the most-drawn test compares the top number's count with fair histories'; the strategy plays the six numbers drawn most often before each of the last ${MC.test_rounds} rounds and must clear z ${MC.z_cut}. "Line on them" is the matches a line holding the favoured numbers would average, against ${fmt(MC.chance_line, 3)} by chance. Detection points ("+X%") are interpolated between the rows.`;
 })();
 
 // ---------- the wheel on every real draw of the backtest periods
