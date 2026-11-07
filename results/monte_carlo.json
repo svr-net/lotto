@@ -2,25 +2,25 @@
  "season": {
   "per_round": {
    "cost": 30.0,
-   "fixed_mean": 8.767907,
-   "rare_ev": 3.7150386256276713,
-   "ev": 12.482945625627671,
-   "return_pct": 41.60981875209224,
-   "p_any_prize": 0.1588505,
-   "p_free_line": 0.908791
+   "fixed_mean": 8.741339,
+   "rare_ev": 3.7054991253041907,
+   "ev": 12.44683812530419,
+   "return_pct": 41.48946041768063,
+   "p_any_prize": 0.1588865,
+   "p_free_line": 0.9090195
   },
   "seasons": {
    "3 months": {
     "rounds": 26,
     "cost": 780.0,
-    "won_mean": 229.17748,
-    "net_mean": -550.82252,
+    "won_mean": 228.09384,
+    "net_mean": -551.90616,
     "net_p5": -662.0,
-    "net_median": -570.0,
+    "net_median": -572.0,
     "net_p95": -404.0,
-    "p_break_even": 0.00328,
-    "prizes_mean": 4.14052,
-    "p_no_prize": 0.01119,
+    "p_break_even": 0.00293,
+    "prizes_mean": 4.13205,
+    "p_no_prize": 0.01091,
     "p_jackpot": 8.65557570040032e-06,
     "p_bonus5": 5.193237365130887e-05,
     "p_five": 0.0028006403224885013
@@ -28,13 +28,13 @@
    "1 year": {
     "rounds": 104,
     "cost": 3120.0,
-    "won_mean": 913.1425,
-    "net_mean": -2206.8575,
+    "won_mean": 909.71122,
+    "net_mean": -2210.28878,
     "net_p5": -2464.0,
     "net_median": -2240.0,
-    "net_p95": -1922.0,
-    "p_break_even": 0.00015,
-    "prizes_mean": 16.51987,
+    "net_p95": -1926.0,
+    "p_break_even": 6e-05,
+    "prizes_mean": 16.51635,
     "p_no_prize": 0.0,
     "p_jackpot": 3.462185329028422e-05,
     "p_bonus5": 0.0002077133133367992,
@@ -43,13 +43,13 @@
    "5 years": {
     "rounds": 520,
     "cost": 15600.0,
-    "won_mean": 4560.02796,
-    "net_mean": -11039.97204,
-    "net_p5": -11694.0,
-    "net_median": -11130.0,
-    "net_p95": -9762.0,
+    "won_mean": 4543.65608,
+    "net_mean": -11056.34392,
+    "net_p5": -11698.0,
+    "net_median": -11136.0,
+    "net_p95": -10017.900000000023,
     "p_break_even": 0.0,
-    "prizes_mean": 82.60075,
+    "prizes_mean": 82.60218,
     "p_no_prize": 0.0,
     "p_jackpot": 0.0001730972801393671,
     "p_bonus5": 0.0010381352080867101,
@@ -57,7 +57,7 @@
    }
   },
   "price": 2.0,
-  "jackpot": 5159350.41888097,
+  "jackpot": 5130695.366361089,
   "lines": 15
  },
  "power": {
@@ -65,85 +65,85 @@
    "rows": [
     {
      "delta": 0,
-     "chi_square": 0.038,
-     "max_count": 0.04,
-     "strategy": 0.004,
-     "line_mean": 0.6093745689655172
+     "chi_square": 0.06,
+     "max_count": 0.018,
+     "strategy": 0.0,
+     "line_mean": 0.6094522413793104
     },
     {
      "delta": 0.05,
-     "chi_square": 0.048,
-     "max_count": 0.044,
+     "chi_square": 0.046,
+     "max_count": 0.05,
      "strategy": 0.0,
-     "line_mean": 0.6154101724137931
+     "line_mean": 0.6154421551724137
     },
     {
      "delta": 0.1,
-     "chi_square": 0.06,
-     "max_count": 0.07,
+     "chi_square": 0.074,
+     "max_count": 0.048,
      "strategy": 0.002,
-     "line_mean": 0.6178682758620689
+     "line_mean": 0.6179596551724138
     },
     {
      "delta": 0.15,
-     "chi_square": 0.068,
+     "chi_square": 0.088,
      "max_count": 0.092,
      "strategy": 0.002,
-     "line_mean": 0.6225194827586207
+     "line_mean": 0.6226474137931034
     },
     {
      "delta": 0.2,
-     "chi_square": 0.13,
-     "max_count": 0.168,
-     "strategy": 0.01,
-     "line_mean": 0.6280205172413793
+     "chi_square": 0.144,
+     "max_count": 0.162,
+     "strategy": 0.0,
+     "line_mean": 0.6283997413793103
     },
     {
      "delta": 0.25,
-     "chi_square": 0.196,
-     "max_count": 0.328,
-     "strategy": 0.012,
-     "line_mean": 0.6319681034482758
+     "chi_square": 0.186,
+     "max_count": 0.306,
+     "strategy": 0.008,
+     "line_mean": 0.6319452586206897
     },
     {
      "delta": 0.3,
-     "chi_square": 0.234,
-     "max_count": 0.506,
-     "strategy": 0.006,
-     "line_mean": 0.6363177586206897
+     "chi_square": 0.24,
+     "max_count": 0.47,
+     "strategy": 0.014,
+     "line_mean": 0.6362492241379311
     },
     {
      "delta": 0.4,
-     "chi_square": 0.448,
-     "max_count": 0.78,
-     "strategy": 0.016,
-     "line_mean": 0.6444505172413793
+     "chi_square": 0.46,
+     "max_count": 0.774,
+     "strategy": 0.024,
+     "line_mean": 0.6443728448275863
     },
     {
      "delta": 0.5,
-     "chi_square": 0.734,
-     "max_count": 0.96,
-     "strategy": 0.054,
-     "line_mean": 0.651957327586207
+     "chi_square": 0.698,
+     "max_count": 0.95,
+     "strategy": 0.04,
+     "line_mean": 0.6518293965517241
     },
     {
      "delta": 0.75,
-     "chi_square": 0.992,
+     "chi_square": 0.986,
      "max_count": 1.0,
      "strategy": 0.11,
-     "line_mean": 0.6736005172413794
+     "line_mean": 0.6732852586206897
     },
     {
      "delta": 1.0,
      "chi_square": 1.0,
      "max_count": 1.0,
-     "strategy": 0.258,
-     "line_mean": 0.6938044827586207
+     "strategy": 0.25,
+     "line_mean": 0.6939141379310345
     }
    ],
    "detect90": {
-    "chi_square": 0.6608527131782946,
-    "max_count": 0.4666666666666667,
+    "chi_square": 0.6753472222222223,
+    "max_count": 0.4715909090909091,
     "strategy": null
    }
   },
@@ -151,90 +151,90 @@
    "rows": [
     {
      "delta": 0,
-     "chi_square": 0.054,
-     "max_count": 0.026,
-     "strategy": 0.004,
-     "line_mean": 0.61073
+     "chi_square": 0.06,
+     "max_count": 0.04,
+     "strategy": 0.002,
+     "line_mean": 0.610775
     },
     {
      "delta": 0.05,
-     "chi_square": 0.082,
-     "max_count": 0.072,
-     "strategy": 0.0,
-     "line_mean": 0.633925
+     "chi_square": 0.084,
+     "max_count": 0.058,
+     "strategy": 0.002,
+     "line_mean": 0.6348
     },
     {
      "delta": 0.1,
-     "chi_square": 0.114,
-     "max_count": 0.096,
-     "strategy": 0.002,
-     "line_mean": 0.66408
+     "chi_square": 0.144,
+     "max_count": 0.092,
+     "strategy": 0.006,
+     "line_mean": 0.664115
     },
     {
      "delta": 0.15,
-     "chi_square": 0.324,
-     "max_count": 0.234,
-     "strategy": 0.024,
-     "line_mean": 0.68681
+     "chi_square": 0.362,
+     "max_count": 0.196,
+     "strategy": 0.028,
+     "line_mean": 0.686475
     },
     {
      "delta": 0.2,
-     "chi_square": 0.636,
-     "max_count": 0.502,
-     "strategy": 0.116,
-     "line_mean": 0.713645
+     "chi_square": 0.648,
+     "max_count": 0.446,
+     "strategy": 0.1,
+     "line_mean": 0.711975
     },
     {
      "delta": 0.25,
-     "chi_square": 0.896,
-     "max_count": 0.794,
-     "strategy": 0.36,
-     "line_mean": 0.73835
+     "chi_square": 0.908,
+     "max_count": 0.762,
+     "strategy": 0.364,
+     "line_mean": 0.73826
     },
     {
      "delta": 0.3,
-     "chi_square": 0.974,
-     "max_count": 0.938,
-     "strategy": 0.588,
-     "line_mean": 0.761915
+     "chi_square": 0.98,
+     "max_count": 0.904,
+     "strategy": 0.614,
+     "line_mean": 0.763645
     },
     {
      "delta": 0.4,
      "chi_square": 1.0,
-     "max_count": 0.996,
-     "strategy": 0.954,
-     "line_mean": 0.81294
+     "max_count": 1.0,
+     "strategy": 0.974,
+     "line_mean": 0.81232
     },
     {
      "delta": 0.5,
      "chi_square": 1.0,
      "max_count": 1.0,
-     "strategy": 0.998,
-     "line_mean": 0.85436
+     "strategy": 1.0,
+     "line_mean": 0.853625
     },
     {
      "delta": 0.75,
      "chi_square": 1.0,
      "max_count": 1.0,
      "strategy": 1.0,
-     "line_mean": 0.966865
+     "line_mean": 0.96738
     },
     {
      "delta": 1.0,
      "chi_square": 1.0,
      "max_count": 1.0,
      "strategy": 1.0,
-     "line_mean": 1.071945
+     "line_mean": 1.07223
     }
    ],
    "detect90": {
-    "chi_square": 0.25256410256410255,
-    "max_count": 0.28680555555555554,
-    "strategy": 0.3852459016393443
+    "chi_square": 0.24846153846153846,
+    "max_count": 0.29859154929577464,
+    "strategy": 0.3794444444444445
    }
   }
  },
- "rounds": 1199,
+ "rounds": 1201,
  "test_rounds": 440,
  "z_cut": 2.9,
  "sims": 500,
