@@ -16,7 +16,8 @@ EXTRA = [("grammar", "results/grammar.json"), ("prime_radix", "results/prime_rad
          ("bayes", "results/bayesian.json"),
          ("rl", "results/rl.json"), ("live", "results/live_scores.json"),
          ("popularity", "results/popularity.json"), ("replay", "results/replay_five_lines.json"),
-         ("radix_strat", "results/radix_strategies.json"), ("wheel_study", "results/wheel_study.json")]
+         ("radix_strat", "results/radix_strategies.json"), ("wheel_study", "results/wheel_study.json"),
+         ("monte_carlo", "results/monte_carlo.json")]
 
 
 def pick_sources(payload: dict) -> list:
