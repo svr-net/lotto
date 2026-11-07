@@ -1,0 +1,19 @@
+UK Lotto: frozen "3 if 4" wheel on 11 12 31 34 36 37 38 39 40 42 45 48 52 54 59
+15 lines, £30 a draw (£2 a line), playing every draw from 2026-11-07.
+Guarantee: whenever 4 of the six drawn numbers are among these 15, at least one line matches 3.
+
+Line  1:  12  34  36  37  39  42
+Line  2:  31  34  37  38  48  54
+Line  3:  11  37  38  42  45  59
+Line  4:  11  36  39  45  48  54
+Line  5:  11  12  31  42  52  54
+Line  6:  11  34  36  48  52  59
+Line  7:  11  12  36  38  40  52
+Line  8:  37  39  40  52  54  59
+Line  9:  31  36  37  40  45  52
+Line 10:  12  37  40  42  45  48
+Line 11:  12  31  38  39  48  59
+Line 12:  11  31  34  39  40  42
+Line 13:  34  38  39  42  45  52
+Line 14:  12  34  40  45  54  59
+Line 15:  31  36  38  42  54  59

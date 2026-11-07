@@ -23,6 +23,7 @@ import pandas as pd
 POOL, PICK = 59, 6
 OUT = "results/live_scores.json"
 REPLAY = "results/replay_five_lines.json"
+FROZEN = "results/frozen_wheel.json"
 
 
 def git_json(ref: str, path: str):
@@ -80,6 +81,7 @@ def summarise(entries: list) -> dict:
             "popularity_lines": tally([s for e in entries for s in e.get("popularity_lines", [])]),
             "wheel_lines": tally([s for e in entries for s in e.get("wheel_lines", [])]),
             "wheel59_lines": tally([s for e in entries for s in (e.get("wheel59") or {}).get("lines", [])]),
+            "frozen_lines": tally([s for e in entries for s in (e.get("frozen_wheel") or {}).get("lines", [])]),
             "chance": chance(), "chance_mean": PICK * PICK / POOL}
 
 
@@ -131,6 +133,18 @@ def backfill_wheel59(record: dict, df: pd.DataFrame) -> None:
         e["wheel59"] = {"source": source, "lines": [score_line(l, e["rounds"]) for l in lines]}
 
 
+def score_frozen(record: dict) -> None:
+    """The frozen wheel (results/frozen_wheel.json, never regenerated) against every draw from its first."""
+    if not os.path.exists(FROZEN):
+        return
+    fz = json.load(open(FROZEN))
+    for e in record["draws"]:
+        if e["date"] >= fz["first_draw"] and "frozen_wheel" not in e:
+            e["frozen_wheel"] = {"wheel": fz["wheel"], "numbers": fz["numbers"],
+                                 "in_numbers": [len(set(fz["numbers"]) & set(r["numbers"])) for r in e["rounds"]],
+                                 "lines": [score_line(l, e["rounds"]) for l in fz["lines"]]}
+
+
 def main(refs: list):
     df = pd.read_csv("data/uk_lotto_full.csv")
     record = json.load(open(OUT)) if os.path.exists(OUT) else {"draws": []}
@@ -156,6 +170,7 @@ def main(refs: list):
         best = max(m for s in record["draws"][-1]["combined"] for m in s["matches"])
         print(f"{ref}: scored {date} (draw {rounds[0]['draw_no']}), best combined line {best} matches")
     backfill_wheel59(record, df)
+    score_frozen(record)
     record["draws"].sort(key=lambda e: e["date"])
     record["summary"] = summarise(record["draws"])
     with open(OUT, "w") as fh:
