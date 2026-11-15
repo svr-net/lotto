@@ -1,7 +1,7 @@
 {
- "rounds": 1203,
+ "rounds": 1205,
  "split": "2022-12-31",
- "test_rounds": 448,
+ "test_rounds": 450,
  "seeds": [
   2026,
   1,
@@ -77,1508 +77,1508 @@
   "hot-weighted, base 2": {
    "strategy": "hot-weighted",
    "base": "base 2",
-   "z_mean": -1.389399080909748,
-   "z_min": -2.235388664061619,
-   "z_max": 0.27678911655402455,
-   "mean_matches": 0.6002976190476191
+   "z_mean": -1.3398367989155897,
+   "z_min": -2.2395846879610635,
+   "z_max": 0.2854674490284801,
+   "mean_matches": 0.6006666666666667
   },
   "cold-weighted, base 2": {
    "strategy": "cold-weighted",
    "base": "base 2",
-   "z_mean": -0.23810047828916622,
-   "z_min": -1.6611255473994593,
-   "z_max": 0.6336558938548648,
-   "mean_matches": 0.6081473214285714
+   "z_mean": -0.3132331147285444,
+   "z_min": -1.7464821590816493,
+   "z_max": 0.5298060157187016,
+   "mean_matches": 0.6075925925925926
   },
   "hot top-6, base 2": {
    "strategy": "hot top-6",
    "base": "base 2",
-   "z_mean": -0.8341104310509689,
-   "z_min": -0.8341104310509689,
-   "z_max": -0.8341104310509689,
-   "mean_matches": 0.5825892857142857
+   "z_mean": -0.7104532066666879,
+   "z_min": -0.7104532066666879,
+   "z_max": -0.7104532066666879,
+   "mean_matches": 0.5866666666666667
   },
   "cold top-6, base 2": {
    "strategy": "cold top-6",
    "base": "base 2",
-   "z_mean": -0.0248534172434255,
-   "z_min": -0.0248534172434255,
-   "z_max": -0.0248534172434255,
-   "mean_matches": 0.609375
+   "z_mean": -0.04018766466403928,
+   "z_min": -0.04018766466403928,
+   "z_max": -0.04018766466403928,
+   "mean_matches": 0.6088888888888889
   },
   "most overdue, base 2": {
    "strategy": "most overdue",
    "base": "base 2",
-   "z_mean": 0.9003421381356442,
-   "z_min": 0.9003421381356442,
-   "z_max": 0.9003421381356442,
-   "mean_matches": 0.640625
+   "z_mean": 0.9512613657854411,
+   "z_min": 0.9512613657854411,
+   "z_max": 0.9512613657854411,
+   "mean_matches": 0.6422222222222222
   },
   "repeat digits, base 2": {
    "strategy": "repeat digits",
    "base": "base 2",
-   "z_mean": 1.0203025073480727,
-   "z_min": 1.0203025073480727,
-   "z_max": 1.0203025073480727,
-   "mean_matches": 0.6450892857142857
+   "z_mean": 0.9390598722086286,
+   "z_min": 0.9390598722086286,
+   "z_max": 0.9390598722086286,
+   "mean_matches": 0.6422222222222222
   },
   "digit grammar, base 2": {
    "strategy": "digit grammar",
    "base": "base 2",
-   "z_mean": 0.22590588190697455,
-   "z_min": 0.08609348274044078,
-   "z_max": 0.3638639080684626,
-   "mean_matches": 0.6133928571428572
+   "z_mean": 0.27479955046376764,
+   "z_min": 0.17705341154666693,
+   "z_max": 0.3993460735991971,
+   "mean_matches": 0.6140740740740741
   },
   "early-ball digits, base 2": {
    "strategy": "early-ball digits",
    "base": "base 2",
-   "z_mean": -0.4615712934913511,
-   "z_min": -1.1456648819488755,
-   "z_max": 0.7172634590455902,
-   "mean_matches": 0.6068452380952382
+   "z_mean": -0.4364769437329798,
+   "z_min": -1.0584242322360817,
+   "z_max": 0.7113768771577443,
+   "mean_matches": 0.607037037037037
   },
   "drawn-order digit chain, base 2": {
    "strategy": "drawn-order digit chain",
    "base": "base 2",
-   "z_mean": 0.3988192098972975,
-   "z_min": -0.28633110667885214,
-   "z_max": 0.760101394921135,
-   "mean_matches": 0.6131324404761904
+   "z_mean": 0.34200778094955536,
+   "z_min": -0.3222083991501926,
+   "z_max": 0.6934448553331106,
+   "mean_matches": 0.6127037037037036
   },
   "machine-matched digits, base 2": {
    "strategy": "machine-matched digits",
    "base": "base 2",
-   "z_mean": -0.763638652866769,
-   "z_min": -1.6764853727371705,
-   "z_max": 0.15990266675872164,
-   "mean_matches": 0.6046502976190476
+   "z_mean": -0.7867430030181635,
+   "z_min": -1.6669901088161274,
+   "z_max": 0.07203864553908629,
+   "mean_matches": 0.6045185185185185
   },
   "bonus-ball digits, base 2": {
    "strategy": "bonus-ball digits",
    "base": "base 2",
-   "z_mean": 0.6294392675796848,
-   "z_min": 0.6294392675796848,
-   "z_max": 0.6294392675796848,
-   "mean_matches": 0.6316964285714286
+   "z_mean": 0.679936873946073,
+   "z_min": 0.679936873946073,
+   "z_max": 0.679936873946073,
+   "mean_matches": 0.6333333333333333
   },
   "Fourier extrapolation, base 2": {
    "strategy": "Fourier extrapolation",
    "base": "base 2",
-   "z_mean": 0.6796907556371657,
-   "z_min": -0.09802261741495583,
-   "z_max": 1.860458189381118,
-   "mean_matches": 0.6156622023809524
+   "z_mean": 0.7172140349949941,
+   "z_min": -0.007211541362828799,
+   "z_max": 1.8245348081758896,
+   "mean_matches": 0.6159629629629629
   },
   "8-round smoothed hotness, base 2": {
    "strategy": "8-round smoothed hotness",
    "base": "base 2",
-   "z_mean": -1.34606162817742,
-   "z_min": -1.9865247537329673,
-   "z_max": -0.5583297127057536,
-   "mean_matches": 0.5993303571428571
+   "z_mean": -1.382645136306653,
+   "z_min": -2.1152510142630043,
+   "z_max": -0.605863024701815,
+   "mean_matches": 0.599037037037037
   },
   "posterior-mean digits, base 2": {
    "strategy": "posterior-mean digits",
    "base": "base 2",
-   "z_mean": -0.3969008025997644,
-   "z_min": -0.3969008025997644,
-   "z_max": -0.3969008025997644,
-   "mean_matches": 0.5959821428571429
+   "z_mean": -0.41024674632932295,
+   "z_min": -0.41024674632932295,
+   "z_max": -0.41024674632932295,
+   "mean_matches": 0.5955555555555555
   },
   "Thompson-sampled digits, base 2": {
    "strategy": "Thompson-sampled digits",
    "base": "base 2",
-   "z_mean": -0.12482688302321192,
-   "z_min": -0.7053588575208211,
-   "z_max": 0.5241651469070013,
-   "mean_matches": 0.6084077380952381
+   "z_mean": -0.10632577918307946,
+   "z_min": -0.686629818620255,
+   "z_max": 0.528106024410882,
+   "mean_matches": 0.6087037037037036
   },
   "logistic regression, base 2": {
    "strategy": "logistic regression",
    "base": "base 2",
-   "z_mean": -0.09155295519989436,
-   "z_min": -0.09155295519989436,
-   "z_max": -0.09155295519989436,
-   "mean_matches": 0.6071428571428571
+   "z_mean": -0.10630393342567383,
+   "z_min": -0.10630393342567383,
+   "z_max": -0.10630393342567383,
+   "mean_matches": 0.6066666666666667
   },
   "Hedge over the strategies, base 2": {
    "strategy": "Hedge over the strategies",
    "base": "base 2",
-   "z_mean": -0.20592998421662417,
-   "z_min": -0.20592998421662417,
-   "z_max": -0.20592998421662417,
-   "mean_matches": 0.6057286449633514,
-   "leader": "repeat digits"
+   "z_mean": -0.2256698877497374,
+   "z_min": -0.2256698877497374,
+   "z_max": -0.2256698877497374,
+   "mean_matches": 0.6053304517012156,
+   "leader": "most overdue"
   },
   "hot-weighted, base 3": {
    "strategy": "hot-weighted",
    "base": "base 3",
-   "z_mean": -0.020892777243059452,
-   "z_min": -0.9415155709013806,
-   "z_max": 0.5475385583014372,
-   "mean_matches": 0.6100446428571429
+   "z_mean": 0.022862441755186463,
+   "z_min": -0.8094029420049483,
+   "z_max": 0.5986115857311735,
+   "mean_matches": 0.6103703703703703
   },
   "cold-weighted, base 3": {
    "strategy": "cold-weighted",
    "base": "base 3",
-   "z_mean": -0.5543858816977161,
-   "z_min": -1.034418685619219,
-   "z_max": 0.2752520412889469,
-   "mean_matches": 0.6061383928571429
+   "z_mean": -0.6189875130578372,
+   "z_min": -1.1143773588096666,
+   "z_max": 0.16670217738079585,
+   "mean_matches": 0.6056666666666667
   },
   "hot top-6, base 3": {
    "strategy": "hot top-6",
    "base": "base 3",
-   "z_mean": -1.0702123435145665,
-   "z_min": -1.0702123435145665,
-   "z_max": -1.0702123435145665,
-   "mean_matches": 0.5758928571428571
+   "z_mean": -1.0100986825492204,
+   "z_min": -1.0100986825492204,
+   "z_max": -1.0100986825492204,
+   "mean_matches": 0.5777777777777777
   },
   "cold top-6, base 3": {
    "strategy": "cold top-6",
    "base": "base 3",
-   "z_mean": -0.9315336935674073,
-   "z_min": -0.9315336935674073,
-   "z_max": -0.9315336935674073,
-   "mean_matches": 0.5803571428571429
+   "z_mean": -0.945724719081639,
+   "z_min": -0.945724719081639,
+   "z_max": -0.945724719081639,
+   "mean_matches": 0.58
   },
   "most overdue, base 3": {
    "strategy": "most overdue",
    "base": "base 3",
-   "z_mean": 0.4257411933472154,
-   "z_min": 0.4257411933472154,
-   "z_max": 0.4257411933472154,
-   "mean_matches": 0.625
+   "z_mean": 0.3469906906918669,
+   "z_min": 0.3469906906918669,
+   "z_max": 0.3469906906918669,
+   "mean_matches": 0.6222222222222222
   },
   "repeat digits, base 3": {
    "strategy": "repeat digits",
    "base": "base 3",
-   "z_mean": 0.6779323539035725,
-   "z_min": 0.6779323539035725,
-   "z_max": 0.6779323539035725,
-   "mean_matches": 0.6339285714285714
+   "z_mean": 0.5992366972832537,
+   "z_min": 0.5992366972832537,
+   "z_max": 0.5992366972832537,
+   "mean_matches": 0.6311111111111111
   },
   "digit grammar, base 3": {
    "strategy": "digit grammar",
    "base": "base 3",
-   "z_mean": -0.03414534043241679,
-   "z_min": -0.8985627915428872,
-   "z_max": 0.6966206597514438,
-   "mean_matches": 0.6099330357142857
+   "z_mean": 0.020615534570227245,
+   "z_min": -0.8103191014194318,
+   "z_max": 0.7345326716438025,
+   "mean_matches": 0.6106296296296296
   },
   "early-ball digits, base 3": {
    "strategy": "early-ball digits",
    "base": "base 3",
-   "z_mean": -0.09302515406197986,
-   "z_min": -0.8483755155375922,
-   "z_max": 0.542270047727833,
-   "mean_matches": 0.6094494047619049
+   "z_mean": -0.09403536518841583,
+   "z_min": -0.7499072331503844,
+   "z_max": 0.4897031857955884,
+   "mean_matches": 0.6094444444444445
   },
   "drawn-order digit chain, base 3": {
    "strategy": "drawn-order digit chain",
    "base": "base 3",
-   "z_mean": 0.37112342324381453,
-   "z_min": -0.7256891269428978,
-   "z_max": 1.054338246931351,
-   "mean_matches": 0.612983630952381
+   "z_mean": 0.3146158083331245,
+   "z_min": -0.7616090259991303,
+   "z_max": 0.972855418134792,
+   "mean_matches": 0.6125555555555554
   },
   "machine-matched digits, base 3": {
    "strategy": "machine-matched digits",
    "base": "base 3",
-   "z_mean": -1.4683317946622605,
-   "z_min": -3.2667941898353976,
-   "z_max": -0.46451004180354094,
-   "mean_matches": 0.5988839285714286
+   "z_mean": -1.4488751145443501,
+   "z_min": -3.256325027903155,
+   "z_max": -0.4406566504559243,
+   "mean_matches": 0.599074074074074
   },
   "bonus-ball digits, base 3": {
    "strategy": "bonus-ball digits",
    "base": "base 3",
-   "z_mean": 0.043935346453109765,
-   "z_min": 0.043935346453109765,
-   "z_max": 0.043935346453109765,
-   "mean_matches": 0.6116071428571429
+   "z_mean": 0.16454356585019989,
+   "z_min": 0.16454356585019989,
+   "z_max": 0.16454356585019989,
+   "mean_matches": 0.6155555555555555
   },
   "Fourier extrapolation, base 3": {
    "strategy": "Fourier extrapolation",
    "base": "base 3",
-   "z_mean": -0.4908560621365365,
-   "z_min": -1.2958015957152644,
-   "z_max": 1.0909879320457234,
-   "mean_matches": 0.6056919642857143
+   "z_mean": -0.4219764396780443,
+   "z_min": -1.1955792548695507,
+   "z_max": 1.0719105297847453,
+   "mean_matches": 0.6062962962962963
   },
   "8-round smoothed hotness, base 3": {
    "strategy": "8-round smoothed hotness",
    "base": "base 3",
-   "z_mean": 0.04666509691437417,
-   "z_min": -0.5688272150975812,
-   "z_max": 0.38900629466139,
-   "mean_matches": 0.6106398809523811
+   "z_mean": 0.10524147379154629,
+   "z_min": -0.45977737158092813,
+   "z_max": 0.4359036979311208,
+   "mean_matches": 0.6111111111111112
   },
   "posterior-mean digits, base 3": {
    "strategy": "posterior-mean digits",
    "base": "base 3",
-   "z_mean": -0.42622803319257496,
-   "z_min": -0.42622803319257496,
-   "z_max": -0.42622803319257496,
-   "mean_matches": 0.5959821428571429
+   "z_mean": -0.37367233368187475,
+   "z_min": -0.37367233368187475,
+   "z_max": -0.37367233368187475,
+   "mean_matches": 0.5977777777777777
   },
   "Thompson-sampled digits, base 3": {
    "strategy": "Thompson-sampled digits",
    "base": "base 3",
-   "z_mean": -0.7153699497383381,
-   "z_min": -1.0998637121151154,
-   "z_max": -0.4201435597539471,
-   "mean_matches": 0.5988095238095238
+   "z_mean": -0.6664887319119556,
+   "z_min": -1.04366207820693,
+   "z_max": -0.40252677925472946,
+   "mean_matches": 0.5996296296296296
   },
   "logistic regression, base 3": {
    "strategy": "logistic regression",
    "base": "base 3",
-   "z_mean": 0.04294532622297355,
-   "z_min": 0.04294532622297355,
-   "z_max": 0.04294532622297355,
-   "mean_matches": 0.6116071428571429
+   "z_mean": 0.15946811060640026,
+   "z_min": 0.15946811060640026,
+   "z_max": 0.15946811060640026,
+   "mean_matches": 0.6155555555555555
   },
   "Hedge over the strategies, base 3": {
    "strategy": "Hedge over the strategies",
    "base": "base 3",
-   "z_mean": -0.8250040248179725,
-   "z_min": -0.8250040248179725,
-   "z_max": -0.8250040248179725,
-   "mean_matches": 0.5939697375096386,
+   "z_mean": -0.8824923803324728,
+   "z_min": -0.8824923803324728,
+   "z_max": -0.8824923803324728,
+   "mean_matches": 0.5929362029079498,
    "leader": "repeat digits"
   },
   "hot-weighted, base 5": {
    "strategy": "hot-weighted",
    "base": "base 5",
-   "z_mean": -0.4314409189409054,
-   "z_min": -1.2506860096737276,
-   "z_max": 0.5196574132117757,
-   "mean_matches": 0.6072544642857143
+   "z_mean": -0.4144064516339789,
+   "z_min": -1.1245972356624732,
+   "z_max": 0.5570151513520969,
+   "mean_matches": 0.6073703703703703
   },
   "cold-weighted, base 5": {
    "strategy": "cold-weighted",
    "base": "base 5",
-   "z_mean": -0.6377327224636871,
-   "z_min": -1.473332026724954,
-   "z_max": 0.17693239596161478,
-   "mean_matches": 0.605282738095238
+   "z_mean": -0.674373606559273,
+   "z_min": -1.5423012234287328,
+   "z_max": 0.125942547540578,
+   "mean_matches": 0.605
   },
   "hot top-6, base 5": {
    "strategy": "hot top-6",
    "base": "base 5",
-   "z_mean": -1.3642979044291128,
-   "z_min": -1.3642979044291128,
-   "z_max": -1.3642979044291128,
-   "mean_matches": 0.5647321428571429
+   "z_mean": -1.3109371730817037,
+   "z_min": -1.3109371730817037,
+   "z_max": -1.3109371730817037,
+   "mean_matches": 0.5666666666666667
   },
   "cold top-6, base 5": {
    "strategy": "cold top-6",
    "base": "base 5",
-   "z_mean": 0.9083049680507876,
-   "z_min": 0.9083049680507876,
-   "z_max": 0.9083049680507876,
-   "mean_matches": 0.640625
+   "z_mean": 0.8925725921003709,
+   "z_min": 0.8925725921003709,
+   "z_max": 0.8925725921003709,
+   "mean_matches": 0.64
   },
   "most overdue, base 5": {
    "strategy": "most overdue",
    "base": "base 5",
-   "z_mean": -1.6100365738347755,
-   "z_min": -1.6100365738347755,
-   "z_max": -1.6100365738347755,
-   "mean_matches": 0.5602678571428571
+   "z_mean": -1.6237737941918535,
+   "z_min": -1.6237737941918535,
+   "z_max": -1.6237737941918535,
+   "mean_matches": 0.56
   },
   "repeat digits, base 5": {
    "strategy": "repeat digits",
    "base": "base 5",
-   "z_mean": 1.2288395736361044,
-   "z_min": 1.2288395736361044,
-   "z_max": 1.2288395736361044,
-   "mean_matches": 0.6517857142857143
+   "z_mean": 1.1463032523183012,
+   "z_min": 1.1463032523183012,
+   "z_max": 1.1463032523183012,
+   "mean_matches": 0.6488888888888888
   },
   "digit grammar, base 5": {
    "strategy": "digit grammar",
    "base": "base 5",
-   "z_mean": -0.5237925307927386,
-   "z_min": -0.5788422040421313,
-   "z_max": -0.48576747542759885,
-   "mean_matches": 0.6042782738095238
+   "z_mean": -0.4632856954041329,
+   "z_min": -0.544010106933733,
+   "z_max": -0.37491327442766,
+   "mean_matches": 0.6049629629629629
   },
   "early-ball digits, base 5": {
    "strategy": "early-ball digits",
    "base": "base 5",
-   "z_mean": 0.12862642588039172,
-   "z_min": -0.8629415770838719,
-   "z_max": 1.2642161175563371,
-   "mean_matches": 0.6112723214285715
+   "z_mean": 0.15493125432110713,
+   "z_min": -0.8356605940354247,
+   "z_max": 1.1843273555369527,
+   "mean_matches": 0.6114814814814815
   },
   "drawn-order digit chain, base 5": {
    "strategy": "drawn-order digit chain",
    "base": "base 5",
-   "z_mean": -0.2158180022281516,
-   "z_min": -1.395738518930737,
-   "z_max": 1.1949012073920742,
-   "mean_matches": 0.6085565476190475
+   "z_mean": -0.24978782435633984,
+   "z_min": -1.400506025311434,
+   "z_max": 1.1743721385389787,
+   "mean_matches": 0.6082962962962962
   },
   "machine-matched digits, base 5": {
    "strategy": "machine-matched digits",
    "base": "base 5",
-   "z_mean": -1.6280068508156054,
-   "z_min": -2.510554975988321,
-   "z_max": -1.012209675501556,
-   "mean_matches": 0.5980282738095238
+   "z_mean": -1.6717784303556302,
+   "z_min": -2.5143978382033416,
+   "z_max": -1.031973641127684,
+   "mean_matches": 0.5977407407407408
   },
   "bonus-ball digits, base 5": {
    "strategy": "bonus-ball digits",
    "base": "base 5",
-   "z_mean": 0.6322719233731103,
-   "z_min": 0.6322719233731103,
-   "z_max": 0.6322719233731103,
-   "mean_matches": 0.6294642857142857
+   "z_mean": 0.6887991355428577,
+   "z_min": 0.6887991355428577,
+   "z_max": 0.6887991355428577,
+   "mean_matches": 0.6311111111111111
   },
   "Fourier extrapolation, base 5": {
    "strategy": "Fourier extrapolation",
    "base": "base 5",
-   "z_mean": 0.7661789123175962,
-   "z_min": 0.2934335943921829,
-   "z_max": 1.3940161262824384,
-   "mean_matches": 0.617001488095238
+   "z_mean": 0.704347371439083,
+   "z_min": 0.28802553740820547,
+   "z_max": 1.2568296003689043,
+   "mean_matches": 0.6164444444444444
   },
   "8-round smoothed hotness, base 5": {
    "strategy": "8-round smoothed hotness",
    "base": "base 5",
-   "z_mean": 1.3513732335319808,
-   "z_min": 1.1953129278866752,
-   "z_max": 1.5651838796216704,
-   "mean_matches": 0.6222470238095238
+   "z_mean": 1.3782605288230325,
+   "z_min": 1.2151312513116614,
+   "z_max": 1.6070612123717904,
+   "mean_matches": 0.6224444444444445
   },
   "posterior-mean digits, base 5": {
    "strategy": "posterior-mean digits",
    "base": "base 5",
-   "z_mean": 0.8375053380645008,
-   "z_min": 0.8375053380645008,
-   "z_max": 0.8375053380645008,
-   "mean_matches": 0.6383928571428571
+   "z_mean": 0.8219429396329626,
+   "z_min": 0.8219429396329626,
+   "z_max": 0.8219429396329626,
+   "mean_matches": 0.6377777777777778
   },
   "Thompson-sampled digits, base 5": {
    "strategy": "Thompson-sampled digits",
    "base": "base 5",
-   "z_mean": 0.43589222422443547,
-   "z_min": 0.11384978416031735,
-   "z_max": 1.004688239288977,
-   "mean_matches": 0.6181919642857143
+   "z_mean": 0.4291638319908689,
+   "z_min": 0.12947831737555462,
+   "z_max": 1.0020700695201343,
+   "mean_matches": 0.618037037037037
   },
   "logistic regression, base 5": {
    "strategy": "logistic regression",
    "base": "base 5",
-   "z_mean": -1.7284780395463513,
-   "z_min": -1.7284780395463513,
-   "z_max": -1.7284780395463513,
-   "mean_matches": 0.5535714285714286
+   "z_mean": -1.7414572922232898,
+   "z_min": -1.7414572922232898,
+   "z_max": -1.7414572922232898,
+   "mean_matches": 0.5533333333333333
   },
   "Hedge over the strategies, base 5": {
    "strategy": "Hedge over the strategies",
    "base": "base 5",
-   "z_mean": -0.5280007061366095,
-   "z_min": -0.5280007061366095,
-   "z_max": -0.5280007061366095,
-   "mean_matches": 0.603235632211052,
+   "z_mean": -0.6334636470623889,
+   "z_min": -0.6334636470623889,
+   "z_max": -0.6334636470623889,
+   "mean_matches": 0.6018713070818831,
    "leader": "repeat digits"
   },
   "hot-weighted, base 7": {
    "strategy": "hot-weighted",
    "base": "base 7",
-   "z_mean": -0.6076992165008108,
-   "z_min": -1.0616600879639921,
-   "z_max": -0.09263646162965371,
-   "mean_matches": 0.6055431547619048
+   "z_mean": -0.5332924489012643,
+   "z_min": -0.8998958647612947,
+   "z_max": -0.14411357932203,
+   "mean_matches": 0.6061111111111112
   },
   "cold-weighted, base 7": {
    "strategy": "cold-weighted",
    "base": "base 7",
-   "z_mean": 0.03884020410120744,
-   "z_min": -0.7444115306238847,
-   "z_max": 0.9083568377202886,
-   "mean_matches": 0.610453869047619
+   "z_mean": 0.02650409928507617,
+   "z_min": -0.749888474282141,
+   "z_max": 0.8373835525473043,
+   "mean_matches": 0.6103703703703703
   },
   "hot top-6, base 7": {
    "strategy": "hot top-6",
    "base": "base 7",
-   "z_mean": -0.7599807271455895,
-   "z_min": -0.7599807271455895,
-   "z_max": -0.7599807271455895,
-   "mean_matches": 0.5848214285714286
+   "z_mean": -0.7738377076595966,
+   "z_min": -0.7738377076595966,
+   "z_max": -0.7738377076595966,
+   "mean_matches": 0.5844444444444444
   },
   "cold top-6, base 7": {
    "strategy": "cold top-6",
    "base": "base 7",
-   "z_mean": 0.3790247129495295,
-   "z_min": 0.3790247129495295,
-   "z_max": 0.3790247129495295,
-   "mean_matches": 0.6227678571428571
+   "z_mean": 0.2965578060849113,
+   "z_min": 0.2965578060849113,
+   "z_max": 0.2965578060849113,
+   "mean_matches": 0.62
   },
   "most overdue, base 7": {
    "strategy": "most overdue",
    "base": "base 7",
-   "z_mean": 1.7507394573530137,
-   "z_min": 1.7507394573530137,
-   "z_max": 1.7507394573530137,
-   "mean_matches": 0.671875
+   "z_mean": 1.6704468752694117,
+   "z_min": 1.6704468752694117,
+   "z_max": 1.6704468752694117,
+   "mean_matches": 0.6688888888888889
   },
   "repeat digits, base 7": {
    "strategy": "repeat digits",
    "base": "base 7",
-   "z_mean": -0.42622803319257496,
-   "z_min": -0.42622803319257496,
-   "z_max": -0.42622803319257496,
-   "mean_matches": 0.5959821428571429
+   "z_mean": -0.5072585267921772,
+   "z_min": -0.5072585267921772,
+   "z_max": -0.5072585267921772,
+   "mean_matches": 0.5933333333333334
   },
   "digit grammar, base 7": {
    "strategy": "digit grammar",
    "base": "base 7",
-   "z_mean": 0.04224962208373839,
-   "z_min": -0.5505207947661934,
-   "z_max": 0.38109909902914463,
-   "mean_matches": 0.6107142857142858
+   "z_mean": 0.10529514018515933,
+   "z_min": -0.5030410254342051,
+   "z_max": 0.4449471289803829,
+   "mean_matches": 0.6112962962962963
   },
   "early-ball digits, base 7": {
    "strategy": "early-ball digits",
    "base": "base 7",
-   "z_mean": 0.1678461227216778,
-   "z_min": -0.27214096557800255,
-   "z_max": 0.878140081803351,
-   "mean_matches": 0.6114955357142857
+   "z_mean": 0.12369743319083053,
+   "z_min": -0.3485883312327183,
+   "z_max": 0.7559879871171843,
+   "mean_matches": 0.6111481481481481
   },
   "drawn-order digit chain, base 7": {
    "strategy": "drawn-order digit chain",
    "base": "base 7",
-   "z_mean": 0.3365371407915698,
-   "z_min": -0.9184934178426246,
-   "z_max": 1.6915041385081715,
-   "mean_matches": 0.612983630952381
+   "z_mean": 0.2769767205394605,
+   "z_min": -0.9524851705561824,
+   "z_max": 1.5829162712191618,
+   "mean_matches": 0.6125185185185185
   },
   "machine-matched digits, base 7": {
    "strategy": "machine-matched digits",
    "base": "base 7",
-   "z_mean": -0.2666247423381451,
-   "z_min": -1.0623517873815072,
-   "z_max": 0.1591410933287721,
+   "z_mean": -0.2672770485056956,
+   "z_min": -1.0512668188197514,
+   "z_max": 0.1822636294229229,
    "mean_matches": 0.6083333333333333
   },
   "bonus-ball digits, base 7": {
    "strategy": "bonus-ball digits",
    "base": "base 7",
-   "z_mean": -0.42816216610083707,
-   "z_min": -0.42816216610083707,
-   "z_max": -0.42816216610083707,
-   "mean_matches": 0.5959821428571429
+   "z_mean": -0.37367233368187475,
+   "z_min": -0.37367233368187475,
+   "z_max": -0.37367233368187475,
+   "mean_matches": 0.5977777777777777
   },
   "Fourier extrapolation, base 7": {
    "strategy": "Fourier extrapolation",
    "base": "base 7",
-   "z_mean": -0.3868691988358721,
-   "z_min": -0.985933203521597,
-   "z_max": -0.026886911172693918,
-   "mean_matches": 0.6066592261904762
+   "z_mean": -0.4530732196972142,
+   "z_min": -1.0979330444087054,
+   "z_max": -0.12817400525501063,
+   "mean_matches": 0.6060740740740741
   },
   "8-round smoothed hotness, base 7": {
    "strategy": "8-round smoothed hotness",
    "base": "base 7",
-   "z_mean": 0.3751928837107923,
-   "z_min": -0.5058798902738003,
-   "z_max": 1.180936410402822,
-   "mean_matches": 0.6135416666666668
+   "z_mean": 0.4502017351272523,
+   "z_min": -0.3572284522219034,
+   "z_max": 1.163237047619101,
+   "mean_matches": 0.6141851851851852
   },
   "posterior-mean digits, base 7": {
    "strategy": "posterior-mean digits",
    "base": "base 7",
-   "z_mean": -0.3712393312661861,
-   "z_min": -0.3712393312661861,
-   "z_max": -0.3712393312661861,
-   "mean_matches": 0.5982142857142857
+   "z_mean": -0.24431254279983278,
+   "z_min": -0.24431254279983278,
+   "z_max": -0.24431254279983278,
+   "mean_matches": 0.6022222222222222
   },
   "Thompson-sampled digits, base 7": {
    "strategy": "Thompson-sampled digits",
    "base": "base 7",
-   "z_mean": -0.24894869132440198,
-   "z_min": -0.5300331889180833,
-   "z_max": -0.008295015212083513,
-   "mean_matches": 0.606361607142857
+   "z_mean": -0.1806324570162061,
+   "z_min": -0.4793999659547684,
+   "z_max": 0.04027913357237894,
+   "mean_matches": 0.6074074074074075
   },
   "logistic regression, base 7": {
    "strategy": "logistic regression",
    "base": "base 7",
-   "z_mean": 1.7662463504636785,
-   "z_min": 1.7662463504636785,
-   "z_max": 1.7662463504636785,
-   "mean_matches": 0.6741071428571429
+   "z_mean": 1.7508002665460907,
+   "z_min": 1.7508002665460907,
+   "z_max": 1.7508002665460907,
+   "mean_matches": 0.6733333333333333
   },
   "Hedge over the strategies, base 7": {
    "strategy": "Hedge over the strategies",
    "base": "base 7",
-   "z_mean": 0.878600864513872,
-   "z_min": 0.878600864513872,
-   "z_max": 0.878600864513872,
-   "mean_matches": 0.632137912019118,
+   "z_mean": 0.8176704458663487,
+   "z_min": 0.8176704458663487,
+   "z_max": 0.8176704458663487,
+   "mean_matches": 0.630536325494165,
    "leader": "logistic regression"
   },
   "hot-weighted, base 11": {
    "strategy": "hot-weighted",
    "base": "base 11",
-   "z_mean": -0.16467738172441973,
-   "z_min": -0.7764790025613238,
-   "z_max": 0.6030069163416376,
-   "mean_matches": 0.6088913690476191
+   "z_mean": -0.14589133916979,
+   "z_min": -0.7206313779846478,
+   "z_max": 0.5654573873827878,
+   "mean_matches": 0.609037037037037
   },
   "cold-weighted, base 11": {
    "strategy": "cold-weighted",
    "base": "base 11",
-   "z_mean": 0.3603282370392488,
-   "z_min": 0.1314658167592573,
-   "z_max": 0.725752816739826,
-   "mean_matches": 0.6128720238095238
+   "z_mean": 0.29943403502474736,
+   "z_min": 0.036515137849181145,
+   "z_max": 0.6291164949602742,
+   "mean_matches": 0.6124074074074075
   },
   "hot top-6, base 11": {
    "strategy": "hot top-6",
    "base": "base 11",
-   "z_mean": -0.9012819894897232,
-   "z_min": -0.9012819894897232,
-   "z_max": -0.9012819894897232,
-   "mean_matches": 0.5803571428571429
+   "z_mean": -0.7773267637708827,
+   "z_min": -0.7773267637708827,
+   "z_max": -0.7773267637708827,
+   "mean_matches": 0.5844444444444444
   },
   "cold top-6, base 11": {
    "strategy": "cold top-6",
    "base": "base 11",
-   "z_mean": 1.296271982001175,
-   "z_min": 1.296271982001175,
-   "z_max": 1.296271982001175,
-   "mean_matches": 0.65625
+   "z_mean": 1.2175899783939788,
+   "z_min": 1.2175899783939788,
+   "z_max": 1.2175899783939788,
+   "mean_matches": 0.6533333333333333
   },
   "most overdue, base 11": {
    "strategy": "most overdue",
    "base": "base 11",
-   "z_mean": -0.09240124689787958,
-   "z_min": -0.09240124689787958,
-   "z_max": -0.09240124689787958,
-   "mean_matches": 0.6071428571428571
+   "z_mean": -0.03906154872879973,
+   "z_min": -0.03906154872879973,
+   "z_max": -0.03906154872879973,
+   "mean_matches": 0.6088888888888889
   },
   "repeat digits, base 11": {
    "strategy": "repeat digits",
    "base": "base 11",
-   "z_mean": 0.18314411243925044,
-   "z_min": 0.18314411243925044,
-   "z_max": 0.18314411243925044,
-   "mean_matches": 0.6160714285714286
+   "z_mean": 0.09843785801532441,
+   "z_min": 0.09843785801532441,
+   "z_max": 0.09843785801532441,
+   "mean_matches": 0.6133333333333333
   },
   "digit grammar, base 11": {
    "strategy": "digit grammar",
    "base": "base 11",
-   "z_mean": 0.34537376588347596,
-   "z_min": 0.033018254404614596,
-   "z_max": 0.6749167333764863,
-   "mean_matches": 0.6134300595238095
+   "z_mean": 0.46716936272908766,
+   "z_min": 0.10832984166279508,
+   "z_max": 0.7859017680272948,
+   "mean_matches": 0.6145925925925927
   },
   "early-ball digits, base 11": {
    "strategy": "early-ball digits",
    "base": "base 11",
-   "z_mean": 0.5573526887130562,
-   "z_min": -0.6285917241808132,
-   "z_max": 1.913818429304613,
-   "mean_matches": 0.6145089285714286
+   "z_mean": 0.5593484073300671,
+   "z_min": -0.560923213251317,
+   "z_max": 1.871712239320877,
+   "mean_matches": 0.6145185185185185
   },
   "drawn-order digit chain, base 11": {
    "strategy": "drawn-order digit chain",
    "base": "base 11",
-   "z_mean": 0.01601174534215562,
-   "z_min": -0.26934351608668605,
-   "z_max": 0.5359213175986098,
-   "mean_matches": 0.6103050595238096
+   "z_mean": -0.01933793051139593,
+   "z_min": -0.3050321749621322,
+   "z_max": 0.4858625433474815,
+   "mean_matches": 0.610037037037037
   },
   "machine-matched digits, base 11": {
    "strategy": "machine-matched digits",
    "base": "base 11",
-   "z_mean": -0.6797343129023151,
-   "z_min": -1.582231707154999,
-   "z_max": 0.4700430152732743,
-   "mean_matches": 0.6050223214285715
+   "z_mean": -0.7041676842934539,
+   "z_min": -1.5686825254875252,
+   "z_max": 0.4319067345891384,
+   "mean_matches": 0.6048518518518519
   },
   "bonus-ball digits, base 11": {
    "strategy": "bonus-ball digits",
    "base": "base 11",
-   "z_mean": 0.5841388237951922,
-   "z_min": 0.5841388237951922,
-   "z_max": 0.5841388237951922,
-   "mean_matches": 0.6294642857142857
+   "z_mean": 0.5007713811788137,
+   "z_min": 0.5007713811788137,
+   "z_max": 0.5007713811788137,
+   "mean_matches": 0.6266666666666667
   },
   "Fourier extrapolation, base 11": {
    "strategy": "Fourier extrapolation",
    "base": "base 11",
-   "z_mean": 0.39757706482904104,
-   "z_min": -0.7562717578939144,
-   "z_max": 1.3245772339670914,
-   "mean_matches": 0.613876488095238
+   "z_mean": 0.34577980888859844,
+   "z_min": -0.8002379493553939,
+   "z_max": 1.2680324339254185,
+   "mean_matches": 0.6134074074074074
   },
   "8-round smoothed hotness, base 11": {
    "strategy": "8-round smoothed hotness",
    "base": "base 11",
-   "z_mean": 0.9633564004314324,
-   "z_min": 0.5505548163886174,
-   "z_max": 1.2180111339734596,
-   "mean_matches": 0.6187872023809523
+   "z_mean": 0.9736517862356401,
+   "z_min": 0.5679230769978565,
+   "z_max": 1.2126195925296543,
+   "mean_matches": 0.6188518518518519
   },
   "posterior-mean digits, base 11": {
    "strategy": "posterior-mean digits",
    "base": "base 11",
-   "z_mean": -0.5624111269877504,
-   "z_min": -0.5624111269877504,
-   "z_max": -0.5624111269877504,
-   "mean_matches": 0.5915178571428571
+   "z_mean": -0.4365831219081482,
+   "z_min": -0.4365831219081482,
+   "z_max": -0.4365831219081482,
+   "mean_matches": 0.5955555555555555
   },
   "Thompson-sampled digits, base 11": {
    "strategy": "Thompson-sampled digits",
    "base": "base 11",
-   "z_mean": -0.6073570818504588,
-   "z_min": -0.6949197020993586,
-   "z_max": -0.46919885524192567,
-   "mean_matches": 0.6005952380952381
+   "z_mean": -0.5374910793429758,
+   "z_min": -0.6239144111294012,
+   "z_max": -0.40756474655473973,
+   "mean_matches": 0.6017037037037036
   },
   "logistic regression, base 11": {
    "strategy": "logistic regression",
    "base": "base 11",
-   "z_mean": -0.5869049786890036,
-   "z_min": -0.5869049786890036,
-   "z_max": -0.5869049786890036,
-   "mean_matches": 0.5915178571428571
+   "z_mean": -0.6714671431666238,
+   "z_min": -0.6714671431666238,
+   "z_max": -0.6714671431666238,
+   "mean_matches": 0.5888888888888889
   },
   "Hedge over the strategies, base 11": {
    "strategy": "Hedge over the strategies",
    "base": "base 11",
-   "z_mean": 0.07156454060604699,
-   "z_min": 0.07156454060604699,
-   "z_max": 0.07156454060604699,
-   "mean_matches": 0.6118630092304775,
+   "z_mean": -0.031015964756531712,
+   "z_min": -0.031015964756531712,
+   "z_max": -0.031015964756531712,
+   "mean_matches": 0.6094377370441685,
    "leader": "cold top-6"
   },
   "hot-weighted, base 13": {
    "strategy": "hot-weighted",
    "base": "base 13",
-   "z_mean": -1.333004530331278,
-   "z_min": -1.6268166461561422,
-   "z_max": -1.0711497302800261,
-   "mean_matches": 0.5999255952380952
+   "z_mean": -1.3188410662442969,
+   "z_min": -1.7274620482173115,
+   "z_max": -1.0768822225284076,
+   "mean_matches": 0.600037037037037
   },
   "cold-weighted, base 13": {
    "strategy": "cold-weighted",
    "base": "base 13",
-   "z_mean": -0.6232893741562465,
-   "z_min": -1.02972607095065,
-   "z_max": -0.24382480940908455,
-   "mean_matches": 0.6053199404761905
+   "z_mean": -0.679311411286026,
+   "z_min": -1.0908368458240572,
+   "z_max": -0.2347253909598671,
+   "mean_matches": 0.6048888888888889
   },
   "hot top-6, base 13": {
    "strategy": "hot top-6",
    "base": "base 13",
-   "z_mean": -1.5111525177945948,
-   "z_min": -1.5111525177945948,
-   "z_max": -1.5111525177945948,
-   "mean_matches": 0.5602678571428571
+   "z_mean": -1.3109371730817034,
+   "z_min": -1.3109371730817034,
+   "z_max": -1.3109371730817034,
+   "mean_matches": 0.5666666666666667
   },
   "cold top-6, base 13": {
    "strategy": "cold top-6",
    "base": "base 13",
-   "z_mean": 1.365322044379001,
-   "z_min": 1.365322044379001,
-   "z_max": 1.365322044379001,
-   "mean_matches": 0.6584821428571429
+   "z_mean": 1.2861364336559233,
+   "z_min": 1.2861364336559233,
+   "z_max": 1.2861364336559233,
+   "mean_matches": 0.6555555555555556
   },
   "most overdue, base 13": {
    "strategy": "most overdue",
    "base": "base 13",
-   "z_mean": -0.49307713062897734,
-   "z_min": -0.49307713062897734,
-   "z_max": -0.49307713062897734,
-   "mean_matches": 0.59375
+   "z_mean": -0.5739743458807232,
+   "z_min": -0.5739743458807232,
+   "z_max": -0.5739743458807232,
+   "mean_matches": 0.5911111111111111
   },
   "repeat digits, base 13": {
    "strategy": "repeat digits",
    "base": "base 13",
-   "z_mean": -0.6504544918018146,
-   "z_min": -0.6504544918018146,
-   "z_max": -0.6504544918018146,
-   "mean_matches": 0.5892857142857143
+   "z_mean": -0.6649461315940658,
+   "z_min": -0.6649461315940658,
+   "z_max": -0.6649461315940658,
+   "mean_matches": 0.5888888888888889
   },
   "digit grammar, base 13": {
    "strategy": "digit grammar",
    "base": "base 13",
-   "z_mean": -0.29938444667577074,
-   "z_min": -1.220065752604886,
-   "z_max": 1.105968760124861,
-   "mean_matches": 0.6076636904761905
+   "z_mean": -0.2545893408225627,
+   "z_min": -1.2105890671506054,
+   "z_max": 1.1126406762473415,
+   "mean_matches": 0.6080740740740741
   },
   "early-ball digits, base 13": {
    "strategy": "early-ball digits",
    "base": "base 13",
-   "z_mean": 0.24079849810939816,
-   "z_min": -0.5501898142733452,
-   "z_max": 1.4015404479941216,
-   "mean_matches": 0.6119047619047618
+   "z_mean": 0.2965725349213388,
+   "z_min": -0.4419946773698257,
+   "z_max": 1.395486269023203,
+   "mean_matches": 0.6123333333333334
   },
   "drawn-order digit chain, base 13": {
    "strategy": "drawn-order digit chain",
    "base": "base 13",
-   "z_mean": 0.30296819411600534,
-   "z_min": -1.5217636368450438,
-   "z_max": 1.9552647161611352,
-   "mean_matches": 0.6127976190476191
+   "z_mean": 0.25131884568538876,
+   "z_min": -1.557648192967122,
+   "z_max": 1.8875084547828846,
+   "mean_matches": 0.6124074074074074
   },
   "machine-matched digits, base 13": {
    "strategy": "machine-matched digits",
    "base": "base 13",
-   "z_mean": -1.1402689075437715,
-   "z_min": -1.7370964533663458,
-   "z_max": -0.0018021546121308632,
-   "mean_matches": 0.6016369047619048
+   "z_mean": -1.136241554294438,
+   "z_min": -1.7281702265454473,
+   "z_max": -0.023166698885424945,
+   "mean_matches": 0.6017037037037037
   },
   "bonus-ball digits, base 13": {
    "strategy": "bonus-ball digits",
    "base": "base 13",
-   "z_mean": 1.3763440948428298,
-   "z_min": 1.3763440948428298,
-   "z_max": 1.3763440948428298,
-   "mean_matches": 0.6584821428571429
+   "z_mean": 1.4252591999098214,
+   "z_min": 1.4252591999098214,
+   "z_max": 1.4252591999098214,
+   "mean_matches": 0.66
   },
   "Fourier extrapolation, base 13": {
    "strategy": "Fourier extrapolation",
    "base": "base 13",
-   "z_mean": -0.3742801221750213,
-   "z_min": -1.023995843302064,
-   "z_max": 0.4358870898601013,
-   "mean_matches": 0.6066964285714286
+   "z_mean": -0.3704467219436434,
+   "z_min": -0.9915362093142385,
+   "z_max": 0.419542225732562,
+   "mean_matches": 0.6067407407407407
   },
   "8-round smoothed hotness, base 13": {
    "strategy": "8-round smoothed hotness",
    "base": "base 13",
-   "z_mean": -0.1420701836554953,
-   "z_min": -0.6446804558051699,
-   "z_max": 0.48591946250697904,
-   "mean_matches": 0.6089657738095239
+   "z_mean": -0.06910652293328039,
+   "z_min": -0.6235769391471099,
+   "z_max": 0.6151158657491138,
+   "mean_matches": 0.6096296296296297
   },
   "posterior-mean digits, base 13": {
    "strategy": "posterior-mean digits",
    "base": "base 13",
-   "z_mean": -0.41874559171268533,
-   "z_min": -0.41874559171268533,
-   "z_max": -0.41874559171268533,
-   "mean_matches": 0.5959821428571429
+   "z_mean": -0.4327765972934857,
+   "z_min": -0.4327765972934857,
+   "z_max": -0.4327765972934857,
+   "mean_matches": 0.5955555555555555
   },
   "Thompson-sampled digits, base 13": {
    "strategy": "Thompson-sampled digits",
    "base": "base 13",
-   "z_mean": -1.719718014274953,
-   "z_min": -2.0837065429383457,
-   "z_max": -1.3338695129467344,
-   "mean_matches": 0.5811011904761905
+   "z_mean": -1.6802160429019561,
+   "z_min": -2.0574175843588463,
+   "z_max": -1.3084487850017905,
+   "mean_matches": 0.5818518518518517
   },
   "logistic regression, base 13": {
    "strategy": "logistic regression",
    "base": "base 13",
-   "z_mean": -0.5524670646895233,
-   "z_min": -0.5524670646895233,
-   "z_max": -0.5524670646895233,
-   "mean_matches": 0.5915178571428571
+   "z_mean": -0.5663972760961307,
+   "z_min": -0.5663972760961307,
+   "z_max": -0.5663972760961307,
+   "mean_matches": 0.5911111111111111
   },
   "Hedge over the strategies, base 13": {
    "strategy": "Hedge over the strategies",
    "base": "base 13",
-   "z_mean": -0.27974468093942256,
-   "z_min": -0.27974468093942256,
-   "z_max": -0.27974468093942256,
-   "mean_matches": 0.6051746378162931,
-   "leader": "cold top-6"
+   "z_mean": -0.29888459330156975,
+   "z_min": -0.29888459330156975,
+   "z_max": -0.29888459330156975,
+   "mean_matches": 0.6048628649245728,
+   "leader": "bonus-ball digits"
   },
   "hot-weighted, base 17": {
    "strategy": "hot-weighted",
    "base": "base 17",
-   "z_mean": -0.30772216777582445,
-   "z_min": -1.2529993791570273,
-   "z_max": 1.1259156473387348,
-   "mean_matches": 0.6077380952380952
+   "z_mean": -0.2508526301697241,
+   "z_min": -1.103809323091611,
+   "z_max": 1.079768176183083,
+   "mean_matches": 0.6081851851851853
   },
   "cold-weighted, base 17": {
    "strategy": "cold-weighted",
    "base": "base 17",
-   "z_mean": 0.0044646993867327,
-   "z_min": -0.9265088121847016,
-   "z_max": 0.5221883177872196,
-   "mean_matches": 0.6102678571428571
+   "z_mean": -0.07000057990184827,
+   "z_min": -1.0042949919467545,
+   "z_max": 0.44061807584479634,
+   "mean_matches": 0.6097037037037039
   },
   "hot top-6, base 17": {
    "strategy": "hot top-6",
    "base": "base 17",
-   "z_mean": -1.585593897251187,
-   "z_min": -1.585593897251187,
-   "z_max": -1.585593897251187,
-   "mean_matches": 0.5580357142857143
+   "z_mean": -1.5242846872347198,
+   "z_min": -1.5242846872347198,
+   "z_max": -1.5242846872347198,
+   "mean_matches": 0.56
   },
   "cold top-6, base 17": {
    "strategy": "cold top-6",
    "base": "base 17",
-   "z_mean": -0.22042553915952082,
-   "z_min": -0.22042553915952082,
-   "z_max": -0.22042553915952082,
-   "mean_matches": 0.6026785714285714
+   "z_mean": -0.2346349610068097,
+   "z_min": -0.2346349610068097,
+   "z_max": -0.2346349610068097,
+   "mean_matches": 0.6022222222222222
   },
   "most overdue, base 17": {
    "strategy": "most overdue",
    "base": "base 17",
-   "z_mean": -0.6077876086598462,
-   "z_min": -0.6077876086598462,
-   "z_max": -0.6077876086598462,
-   "mean_matches": 0.5892857142857143
+   "z_mean": -0.6860652123077601,
+   "z_min": -0.6860652123077601,
+   "z_max": -0.6860652123077601,
+   "mean_matches": 0.5866666666666667
   },
   "repeat digits, base 17": {
    "strategy": "repeat digits",
    "base": "base 17",
-   "z_mean": 0.8634483193146448,
-   "z_min": 0.8634483193146448,
-   "z_max": 0.8634483193146448,
-   "mean_matches": 0.640625
+   "z_mean": 0.7849383519077741,
+   "z_min": 0.7849383519077741,
+   "z_max": 0.7849383519077741,
+   "mean_matches": 0.6377777777777778
   },
   "digit grammar, base 17": {
    "strategy": "digit grammar",
    "base": "base 17",
-   "z_mean": 0.24594114105006926,
-   "z_min": -0.012827597282646345,
-   "z_max": 0.6208575744011988,
-   "mean_matches": 0.6125744047619047
+   "z_mean": 0.3598340452459561,
+   "z_min": 0.07406586291449403,
+   "z_max": 0.7269894803428059,
+   "mean_matches": 0.6136666666666666
   },
   "early-ball digits, base 17": {
    "strategy": "early-ball digits",
    "base": "base 17",
-   "z_mean": -0.06963880763295921,
-   "z_min": -1.1049554075050807,
-   "z_max": 0.47115163254214604,
-   "mean_matches": 0.6097470238095237
+   "z_mean": -0.08578938821915838,
+   "z_min": -1.0510034641207378,
+   "z_max": 0.43058310628029967,
+   "mean_matches": 0.6096296296296296
   },
   "drawn-order digit chain, base 17": {
    "strategy": "drawn-order digit chain",
    "base": "base 17",
-   "z_mean": -0.09285310091738948,
-   "z_min": -1.2115902401525025,
-   "z_max": 1.1740530344324327,
-   "mean_matches": 0.6095610119047619
+   "z_mean": -0.09827635743501902,
+   "z_min": -1.1726881286940476,
+   "z_max": 1.1395258395524226,
+   "mean_matches": 0.6095185185185185
   },
   "machine-matched digits, base 17": {
    "strategy": "machine-matched digits",
    "base": "base 17",
-   "z_mean": -1.439686895488461,
-   "z_min": -2.2451373292316776,
-   "z_max": -0.5307151332565548,
-   "mean_matches": 0.5995163690476191
+   "z_mean": -1.4342714094735125,
+   "z_min": -2.246611614366557,
+   "z_max": -0.5518965198777983,
+   "mean_matches": 0.5995925925925927
   },
   "bonus-ball digits, base 17": {
    "strategy": "bonus-ball digits",
    "base": "base 17",
-   "z_mean": -0.9819417447989921,
-   "z_min": -0.9819417447989921,
-   "z_max": -0.9819417447989921,
-   "mean_matches": 0.578125
+   "z_mean": -1.0637594714409022,
+   "z_min": -1.0637594714409022,
+   "z_max": -1.0637594714409022,
+   "mean_matches": 0.5755555555555556
   },
   "Fourier extrapolation, base 17": {
    "strategy": "Fourier extrapolation",
    "base": "base 17",
-   "z_mean": -0.1914056526724697,
-   "z_min": -0.8901412867633065,
-   "z_max": 0.5091320657118514,
-   "mean_matches": 0.6085193452380951
+   "z_mean": -0.09012082713759284,
+   "z_min": -0.7991189761700618,
+   "z_max": 0.6307187109076168,
+   "mean_matches": 0.6094444444444446
   },
   "8-round smoothed hotness, base 17": {
    "strategy": "8-round smoothed hotness",
    "base": "base 17",
-   "z_mean": -0.7149557775339438,
-   "z_min": -1.3117001183059214,
-   "z_max": -0.36235902664227077,
-   "mean_matches": 0.6039062500000001
+   "z_mean": -0.6894285488203695,
+   "z_min": -1.2895741795588185,
+   "z_max": -0.3158221205080507,
+   "mean_matches": 0.6041481481481482
   },
   "posterior-mean digits, base 17": {
    "strategy": "posterior-mean digits",
    "base": "base 17",
-   "z_mean": 0.7337526322507203,
-   "z_min": 0.7337526322507203,
-   "z_max": 0.7337526322507203,
-   "mean_matches": 0.6339285714285714
+   "z_mean": 0.852401485327019,
+   "z_min": 0.852401485327019,
+   "z_max": 0.852401485327019,
+   "mean_matches": 0.6377777777777778
   },
   "Thompson-sampled digits, base 17": {
    "strategy": "Thompson-sampled digits",
    "base": "base 17",
-   "z_mean": 0.1259634413889669,
-   "z_min": -0.43238997635877807,
-   "z_max": 0.6713456244778062,
-   "mean_matches": 0.6122767857142857
+   "z_mean": 0.23201463125267976,
+   "z_min": -0.3290390361930349,
+   "z_max": 0.7858310536259079,
+   "mean_matches": 0.614
   },
   "logistic regression, base 17": {
    "strategy": "logistic regression",
    "base": "base 17",
-   "z_mean": 0.96692825149395,
-   "z_min": 0.96692825149395,
-   "z_max": 0.96692825149395,
-   "mean_matches": 0.6428571428571429
+   "z_mean": 0.8847661399759642,
+   "z_min": 0.8847661399759642,
+   "z_max": 0.8847661399759642,
+   "mean_matches": 0.64
   },
   "Hedge over the strategies, base 17": {
    "strategy": "Hedge over the strategies",
    "base": "base 17",
-   "z_mean": -0.7515463603491446,
-   "z_min": -0.7515463603491446,
-   "z_max": -0.7515463603491446,
-   "mean_matches": 0.5959577395032303,
+   "z_mean": -0.8083223252495186,
+   "z_min": -0.8083223252495186,
+   "z_max": -0.8083223252495186,
+   "mean_matches": 0.5949653892427503,
    "leader": "logistic regression"
   },
   "hot-weighted, base 19": {
    "strategy": "hot-weighted",
    "base": "base 19",
-   "z_mean": 0.26464188167661457,
-   "z_min": -0.6878447571940864,
-   "z_max": 1.9641242091407574,
-   "mean_matches": 0.6121651785714287
+   "z_mean": 0.3079139503663863,
+   "z_min": -0.5625312274129091,
+   "z_max": 1.9604464112582554,
+   "mean_matches": 0.6125185185185186
   },
   "cold-weighted, base 19": {
    "strategy": "cold-weighted",
    "base": "base 19",
-   "z_mean": 0.8619703399465277,
-   "z_min": 0.13201780856795345,
-   "z_max": 2.0659317631936656,
-   "mean_matches": 0.616703869047619
+   "z_mean": 0.8130847338219428,
+   "z_min": 0.12585899944761023,
+   "z_max": 1.9167454141872053,
+   "mean_matches": 0.6163333333333333
   },
   "hot top-6, base 19": {
    "strategy": "hot top-6",
    "base": "base 19",
-   "z_mean": -0.3642892255066007,
-   "z_min": -0.3642892255066007,
-   "z_max": -0.3642892255066007,
-   "mean_matches": 0.5982142857142857
+   "z_mean": -0.31102964921190984,
+   "z_min": -0.31102964921190984,
+   "z_max": -0.31102964921190984,
+   "mean_matches": 0.6
   },
   "cold top-6, base 19": {
    "strategy": "cold top-6",
    "base": "base 19",
-   "z_mean": 0.946947675139222,
-   "z_min": 0.946947675139222,
-   "z_max": 0.946947675139222,
-   "mean_matches": 0.640625
+   "z_mean": 0.8605602715126397,
+   "z_min": 0.8605602715126397,
+   "z_max": 0.8605602715126397,
+   "mean_matches": 0.6377777777777778
   },
   "most overdue, base 19": {
    "strategy": "most overdue",
    "base": "base 19",
-   "z_mean": 0.707298089667412,
-   "z_min": 0.707298089667412,
-   "z_max": 0.707298089667412,
-   "mean_matches": 0.6339285714285714
+   "z_mean": 0.6251039071121449,
+   "z_min": 0.6251039071121449,
+   "z_max": 0.6251039071121449,
+   "mean_matches": 0.6311111111111111
   },
   "repeat digits, base 19": {
    "strategy": "repeat digits",
    "base": "base 19",
-   "z_mean": -2.8536678013140726,
-   "z_min": -2.8536678013140726,
-   "z_max": -2.8536678013140726,
-   "mean_matches": 0.5223214285714286
+   "z_mean": -2.9379664598427384,
+   "z_min": -2.9379664598427384,
+   "z_max": -2.9379664598427384,
+   "mean_matches": 0.52
   },
   "digit grammar, base 19": {
    "strategy": "digit grammar",
    "base": "base 19",
-   "z_mean": 0.5352540193602238,
-   "z_min": -0.2900297957622462,
-   "z_max": 1.5346203610416622,
-   "mean_matches": 0.6160342261904762
+   "z_mean": 0.5950774516938289,
+   "z_min": -0.25405346136648094,
+   "z_max": 1.590002059061828,
+   "mean_matches": 0.6166666666666666
   },
   "early-ball digits, base 19": {
    "strategy": "early-ball digits",
    "base": "base 19",
-   "z_mean": 0.25163634603019097,
-   "z_min": -0.8474472152186953,
-   "z_max": 1.4002822704104454,
-   "mean_matches": 0.6121279761904762
+   "z_mean": 0.24015655720510443,
+   "z_min": -0.937287308317836,
+   "z_max": 1.3044513240119084,
+   "mean_matches": 0.612037037037037
   },
   "drawn-order digit chain, base 19": {
    "strategy": "drawn-order digit chain",
    "base": "base 19",
-   "z_mean": -0.4841937598933545,
-   "z_min": -1.2569186067738134,
-   "z_max": 0.09968584536383507,
-   "mean_matches": 0.606547619047619
+   "z_mean": -0.49422911728657204,
+   "z_min": -1.3203974363608015,
+   "z_max": 0.1516385976899503,
+   "mean_matches": 0.6064814814814814
   },
   "machine-matched digits, base 19": {
    "strategy": "machine-matched digits",
    "base": "base 19",
-   "z_mean": -0.6743462187138478,
-   "z_min": -1.6432417002504875,
-   "z_max": 0.29791904824265114,
-   "mean_matches": 0.6048363095238095
+   "z_mean": -0.6310453069627996,
+   "z_min": -1.4697447770898655,
+   "z_max": 0.26030442237020834,
+   "mean_matches": 0.6051851851851852
   },
   "bonus-ball digits, base 19": {
    "strategy": "bonus-ball digits",
    "base": "base 19",
-   "z_mean": -0.30207017003548703,
-   "z_min": -0.30207017003548703,
-   "z_max": -0.30207017003548703,
-   "mean_matches": 0.6004464285714286
+   "z_mean": -0.31695455586662574,
+   "z_min": -0.31695455586662574,
+   "z_max": -0.31695455586662574,
+   "mean_matches": 0.6
   },
   "Fourier extrapolation, base 19": {
    "strategy": "Fourier extrapolation",
    "base": "base 19",
-   "z_mean": 0.2250436077421832,
-   "z_min": -0.3837313600470463,
-   "z_max": 0.6416071005242792,
-   "mean_matches": 0.6123139880952381
+   "z_mean": 0.3601303360864494,
+   "z_min": -0.26699464306911497,
+   "z_max": 0.7163403852860457,
+   "mean_matches": 0.6136666666666666
   },
   "8-round smoothed hotness, base 19": {
    "strategy": "8-round smoothed hotness",
    "base": "base 19",
-   "z_mean": -0.43476784376481065,
-   "z_min": -0.80821765537787,
-   "z_max": 0.011122485168839154,
-   "mean_matches": 0.6061383928571429
+   "z_mean": -0.3700097560609315,
+   "z_min": -0.7513779881520293,
+   "z_max": 0.08128377150401046,
+   "mean_matches": 0.6067407407407409
   },
   "posterior-mean digits, base 19": {
    "strategy": "posterior-mean digits",
    "base": "base 19",
-   "z_mean": -0.6933245569435997,
-   "z_min": -0.6933245569435997,
-   "z_max": -0.6933245569435997,
-   "mean_matches": 0.5870535714285714
+   "z_mean": -0.7738377076595966,
+   "z_min": -0.7738377076595966,
+   "z_max": -0.7738377076595966,
+   "mean_matches": 0.5844444444444444
   },
   "Thompson-sampled digits, base 19": {
    "strategy": "Thompson-sampled digits",
    "base": "base 19",
-   "z_mean": -1.6056200674439232,
-   "z_min": -1.678087998957156,
-   "z_max": -1.546956269450028,
-   "mean_matches": 0.5850074404761906
+   "z_mean": -1.6094919699734571,
+   "z_min": -1.6516578079898276,
+   "z_max": -1.577539793232833,
+   "mean_matches": 0.5850370370370369
   },
   "logistic regression, base 19": {
    "strategy": "logistic regression",
    "base": "base 19",
-   "z_mean": 1.0815925909848882,
-   "z_min": 1.0815925909848882,
-   "z_max": 1.0815925909848882,
-   "mean_matches": 0.6473214285714286
+   "z_mean": 1.0660547034908903,
+   "z_min": 1.0660547034908903,
+   "z_max": 1.0660547034908903,
+   "mean_matches": 0.6466666666666666
   },
   "Hedge over the strategies, base 19": {
    "strategy": "Hedge over the strategies",
    "base": "base 19",
-   "z_mean": -0.7983888879208972,
-   "z_min": -0.7983888879208972,
-   "z_max": -0.7983888879208972,
-   "mean_matches": 0.5984866951637632,
+   "z_mean": -0.8856574149033818,
+   "z_min": -0.8856574149033818,
+   "z_max": -0.8856574149033818,
+   "mean_matches": 0.597243273242475,
    "leader": "logistic regression"
   },
   "hot-weighted, base 23": {
    "strategy": "hot-weighted",
    "base": "base 23",
-   "z_mean": -0.701683447502152,
-   "z_min": -1.5503828952695984,
-   "z_max": 0.6085899193719135,
-   "mean_matches": 0.6047619047619047
+   "z_mean": -0.6295122572106643,
+   "z_min": -1.3206880769991778,
+   "z_max": 0.5715102003544855,
+   "mean_matches": 0.6052962962962963
   },
   "cold-weighted, base 23": {
    "strategy": "cold-weighted",
    "base": "base 23",
-   "z_mean": 0.7923487704171369,
-   "z_min": 0.3055487366659137,
-   "z_max": 1.0854442789105876,
-   "mean_matches": 0.6161458333333334
+   "z_mean": 0.7163011351328002,
+   "z_min": 0.1814886896586167,
+   "z_max": 1.0166852746915105,
+   "mean_matches": 0.6155555555555555
   },
   "hot top-6, base 23": {
    "strategy": "hot top-6",
    "base": "base 23",
-   "z_mean": -0.6294596234744086,
-   "z_min": -0.6294596234744086,
-   "z_max": -0.6294596234744086,
-   "mean_matches": 0.5892857142857143
+   "z_mean": -0.36872713120648554,
+   "z_min": -0.36872713120648554,
+   "z_max": -0.36872713120648554,
+   "mean_matches": 0.5977777777777777
   },
   "cold top-6, base 23": {
    "strategy": "cold top-6",
    "base": "base 23",
-   "z_mean": -0.2765832598167606,
-   "z_min": -0.2765832598167606,
-   "z_max": -0.2765832598167606,
-   "mean_matches": 0.6004464285714286
+   "z_mean": -0.3535589663509239,
+   "z_min": -0.3535589663509239,
+   "z_max": -0.3535589663509239,
+   "mean_matches": 0.5977777777777777
   },
   "most overdue, base 23": {
    "strategy": "most overdue",
    "base": "base 23",
-   "z_mean": 0.6321438712326307,
-   "z_min": 0.6321438712326307,
-   "z_max": 0.6321438712326307,
-   "mean_matches": 0.6316964285714286
+   "z_mean": 0.5512143942477603,
+   "z_min": 0.5512143942477603,
+   "z_max": 0.5512143942477603,
+   "mean_matches": 0.6288888888888889
   },
   "repeat digits, base 23": {
    "strategy": "repeat digits",
    "base": "base 23",
-   "z_mean": -1.7701915416309653,
-   "z_min": -1.7701915416309653,
-   "z_max": -1.7701915416309653,
-   "mean_matches": 0.5535714285714286
+   "z_mean": -1.7833816763999597,
+   "z_min": -1.7833816763999597,
+   "z_max": -1.7833816763999597,
+   "mean_matches": 0.5533333333333333
   },
   "digit grammar, base 23": {
    "strategy": "digit grammar",
    "base": "base 23",
-   "z_mean": -0.5361205428262097,
-   "z_min": -1.6277267916286071,
-   "z_max": 0.4016477181200466,
-   "mean_matches": 0.6050223214285714
+   "z_mean": -0.46301718439782746,
+   "z_min": -1.545878519538848,
+   "z_max": 0.4417089212818893,
+   "mean_matches": 0.6057407407407407
   },
   "early-ball digits, base 23": {
    "strategy": "early-ball digits",
    "base": "base 23",
-   "z_mean": -0.13068344600746692,
-   "z_min": -1.1688569912481102,
-   "z_max": 1.1460050831778006,
-   "mean_matches": 0.6091517857142857
+   "z_mean": -0.10308946031373416,
+   "z_min": -1.056549456535818,
+   "z_max": 1.1079243565665713,
+   "mean_matches": 0.6093703703703702
   },
   "drawn-order digit chain, base 23": {
    "strategy": "drawn-order digit chain",
    "base": "base 23",
-   "z_mean": 0.6055392646000705,
-   "z_min": 0.3469436075721537,
-   "z_max": 0.9934356122739137,
-   "mean_matches": 0.6149553571428571
+   "z_mean": 0.5654463498637651,
+   "z_min": 0.2964926542951101,
+   "z_max": 0.9576655732569729,
+   "mean_matches": 0.6146296296296295
   },
   "machine-matched digits, base 23": {
    "strategy": "machine-matched digits",
    "base": "base 23",
-   "z_mean": -0.9667476165770857,
-   "z_min": -2.5582399288320197,
-   "z_max": 0.7268778287016637,
-   "mean_matches": 0.6027901785714286
+   "z_mean": -0.9554799365047947,
+   "z_min": -2.4670474506422644,
+   "z_max": 0.6599888531682754,
+   "mean_matches": 0.6028888888888889
   },
   "bonus-ball digits, base 23": {
    "strategy": "bonus-ball digits",
    "base": "base 23",
-   "z_mean": 0.044350977888366276,
-   "z_min": 0.044350977888366276,
-   "z_max": 0.044350977888366276,
-   "mean_matches": 0.6116071428571429
+   "z_mean": -0.039612606693197876,
+   "z_min": -0.039612606693197876,
+   "z_max": -0.039612606693197876,
+   "mean_matches": 0.6088888888888889
   },
   "Fourier extrapolation, base 23": {
    "strategy": "Fourier extrapolation",
    "base": "base 23",
-   "z_mean": 0.5638409738847556,
-   "z_min": -0.11908019147925533,
-   "z_max": 1.535400108438542,
-   "mean_matches": 0.6156994047619048
+   "z_mean": 0.5973591475908665,
+   "z_min": -0.08853823151827896,
+   "z_max": 1.529932330887808,
+   "mean_matches": 0.616
   },
   "8-round smoothed hotness, base 23": {
    "strategy": "8-round smoothed hotness",
    "base": "base 23",
-   "z_mean": 1.0894941343061018,
-   "z_min": 0.5815452063884398,
-   "z_max": 1.9450348921711316,
-   "mean_matches": 0.6203124999999999
+   "z_mean": 1.199299110411952,
+   "z_min": 0.6829232266786933,
+   "z_max": 2.0885158103279875,
+   "mean_matches": 0.6213333333333334
   },
   "posterior-mean digits, base 23": {
    "strategy": "posterior-mean digits",
    "base": "base 23",
-   "z_mean": 0.7217526013738741,
-   "z_min": 0.7217526013738741,
-   "z_max": 0.7217526013738741,
-   "mean_matches": 0.6361607142857143
+   "z_mean": 0.7073676436754269,
+   "z_min": 0.7073676436754269,
+   "z_max": 0.7073676436754269,
+   "mean_matches": 0.6355555555555555
   },
   "Thompson-sampled digits, base 23": {
    "strategy": "Thompson-sampled digits",
    "base": "base 23",
-   "z_mean": 0.2553509050444885,
-   "z_min": -0.07114901782834755,
-   "z_max": 0.43349530774049577,
-   "mean_matches": 0.6138020833333333
+   "z_mean": 0.2965193864766934,
+   "z_min": -0.004094490932668909,
+   "z_max": 0.463658300473297,
+   "mean_matches": 0.6143703703703703
   },
   "logistic regression, base 23": {
    "strategy": "logistic regression",
    "base": "base 23",
-   "z_mean": -1.1749495954626323,
-   "z_min": -1.1749495954626323,
-   "z_max": -1.1749495954626323,
-   "mean_matches": 0.5714285714285714
+   "z_mean": -1.2556959501870861,
+   "z_min": -1.2556959501870861,
+   "z_max": -1.2556959501870861,
+   "mean_matches": 0.5688888888888889
   },
   "Hedge over the strategies, base 23": {
    "strategy": "Hedge over the strategies",
    "base": "base 23",
-   "z_mean": -1.2309074138277198,
-   "z_min": -1.2309074138277198,
-   "z_max": -1.2309074138277198,
-   "mean_matches": 0.592958172256128,
+   "z_mean": -1.2682337080286687,
+   "z_min": -1.2682337080286687,
+   "z_max": -1.2682337080286687,
+   "mean_matches": 0.5925324912082144,
    "leader": "posterior-mean digits"
   },
   "hot-weighted, base 29": {
    "strategy": "hot-weighted",
    "base": "base 29",
-   "z_mean": -1.3001722137469658,
-   "z_min": -2.3193818897862077,
-   "z_max": -0.30708098191395394,
-   "mean_matches": 0.6003348214285714
+   "z_mean": -1.2365279659200277,
+   "z_min": -2.1627471288374602,
+   "z_max": -0.26689526907974476,
+   "mean_matches": 0.6008148148148148
   },
   "cold-weighted, base 29": {
    "strategy": "cold-weighted",
    "base": "base 29",
-   "z_mean": -0.33072103893353205,
-   "z_min": -0.9600861201302069,
-   "z_max": 0.5577891043265991,
-   "mean_matches": 0.6075148809523809
+   "z_mean": -0.34112081591584603,
+   "z_min": -0.9379403509866651,
+   "z_max": 0.49564928788449497,
+   "mean_matches": 0.6074444444444445
   },
   "hot top-6, base 29": {
    "strategy": "hot top-6",
    "base": "base 29",
-   "z_mean": -0.42622803319257496,
-   "z_min": -0.42622803319257496,
-   "z_max": -0.42622803319257496,
-   "mean_matches": 0.5959821428571429
+   "z_mean": -0.3720018914967222,
+   "z_min": -0.3720018914967222,
+   "z_max": -0.3720018914967222,
+   "mean_matches": 0.5977777777777777
   },
   "cold top-6, base 29": {
    "strategy": "cold top-6",
    "base": "base 29",
-   "z_mean": 2.243424240941243,
-   "z_min": 2.243424240941243,
-   "z_max": 2.243424240941243,
-   "mean_matches": 0.6897321428571429
+   "z_mean": 2.1625647111986854,
+   "z_min": 2.1625647111986854,
+   "z_max": 2.1625647111986854,
+   "mean_matches": 0.6866666666666666
   },
   "most overdue, base 29": {
    "strategy": "most overdue",
    "base": "base 29",
-   "z_mean": 1.1521902264824275,
-   "z_min": 1.1521902264824275,
-   "z_max": 1.1521902264824275,
-   "mean_matches": 0.6495535714285714
+   "z_mean": 1.070584958064127,
+   "z_min": 1.070584958064127,
+   "z_max": 1.070584958064127,
+   "mean_matches": 0.6466666666666666
   },
   "repeat digits, base 29": {
    "strategy": "repeat digits",
    "base": "base 29",
-   "z_mean": -0.6352497813523583,
-   "z_min": -0.6352497813523583,
-   "z_max": -0.6352497813523583,
-   "mean_matches": 0.5892857142857143
+   "z_mean": -0.7169676764269087,
+   "z_min": -0.7169676764269087,
+   "z_max": -0.7169676764269087,
+   "mean_matches": 0.5866666666666667
   },
   "digit grammar, base 29": {
    "strategy": "digit grammar",
    "base": "base 29",
-   "z_mean": -0.061717019338805655,
-   "z_min": -0.9696161199634891,
-   "z_max": 0.6428313647038971,
-   "mean_matches": 0.6095982142857143
+   "z_mean": 0.012580619085552006,
+   "z_min": -0.8253765822388716,
+   "z_max": 0.6873346957898793,
+   "mean_matches": 0.6104074074074074
   },
   "early-ball digits, base 29": {
    "strategy": "early-ball digits",
    "base": "base 29",
-   "z_mean": 1.3355306094135937,
-   "z_min": 0.46045894105569096,
-   "z_max": 3.030053514610426,
-   "mean_matches": 0.6207217261904762
+   "z_mean": 1.3312306408527157,
+   "z_min": 0.4092612424107401,
+   "z_max": 2.9402973296979233,
+   "mean_matches": 0.6207037037037036
   },
   "drawn-order digit chain, base 29": {
    "strategy": "drawn-order digit chain",
    "base": "base 29",
-   "z_mean": 1.027703009810925,
-   "z_min": 0.02632078466264151,
-   "z_max": 2.7885300357512275,
-   "mean_matches": 0.6178199404761905
+   "z_mean": 0.9847546455108076,
+   "z_min": 0.06233372262096576,
+   "z_max": 2.7153905056955305,
+   "mean_matches": 0.6174814814814815
   },
   "machine-matched digits, base 29": {
    "strategy": "machine-matched digits",
    "base": "base 29",
-   "z_mean": -1.6124385649936632,
-   "z_min": -2.367888646088703,
-   "z_max": -0.8858130388824431,
-   "mean_matches": 0.5978794642857141
+   "z_mean": -1.6201229753615758,
+   "z_min": -2.4680424154233864,
+   "z_max": -0.8031370664092908,
+   "mean_matches": 0.5978518518518517
   },
   "bonus-ball digits, base 29": {
    "strategy": "bonus-ball digits",
    "base": "base 29",
-   "z_mean": -0.8497799510804266,
-   "z_min": -0.8497799510804266,
-   "z_max": -0.8497799510804266,
-   "mean_matches": 0.5825892857142857
+   "z_mean": -0.8638870728850269,
+   "z_min": -0.8638870728850269,
+   "z_max": -0.8638870728850269,
+   "mean_matches": 0.5822222222222222
   },
   "Fourier extrapolation, base 29": {
    "strategy": "Fourier extrapolation",
    "base": "base 29",
-   "z_mean": -0.5396021168758818,
-   "z_min": -0.906606230514274,
-   "z_max": -0.3285146691841704,
-   "mean_matches": 0.604873511904762
+   "z_mean": -0.5432578134694136,
+   "z_min": -0.9557588206328126,
+   "z_max": -0.29817240473065476,
+   "mean_matches": 0.6048518518518519
   },
   "8-round smoothed hotness, base 29": {
    "strategy": "8-round smoothed hotness",
    "base": "base 29",
-   "z_mean": -0.0637675040640434,
-   "z_min": -0.5074185825500358,
-   "z_max": 0.8068602321967925,
-   "mean_matches": 0.6096354166666665
+   "z_mean": 0.011172663058895508,
+   "z_min": -0.4228341036177764,
+   "z_max": 0.8381305926662977,
+   "mean_matches": 0.6102962962962962
   },
   "posterior-mean digits, base 29": {
    "strategy": "posterior-mean digits",
    "base": "base 29",
-   "z_mean": -0.023616370747735902,
-   "z_min": -0.023616370747735902,
-   "z_max": -0.023616370747735902,
-   "mean_matches": 0.609375
+   "z_mean": -0.10441712216031633,
+   "z_min": -0.10441712216031633,
+   "z_max": -0.10441712216031633,
+   "mean_matches": 0.6066666666666667
   },
   "Thompson-sampled digits, base 29": {
    "strategy": "Thompson-sampled digits",
    "base": "base 29",
-   "z_mean": -0.726402367974964,
-   "z_min": -0.9678318383859341,
-   "z_max": -0.2776006891695838,
-   "mean_matches": 0.597953869047619
+   "z_mean": -0.7666862723530014,
+   "z_min": -1.0224345503814882,
+   "z_max": -0.31487768914510367,
+   "mean_matches": 0.5973333333333334
   },
   "logistic regression, base 29": {
    "strategy": "logistic regression",
    "base": "base 29",
-   "z_mean": 1.2526593891507383,
-   "z_min": 1.2526593891507383,
-   "z_max": 1.2526593891507383,
-   "mean_matches": 0.6540178571428571
+   "z_mean": 1.360823714753274,
+   "z_min": 1.360823714753274,
+   "z_max": 1.360823714753274,
+   "mean_matches": 0.6577777777777778
   },
   "Hedge over the strategies, base 29": {
    "strategy": "Hedge over the strategies",
    "base": "base 29",
-   "z_mean": 1.2011781195626847,
-   "z_min": 1.2011781195626847,
-   "z_max": 1.2011781195626847,
-   "mean_matches": 0.6412986964826609,
+   "z_mean": 1.1008542354337838,
+   "z_min": 1.1008542354337838,
+   "z_max": 1.1008542354337838,
+   "mean_matches": 0.6386230518363174,
    "leader": "cold top-6"
   },
   "hot-weighted, numbers": {
    "strategy": "hot-weighted",
    "base": "numbers",
-   "z_mean": -0.9134145697912022,
-   "z_min": -1.5783990511408845,
-   "z_max": 0.2655405622240126,
-   "mean_matches": 0.603125
+   "z_mean": -0.918276506549287,
+   "z_min": -1.583023099179105,
+   "z_max": 0.21451117274797019,
+   "mean_matches": 0.6031111111111112
   },
   "cold-weighted, numbers": {
    "strategy": "cold-weighted",
    "base": "numbers",
-   "z_mean": 0.369388150632751,
-   "z_min": -0.1522728332635125,
-   "z_max": 1.2908023654655514,
-   "mean_matches": 0.6130580357142857
+   "z_mean": 0.3021095297096259,
+   "z_min": -0.1985928373788871,
+   "z_max": 1.2551110229366345,
+   "mean_matches": 0.6125185185185186
   },
   "hot top-6, numbers": {
    "strategy": "hot top-6",
    "base": "numbers",
-   "z_mean": -0.8169776547512534,
-   "z_min": -0.8169776547512534,
-   "z_max": -0.8169776547512534,
-   "mean_matches": 0.5848214285714286
+   "z_mean": -0.6851062322867395,
+   "z_min": -0.6851062322867395,
+   "z_max": -0.6851062322867395,
+   "mean_matches": 0.5888888888888889
   },
   "cold top-6, numbers": {
    "strategy": "cold top-6",
    "base": "numbers",
-   "z_mean": -0.292367232212654,
-   "z_min": -0.292367232212654,
-   "z_max": -0.292367232212654,
-   "mean_matches": 0.6004464285714286
+   "z_mean": -0.37367233368187475,
+   "z_min": -0.37367233368187475,
+   "z_max": -0.37367233368187475,
+   "mean_matches": 0.5977777777777777
   },
   "most overdue, numbers": {
    "strategy": "most overdue",
    "base": "numbers",
-   "z_mean": 0.36602092051072316,
-   "z_min": 0.36602092051072316,
-   "z_max": 0.36602092051072316,
-   "mean_matches": 0.6227678571428571
+   "z_mean": 0.28641692900986643,
+   "z_min": 0.28641692900986643,
+   "z_max": 0.28641692900986643,
+   "mean_matches": 0.62
   },
   "repeat digits, numbers": {
    "strategy": "repeat digits",
    "base": "numbers",
-   "z_mean": -2.383382840934614,
-   "z_min": -2.383382840934614,
-   "z_max": -2.383382840934614,
-   "mean_matches": 0.5357142857142857
+   "z_mean": -2.4669879814442517,
+   "z_min": -2.4669879814442517,
+   "z_max": -2.4669879814442517,
+   "mean_matches": 0.5333333333333333
   },
   "digit grammar, numbers": {
    "strategy": "digit grammar",
    "base": "numbers",
-   "z_mean": -0.5435652848974054,
-   "z_min": -1.5157085565041502,
-   "z_max": 0.38032318016396605,
-   "mean_matches": 0.6058779761904761
+   "z_mean": -0.4674888264104425,
+   "z_min": -1.5105982523018893,
+   "z_max": 0.5548977083402374,
+   "mean_matches": 0.6065185185185185
   },
   "early-ball digits, numbers": {
    "strategy": "early-ball digits",
    "base": "numbers",
-   "z_mean": -0.17979975685805108,
-   "z_min": -1.7894129257018425,
-   "z_max": 1.4402154599235089,
-   "mean_matches": 0.6085193452380951
+   "z_mean": -0.1457096623543329,
+   "z_min": -1.7816092323426318,
+   "z_max": 1.4726262131343457,
+   "mean_matches": 0.6088148148148148
   },
   "drawn-order digit chain, numbers": {
    "strategy": "drawn-order digit chain",
    "base": "numbers",
-   "z_mean": 0.5109875134683918,
-   "z_min": -0.3003659267791763,
-   "z_max": 1.1040221741350273,
-   "mean_matches": 0.614174107142857
+   "z_mean": 0.4796326242112981,
+   "z_min": -0.3534538022250724,
+   "z_max": 1.0692878885119372,
+   "mean_matches": 0.6139259259259259
   },
   "machine-matched digits, numbers": {
    "strategy": "machine-matched digits",
    "base": "numbers",
-   "z_mean": -0.5424135758971134,
-   "z_min": -1.4986898961109687,
-   "z_max": 0.3283694338214874,
-   "mean_matches": 0.6059895833333334
+   "z_mean": -0.44798976103498817,
+   "z_min": -1.3833283907018254,
+   "z_max": 0.3666423184644485,
+   "mean_matches": 0.6067037037037037
   },
   "bonus-ball digits, numbers": {
    "strategy": "bonus-ball digits",
    "base": "numbers",
-   "z_mean": 0.10871317501832277,
-   "z_min": 0.10871317501832277,
-   "z_max": 0.10871317501832277,
-   "mean_matches": 0.6138392857142857
+   "z_mean": 0.09403556035694724,
+   "z_min": 0.09403556035694724,
+   "z_max": 0.09403556035694724,
+   "mean_matches": 0.6133333333333333
   },
   "Fourier extrapolation, numbers": {
    "strategy": "Fourier extrapolation",
    "base": "numbers",
-   "z_mean": -0.25642822996047276,
-   "z_min": -0.636273723090861,
-   "z_max": 0.15711709103083565,
-   "mean_matches": 0.6074776785714285
+   "z_mean": -0.17609906534201344,
+   "z_min": -0.5425464048590752,
+   "z_max": 0.1737532788264581,
+   "mean_matches": 0.6083333333333334
   },
   "8-round smoothed hotness, numbers": {
    "strategy": "8-round smoothed hotness",
    "base": "numbers",
-   "z_mean": -0.5875265370285147,
-   "z_min": -1.0823715984440092,
-   "z_max": 0.17885261546697848,
-   "mean_matches": 0.6049479166666667
+   "z_mean": -0.567279799955279,
+   "z_min": -1.0749252134087568,
+   "z_max": 0.2114984014024267,
+   "mean_matches": 0.6051481481481482
   },
   "posterior-mean digits, numbers": {
    "strategy": "posterior-mean digits",
    "base": "numbers",
-   "z_mean": -0.2811650418486373,
-   "z_min": -0.2811650418486373,
-   "z_max": -0.2811650418486373,
-   "mean_matches": 0.6004464285714286
+   "z_mean": -0.29506863340584905,
+   "z_min": -0.29506863340584905,
+   "z_max": -0.29506863340584905,
+   "mean_matches": 0.6
   },
   "Thompson-sampled digits, numbers": {
    "strategy": "Thompson-sampled digits",
    "base": "numbers",
-   "z_mean": -0.48418879776222146,
-   "z_min": -0.7973252541520834,
-   "z_max": -0.055407948782266396,
-   "mean_matches": 0.6023809523809524
+   "z_mean": -0.4963175985905697,
+   "z_min": -0.8558807216050162,
+   "z_max": -0.06498885542535418,
+   "mean_matches": 0.6022222222222223
   },
   "logistic regression, numbers": {
    "strategy": "logistic regression",
    "base": "numbers",
-   "z_mean": 1.7795879786713076,
-   "z_min": 1.7795879786713076,
-   "z_max": 1.7795879786713076,
-   "mean_matches": 0.671875
+   "z_mean": 1.697870794554731,
+   "z_min": 1.697870794554731,
+   "z_max": 1.697870794554731,
+   "mean_matches": 0.6688888888888889
   },
   "Hedge over the strategies, numbers": {
    "strategy": "Hedge over the strategies",
    "base": "numbers",
-   "z_mean": 0.41455625652408234,
-   "z_min": 0.41455625652408234,
-   "z_max": 0.41455625652408234,
-   "mean_matches": 0.6188354304758394,
+   "z_mean": 0.28435770125015164,
+   "z_min": 0.28435770125015164,
+   "z_max": 0.28435770125015164,
+   "mean_matches": 0.6161031565308476,
    "leader": "logistic regression"
   }
  },
@@ -1602,9 +1602,9 @@
      12,
      22,
      23,
-     29,
+     30,
      39,
-     47
+     48
     ]
    ],
    "cold-weighted, base 2": [
@@ -1619,22 +1619,22 @@
    ],
    "hot top-6, base 2": [
     [
-     4,
-     20,
      36,
      38,
+     39,
      52,
-     54
+     54,
+     55
     ]
    ],
    "cold top-6, base 2": [
     [
+     8,
      9,
      11,
+     24,
      25,
-     27,
-     43,
-     59
+     27
     ]
    ],
    "most overdue, base 2": [
@@ -1681,7 +1681,7 @@
     [
      12,
      26,
-     30,
+     31,
      38,
      47,
      59
@@ -1692,16 +1692,16 @@
      2,
      4,
      33,
-     34,
+     35,
      53,
      56
     ]
    ],
    "bonus-ball digits, base 2": [
     [
-     17,
+     11,
      19,
-     25,
+     26,
      27,
      51,
      59
@@ -1709,18 +1709,18 @@
    ],
    "Fourier extrapolation, base 2": [
     [
-     23,
-     25,
+     26,
+     29,
      40,
      42,
-     50,
-     52
+     47,
+     50
     ]
    ],
    "8-round smoothed hotness, base 2": [
     [
      10,
-     38,
+     39,
      54,
      55,
      56,
@@ -1750,10 +1750,10 @@
    "logistic regression, base 2": [
     [
      11,
-     19,
      25,
      26,
      27,
+     57,
      59
     ]
    ],
@@ -1762,7 +1762,7 @@
      12,
      22,
      32,
-     33,
+     34,
      52,
      53
     ]
@@ -1779,22 +1779,22 @@
    ],
    "hot top-6, base 3": [
     [
-     18,
      27,
      45,
      47,
      48,
+     50,
      51
     ]
    ],
    "cold top-6, base 3": [
     [
+     1,
+     4,
+     7,
      10,
      13,
-     16,
-     40,
-     43,
-     58
+     16
     ]
    ],
    "most overdue, base 3": [
@@ -1850,10 +1850,10 @@
    "machine-matched digits, base 3": [
     [
      1,
-     10,
-     19,
-     47,
+     11,
+     20,
      48,
+     49,
      59
     ]
    ],
@@ -1861,30 +1861,30 @@
     [
      21,
      24,
-     39,
-     42,
+     25,
      48,
-     51
+     51,
+     52
     ]
    ],
    "Fourier extrapolation, base 3": [
     [
-     12,
+     10,
      24,
-     39,
-     42,
-     44,
-     50
+     38,
+     45,
+     47,
+     53
     ]
    ],
    "8-round smoothed hotness, base 3": [
     [
-     13,
      14,
-     21,
-     24,
-     31,
-     44
+     15,
+     23,
+     26,
+     33,
+     46
     ]
    ],
    "posterior-mean digits, base 3": [
@@ -1909,92 +1909,92 @@
    ],
    "logistic regression, base 3": [
     [
-     3,
-     18,
      21,
+     45,
      48,
      54,
-     57
+     57,
+     59
     ]
    ],
    "hot-weighted, base 5": [
     [
+     5,
      12,
      19,
-     20,
-     23,
+     21,
      24,
-     49
+     50
     ]
    ],
    "cold-weighted, base 5": [
     [
      4,
-     5,
      19,
      31,
-     45,
-     48
+     44,
+     48,
+     51
     ]
    ],
    "hot top-6, base 5": [
     [
-     2,
      22,
      27,
      47,
      48,
-     52
+     52,
+     53
     ]
    ],
    "cold top-6, base 5": [
     [
      5,
+     6,
+     9,
      15,
      16,
-     19,
-     40,
-     55
+     19
     ]
    ],
    "most overdue, base 5": [
     [
-     15,
-     20,
-     40,
-     45,
+     23,
+     24,
      46,
-     48
+     47,
+     48,
+     49
     ]
    ],
    "repeat digits, base 5": [
     [
-     1,
-     26,
-     29,
-     32,
-     51,
-     53
+     19,
+     25,
+     28,
+     31,
+     44,
+     52
     ]
    ],
    "digit grammar, base 5": [
     [
-     4,
-     10,
-     13,
-     21,
-     29,
-     53
+     5,
+     9,
+     18,
+     26,
+     51,
+     57
     ]
    ],
    "early-ball digits, base 5": [
     [
      10,
      16,
-     18,
+     17,
      21,
      28,
-     32
+     29
     ]
    ],
    "drawn-order digit chain, base 5": [
@@ -2003,7 +2003,7 @@
      17,
      23,
      25,
-     26,
+     47,
      48
     ]
    ],
@@ -2011,39 +2011,39 @@
     [
      5,
      37,
-     43,
+     39,
+     44,
      46,
-     47,
      50
     ]
    ],
    "bonus-ball digits, base 5": [
     [
      1,
+     25,
      26,
      36,
      50,
-     51,
-     56
+     51
     ]
    ],
    "Fourier extrapolation, base 5": [
     [
-     30,
-     38,
-     48,
-     49,
-     56,
-     57
+     23,
+     32,
+     45,
+     47,
+     54,
+     56
     ]
    ],
    "8-round smoothed hotness, base 5": [
     [
      3,
      5,
+     7,
      9,
-     40,
-     54,
+     43,
      55
     ]
    ],
@@ -2059,11 +2059,11 @@
    ],
    "Thompson-sampled digits, base 5": [
     [
-     9,
-     14,
-     34,
+     37,
      39,
-     44,
+     52,
+     54,
+     57,
      59
     ]
    ],
@@ -2071,17 +2071,17 @@
     [
      5,
      8,
-     9,
      15,
      30,
+     40,
      55
     ]
    ],
    "hot-weighted, base 7": [
     [
+     2,
      4,
      10,
-     14,
      27,
      39,
      50
@@ -2089,7 +2089,7 @@
    ],
    "cold-weighted, base 7": [
     [
-     2,
+     6,
      18,
      26,
      36,
@@ -2100,7 +2100,7 @@
    "hot top-6, base 7": [
     [
      4,
-     42,
+     39,
      45,
      46,
      52,
@@ -2113,57 +2113,57 @@
      13,
      16,
      20,
-     34,
-     58
+     27,
+     34
     ]
    ],
    "most overdue, base 7": [
     [
-     2,
-     16,
+     7,
+     21,
+     26,
      28,
-     30,
      42,
-     44
+     49
     ]
    ],
    "repeat digits, base 7": [
     [
-     5,
-     24,
+     18,
+     37,
      38,
      39,
-     40,
-     53
+     50,
+     52
     ]
    ],
    "digit grammar, base 7": [
     [
-     12,
-     16,
-     18,
-     35,
-     46,
-     47
+     5,
+     7,
+     29,
+     42,
+     44,
+     54
     ]
    ],
    "early-ball digits, base 7": [
     [
-     11,
+     10,
      25,
      30,
-     44,
      46,
-     50
+     50,
+     57
     ]
    ],
    "drawn-order digit chain, base 7": [
     [
      7,
-     36,
-     38,
+     37,
      39,
-     56,
+     40,
+     43,
      57
     ]
    ],
@@ -2171,39 +2171,39 @@
     [
      1,
      5,
-     25,
+     26,
      29,
      37,
-     43
+     45
     ]
    ],
    "bonus-ball digits, base 7": [
     [
+     5,
+     23,
      26,
-     29,
      30,
-     32,
      33,
      54
     ]
    ],
    "Fourier extrapolation, base 7": [
     [
-     7,
-     25,
-     38,
-     53,
-     54,
-     58
+     5,
+     40,
+     47,
+     49,
+     51,
+     55
     ]
    ],
    "8-round smoothed hotness, base 7": [
     [
-     11,
+     10,
      13,
-     21,
-     43,
-     53,
+     23,
+     47,
+     57,
      59
     ]
    ],
@@ -2219,22 +2219,22 @@
    ],
    "Thompson-sampled digits, base 7": [
     [
-     10,
-     38,
-     39,
+     12,
+     35,
+     36,
+     37,
      40,
-     52,
-     59
+     56
     ]
    ],
    "logistic regression, base 7": [
     [
-     2,
-     9,
-     16,
+     7,
+     14,
+     21,
      23,
-     30,
-     44
+     27,
+     28
     ]
    ],
    "hot-weighted, base 11": [
@@ -2242,9 +2242,9 @@
      2,
      26,
      30,
-     44,
-     50,
-     58
+     45,
+     51,
+     54
     ]
    ],
    "cold-weighted, base 11": [
@@ -2252,17 +2252,17 @@
      1,
      4,
      23,
+     34,
      36,
-     50,
-     52
+     47
     ]
    ],
    "hot top-6, base 11": [
     [
      4,
-     10,
      46,
      48,
+     49,
      53,
      54
     ]
@@ -2273,68 +2273,68 @@
      12,
      23,
      34,
-     56,
-     58
+     45,
+     56
     ]
    ],
    "most overdue, base 11": [
     [
-     11,
+     1,
      12,
-     19,
-     21,
-     32,
-     54
+     22,
+     23,
+     34,
+     45
     ]
    ],
    "repeat digits, base 11": [
     [
-     5,
-     24,
-     27,
-     28,
-     31,
-     49
+     2,
+     9,
+     15,
+     20,
+     46,
+     53
     ]
    ],
    "digit grammar, base 11": [
     [
-     3,
-     20,
-     35,
-     46,
-     50,
-     55
+     7,
+     12,
+     25,
+     40,
+     43,
+     49
     ]
    ],
    "early-ball digits, base 11": [
     [
-     12,
      16,
-     30,
+     23,
+     31,
+     32,
      33,
-     41,
      47
     ]
    ],
    "drawn-order digit chain, base 11": [
     [
      2,
-     16,
-     19,
+     12,
+     17,
      20,
-     31,
-     52
+     42,
+     51
     ]
    ],
    "machine-matched digits, base 11": [
     [
-     2,
-     13,
+     3,
      19,
-     38,
-     42,
-     45
+     23,
+     30,
+     39,
+     46
     ]
    ],
    "bonus-ball digits, base 11": [
@@ -2342,29 +2342,29 @@
      11,
      12,
      17,
-     18,
-     19,
-     21
+     21,
+     22,
+     32
     ]
    ],
    "Fourier extrapolation, base 11": [
     [
-     4,
-     5,
-     12,
-     21,
-     38,
-     58
+     6,
+     7,
+     10,
+     11,
+     13,
+     33
     ]
    ],
    "8-round smoothed hotness, base 11": [
     [
-     9,
-     11,
-     26,
-     32,
-     35,
-     37
+     20,
+     27,
+     30,
+     34,
+     37,
+     52
     ]
    ],
    "posterior-mean digits, base 11": [
@@ -2379,29 +2379,29 @@
    ],
    "Thompson-sampled digits, base 11": [
     [
-     36,
-     37,
-     40,
+     20,
+     34,
+     38,
      42,
-     58,
-     59
+     43,
+     53
     ]
    ],
    "logistic regression, base 11": [
     [
      1,
      12,
-     18,
      23,
      29,
-     56
+     56,
+     58
     ]
    ],
    "hot-weighted, base 13": [
     [
-     3,
-     33,
-     39,
+     6,
+     18,
+     22,
      44,
      53,
      54
@@ -2409,19 +2409,19 @@
    ],
    "cold-weighted, base 13": [
     [
-     5,
      6,
      13,
-     16,
-     20,
-     24
+     24,
+     25,
+     49,
+     50
     ]
    ],
    "hot top-6, base 13": [
     [
-     2,
-     5,
      12,
+     38,
+     41,
      51,
      54,
      57
@@ -2429,69 +2429,69 @@
    ],
    "cold top-6, base 13": [
     [
+     10,
      14,
-     20,
      23,
-     27,
+     24,
      36,
-     40
+     49
     ]
    ],
    "most overdue, base 13": [
     [
+     8,
      21,
-     24,
-     41,
+     34,
+     37,
      47,
-     49,
      50
     ]
    ],
    "repeat digits, base 13": [
     [
-     1,
-     6,
-     31,
-     32,
-     53,
-     58
+     12,
+     14,
+     27,
+     28,
+     40,
+     59
     ]
    ],
    "digit grammar, base 13": [
     [
-     23,
-     35,
-     50,
-     54,
-     58,
-     59
+     8,
+     30,
+     32,
+     42,
+     47,
+     50
     ]
    ],
    "early-ball digits, base 13": [
     [
+     5,
      8,
-     17,
-     18,
-     31,
+     15,
+     21,
      36,
-     54
+     55
     ]
    ],
    "drawn-order digit chain, base 13": [
     [
      1,
-     5,
-     15,
-     20,
-     25,
-     28
+     12,
+     17,
+     22,
+     26,
+     34
     ]
    ],
    "machine-matched digits, base 13": [
     [
-     14,
-     18,
-     23,
+     24,
+     28,
+     29,
      35,
      42,
      46
@@ -2499,31 +2499,31 @@
    ],
    "bonus-ball digits, base 13": [
     [
-     24,
      25,
      37,
      38,
+     39,
      50,
      51
     ]
    ],
    "Fourier extrapolation, base 13": [
     [
-     4,
-     6,
-     12,
-     22,
-     33,
-     51
+     11,
+     19,
+     26,
+     27,
+     29,
+     52
     ]
    ],
    "8-round smoothed hotness, base 13": [
     [
+     5,
      12,
-     26,
-     31,
-     37,
-     39,
+     22,
+     38,
+     54,
      56
     ]
    ],
@@ -2531,67 +2531,67 @@
     [
      26,
      33,
-     39,
      52,
+     54,
      55,
      59
     ]
    ],
    "Thompson-sampled digits, base 13": [
     [
-     7,
-     12,
-     33,
-     38,
-     57,
-     59
+     11,
+     29,
+     37,
+     52,
+     54,
+     55
     ]
    ],
    "logistic regression, base 13": [
     [
+     4,
      9,
      17,
      22,
-     25,
      35,
      48
     ]
    ],
    "hot-weighted, base 17": [
     [
-     9,
+     7,
      19,
-     20,
-     27,
+     21,
      30,
-     31
+     52,
+     58
     ]
    ],
    "cold-weighted, base 17": [
     [
      7,
      14,
-     16,
      24,
-     50,
-     58
+     48,
+     52,
+     54
     ]
    ],
    "hot top-6, base 17": [
     [
-     4,
      21,
-     28,
      38,
+     49,
+     54,
      55,
      59
     ]
    ],
    "cold top-6, base 17": [
     [
-     7,
      10,
      16,
+     27,
      33,
      44,
      50
@@ -2600,91 +2600,91 @@
    "most overdue, base 17": [
     [
      10,
-     16,
+     18,
      27,
+     28,
      33,
-     44,
-     50
+     44
     ]
    ],
    "repeat digits, base 17": [
     [
-     21,
-     23,
-     25,
-     42,
+     7,
+     8,
+     38,
+     49,
      53,
-     57
+     59
     ]
    ],
    "digit grammar, base 17": [
     [
-     11,
-     31,
-     32,
-     56,
-     58,
-     59
+     14,
+     17,
+     41,
+     43,
+     53,
+     55
     ]
    ],
    "early-ball digits, base 17": [
     [
-     11,
      13,
-     19,
+     23,
      24,
-     45,
-     46
+     30,
+     36,
+     45
     ]
    ],
    "drawn-order digit chain, base 17": [
     [
-     21,
+     4,
      26,
-     28,
-     34,
-     36,
-     46
-    ]
-   ],
-   "machine-matched digits, base 17": [
-    [
-     5,
-     15,
      42,
      44,
      57,
      58
     ]
    ],
+   "machine-matched digits, base 17": [
+    [
+     9,
+     15,
+     17,
+     30,
+     40,
+     42
+    ]
+   ],
    "bonus-ball digits, base 17": [
     [
      16,
      17,
+     26,
      28,
      30,
-     33,
-     50
+     33
     ]
    ],
    "Fourier extrapolation, base 17": [
     [
-     1,
-     14,
-     31,
-     37,
-     39,
-     48
+     7,
+     8,
+     13,
+     25,
+     34,
+     42
     ]
    ],
    "8-round smoothed hotness, base 17": [
     [
-     5,
-     7,
-     13,
+     4,
+     21,
      25,
-     38,
-     52
+     53,
+     56,
+     57
     ]
    ],
    "posterior-mean digits, base 17": [
@@ -2699,151 +2699,151 @@
    ],
    "Thompson-sampled digits, base 17": [
     [
-     3,
-     20,
-     37,
-     53,
+     11,
+     28,
+     45,
+     52,
      54,
-     59
+     56
     ]
    ],
    "logistic regression, base 17": [
     [
-     7,
-     16,
-     24,
+     17,
+     18,
+     22,
+     26,
      30,
-     33,
-     50
+     33
     ]
    ],
    "hot-weighted, base 19": [
     [
      2,
-     18,
-     31,
+     23,
      32,
-     34,
-     52
+     33,
+     38,
+     40
     ]
    ],
    "cold-weighted, base 19": [
     [
      7,
-     21,
+     13,
      22,
-     34,
-     37,
+     26,
+     31,
      45
     ]
    ],
    "hot top-6, base 19": [
     [
-     4,
      38,
-     42,
+     40,
      49,
      51,
-     57
+     57,
+     59
     ]
    ],
    "cold top-6, base 19": [
     [
+     1,
      12,
+     17,
      20,
      31,
-     33,
-     36,
-     50
+     36
     ]
    ],
    "most overdue, base 19": [
     [
      8,
-     17,
      27,
+     28,
+     33,
      36,
-     46,
-     55
+     46
     ]
    ],
    "repeat digits, base 19": [
     [
-     6,
+     3,
      15,
-     26,
+     38,
      40,
-     44,
-     59
+     41,
+     53
     ]
    ],
    "digit grammar, base 19": [
     [
-     11,
-     16,
-     17,
-     37,
-     38,
-     59
+     18,
+     19,
+     53,
+     55,
+     56,
+     58
     ]
    ],
    "early-ball digits, base 19": [
     [
      4,
-     18,
-     19,
-     22,
-     40,
-     44
+     10,
+     41,
+     42,
+     44,
+     55
     ]
    ],
    "drawn-order digit chain, base 19": [
     [
-     10,
-     11,
-     21,
-     42,
-     48,
-     56
+     1,
+     5,
+     20,
+     33,
+     46,
+     48
     ]
    ],
    "machine-matched digits, base 19": [
     [
-     2,
-     7,
+     14,
+     31,
      34,
-     36,
-     48,
+     37,
+     41,
      51
     ]
    ],
    "bonus-ball digits, base 19": [
     [
      21,
+     26,
      30,
      31,
      32,
-     35,
      50
     ]
    ],
    "Fourier extrapolation, base 19": [
     [
-     4,
-     16,
-     36,
-     40,
-     50,
-     55
+     12,
+     21,
+     28,
+     34,
+     43,
+     54
     ]
    ],
    "8-round smoothed hotness, base 19": [
     [
-     23,
-     34,
-     43,
-     49,
-     56,
+     9,
+     24,
+     26,
+     38,
+     44,
      57
     ]
    ],
@@ -2859,42 +2859,42 @@
    ],
    "Thompson-sampled digits, base 19": [
     [
-     20,
-     23,
-     39,
-     42,
-     57,
-     58
+     21,
+     28,
+     32,
+     34,
+     35,
+     59
     ]
    ],
    "logistic regression, base 19": [
     [
-     1,
-     3,
-     12,
      20,
-     22,
-     31
+     26,
+     31,
+     32,
+     36,
+     37
     ]
    ],
    "hot-weighted, base 23": [
     [
-     2,
-     28,
-     31,
+     12,
+     23,
      35,
-     43,
+     37,
+     39,
      48
     ]
    ],
    "cold-weighted, base 23": [
     [
      1,
-     11,
-     20,
-     21,
-     35,
-     37
+     19,
+     26,
+     40,
+     46,
+     54
     ]
    ],
    "hot top-6, base 23": [
@@ -2903,14 +2903,14 @@
      38,
      48,
      51,
-     52,
+     53,
      54
     ]
    ],
    "cold top-6, base 23": [
     [
      10,
-     16,
+     17,
      33,
      39,
      40,
@@ -2920,68 +2920,68 @@
    "most overdue, base 23": [
     [
      1,
+     10,
      17,
      24,
      33,
-     40,
-     44
+     40
     ]
    ],
    "repeat digits, base 23": [
     [
-     7,
-     29,
-     36,
-     53,
-     57,
-     59
+     2,
+     13,
+     18,
+     25,
+     41,
+     48
     ]
    ],
    "digit grammar, base 23": [
     [
-     5,
-     34,
-     35,
-     48,
-     51,
-     54
+     4,
+     15,
+     40,
+     46,
+     50,
+     57
     ]
    ],
    "early-ball digits, base 23": [
     [
-     25,
-     28,
-     33,
+     19,
+     31,
+     40,
      44,
      45,
-     48
+     47
     ]
    ],
    "drawn-order digit chain, base 23": [
     [
-     17,
-     29,
-     38,
-     45,
-     47,
-     57
+     2,
+     40,
+     41,
+     42,
+     48,
+     56
     ]
    ],
    "machine-matched digits, base 23": [
     [
-     2,
+     12,
      13,
-     41,
-     42,
+     28,
+     33,
      43,
-     48
+     59
     ]
    ],
    "bonus-ball digits, base 23": [
     [
+     2,
      11,
-     16,
-     21,
+     25,
      34,
      39,
      44
@@ -2989,22 +2989,22 @@
    ],
    "Fourier extrapolation, base 23": [
     [
-     15,
-     23,
-     28,
-     40,
-     42,
-     46
+     4,
+     13,
+     25,
+     32,
+     47,
+     59
     ]
    ],
    "8-round smoothed hotness, base 23": [
     [
+     3,
      5,
-     15,
-     35,
-     36,
-     49,
-     59
+     29,
+     38,
+     53,
+     55
     ]
    ],
    "posterior-mean digits, base 23": [
@@ -3013,54 +3013,54 @@
      31,
      36,
      37,
-     45,
-     54
+     54,
+     59
     ]
    ],
    "Thompson-sampled digits, base 23": [
     [
+     8,
+     11,
      14,
      31,
-     34,
-     37,
      54,
      57
     ]
    ],
    "logistic regression, base 23": [
     [
-     1,
-     9,
+     5,
      21,
+     22,
      44,
      47,
-     55
+     51
     ]
    ],
    "hot-weighted, base 29": [
     [
-     9,
-     10,
-     25,
-     29,
-     47,
-     54
+     2,
+     5,
+     11,
+     13,
+     14,
+     25
     ]
    ],
    "cold-weighted, base 29": [
     [
      2,
-     6,
+     3,
      10,
-     12,
-     13,
-     33
+     25,
+     33,
+     41
     ]
    ],
    "hot top-6, base 29": [
     [
-     28,
-     35,
+     31,
+     32,
      38,
      47,
      53,
@@ -3070,11 +3070,11 @@
    "cold top-6, base 29": [
     [
      5,
-     12,
+     7,
+     23,
      27,
      34,
-     56,
-     58
+     56
     ]
    ],
    "most overdue, base 29": [
@@ -3089,52 +3089,52 @@
    ],
    "repeat digits, base 29": [
     [
-     1,
-     28,
-     30,
-     35,
-     53,
-     55
+     2,
+     9,
+     12,
+     15,
+     24,
+     41
     ]
    ],
    "digit grammar, base 29": [
     [
-     7,
-     38,
-     44,
-     49,
-     50,
-     56
-    ]
-   ],
-   "early-ball digits, base 29": [
-    [
-     7,
-     21,
-     43,
-     52,
-     55,
-     57
-    ]
-   ],
-   "drawn-order digit chain, base 29": [
-    [
-     2,
-     23,
-     44,
-     52,
+     13,
+     53,
+     56,
+     57,
      58,
      59
     ]
    ],
-   "machine-matched digits, base 29": [
+   "early-ball digits, base 29": [
+    [
+     3,
+     7,
+     23,
+     46,
+     54,
+     59
+    ]
+   ],
+   "drawn-order digit chain, base 29": [
     [
      7,
+     8,
      10,
-     11,
-     20,
-     24,
-     46
+     21,
+     23,
+     45
+    ]
+   ],
+   "machine-matched digits, base 29": [
+    [
+     1,
+     17,
+     19,
+     32,
+     47,
+     48
     ]
    ],
    "bonus-ball digits, base 29": [
@@ -3142,29 +3142,29 @@
      21,
      30,
      40,
-     45,
      50,
+     54,
      59
     ]
    ],
    "Fourier extrapolation, base 29": [
     [
-     2,
-     10,
-     28,
-     46,
-     47,
-     57
+     18,
+     25,
+     29,
+     39,
+     42,
+     48
     ]
    ],
    "8-round smoothed hotness, base 29": [
     [
-     19,
-     27,
-     30,
-     39,
-     43,
-     48
+     8,
+     12,
+     18,
+     45,
+     47,
+     59
     ]
    ],
    "posterior-mean digits, base 29": [
@@ -3179,22 +3179,22 @@
    ],
    "Thompson-sampled digits, base 29": [
     [
-     3,
-     32,
-     37,
-     38,
-     46,
-     53
+     29,
+     42,
+     43,
+     54,
+     56,
+     58
     ]
    ],
    "logistic regression, base 29": [
     [
-     5,
-     16,
      18,
      22,
+     25,
      47,
-     51
+     51,
+     54
     ]
    ]
   }

@@ -1,0 +1,17 @@
+{
+ "backend": "threads", "start": "2017-01-01", "horizon": 26, "paths": 2000, "resets": 1018, "windows": 41,
+ "frozen_numbers": [11, 12, 31, 34, 36, 37, 38, 39, 40, 42, 45, 48, 52, 54, 59],
+ "actual": {"prize_rounds_mean": 2.8293, "any4_rate": 0.5610},
+ "models": {
+  "fair": {"log_score_k1": -1.41349, "pred_prize_mean": 2.9824, "coverage90": 0.8780, "pit_p": 0.9647, "pred_any4": 0.5726, "brier_any4": 0.2482},
+  "hindsight as reality": {"log_score_k1": -1.44096, "pred_prize_mean": 4.1974, "coverage90": 0.8537, "pit_p": 0.0002, "pred_any4": 0.7495, "brier_any4": 0.2985}
+ },
+ "log_score_diff": {"mean": -0.02747, "z": -4.048},
+ "cost_per_round": 30.00,
+ "forward": {"from": "2026-11-14", "real_since_frozen": {"first_draw": "2026-11-07", "rounds": 6, "prize_rounds": 0, "net": -164.00},
+  "models": {
+   "fair": {"checkpoints": {"26": {"prize_rounds": [1, 3, 6], "net": [-706, -580, -326], "p_no_prize": 0.0433}, "52": {"prize_rounds": [2, 6, 10], "net": [-1342, -1138, -792], "p_no_prize": 0.0020}, "104": {"prize_rounds": [7, 12, 17], "net": [-2576, -2250, -1774], "p_no_prize": 0.0000}}, "real_rank": {"net_pct": 32.2, "p_no_prize_so_far": 0.4835}},
+   "hindsight as reality": {"checkpoints": {"26": {"prize_rounds": [1, 3, 7], "net": [-684, -536, -248], "p_no_prize": 0.0232}, "52": {"prize_rounds": [3, 7, 11], "net": [-1288, -1046, -652], "p_no_prize": 0.0006}, "104": {"prize_rounds": [9, 14, 20], "net": [-2446, -2068, -1510], "p_no_prize": 0.0000}}, "real_rank": {"net_pct": 24.4, "p_no_prize_so_far": 0.4116}}
+  }
+ }
+}
