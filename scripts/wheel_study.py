@@ -140,7 +140,7 @@ def candidate_backtest(e, split, seeds):
     return res, len(nights), len(ins)
 
 
-def replay_check(path="results/replay_five_lines.json"):
+def replay_check(path="results/replay_wheel.json"):
     """The report's own choice (the 31 numbers with most combined support, played twice) in the replayed draws."""
     if not os.path.exists(path):
         return None

@@ -5,7 +5,6 @@ from collections import Counter
 
 import numpy as np
 import pandas as pd
-import torch
 
 DRAW_COLUMNS = ["n1", "n2", "n3", "n4", "n5", "n6"]
 
@@ -106,15 +105,6 @@ def load_draws(csv_path: str) -> pd.DataFrame:
 def draws_to_numpy(df: pd.DataFrame) -> np.ndarray:
     """Extract the six main numbers as an [N, 6] int array."""
     return df[DRAW_COLUMNS].values.astype(int)
-
-
-def tokenize(draws_np: np.ndarray) -> torch.Tensor:
-    """Convert a [N, 6] int array of lotto numbers into an integer token tensor.
-
-    Each draw is sorted ascending: a draw is a set, so a canonical order lets the
-    autoregressive model learn one sequence per draw.
-    """
-    return torch.tensor(np.sort(np.asarray(draws_np), axis=1), dtype=torch.long)
 
 
 def temporal_split(df: pd.DataFrame, split_date: str = "2022-12-31"):

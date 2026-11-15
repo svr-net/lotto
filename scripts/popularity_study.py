@@ -106,33 +106,6 @@ def pattern_line(line) -> bool:
     return len(set(d.tolist())) == 1 or (d == 1).sum() >= 2
 
 
-def choose_lines(score, pop: Popularity, prev=(), n_lines: int = 5, n_cand: int = 20000,
-                 max_overlap: int = 1, seed: int = 0) -> list:
-    """Sample candidate lines in proportion to the investigations' combined support (as the combined
-    lines are), then keep the least popular ones, with at most max_overlap numbers in common (relaxed
-    if that leaves too few lines). Sharing at most one number keeps nearly all of the chance that some
-    line wins a prize; sharing none would force birthday numbers in and cut the jackpot advantage."""
-    rng = np.random.default_rng(seed)
-    p = np.asarray(score, dtype=float)
-    p = p + p.mean() * 0.2
-    p /= p.sum()
-    g = -np.log(rng.random((n_cand, len(p)))) / p  # Gumbel-style weighted sampling without replacement
-    cand = np.sort(np.argsort(g, axis=1)[:, :6] + 1, axis=1)
-    cand = np.unique(cand, axis=0)
-    cand = cand[[not pattern_line(c) for c in cand]]
-    pops = np.array([pop.popularity(c, prev) for c in cand])
-    chosen = []
-    for i in np.argsort(pops):
-        c = set(cand[i].tolist())
-        if all(len(c & set(o)) <= max_overlap for o in chosen):
-            chosen.append(sorted(int(x) for x in cand[i]))
-        if len(chosen) == n_lines:
-            break
-    if len(chosen) < n_lines and max_overlap < 6:
-        return choose_lines(score, pop, prev, n_lines, n_cand, max_overlap + 1, seed)
-    return chosen
-
-
 def fit(df: pd.DataFrame, recent_rounds: int = 208) -> dict:
     X, Z, y, grp = design(df)
     b0, _, ll0 = poisson_fit(Z, y)

@@ -13,16 +13,11 @@
 // Forward: the frozen wheel simulated 104 rounds on from the latest real draw, with its real record since
 // it was frozen ranked within forecasts reset to that day.
 //
-// The kernel is fused: one pass per simulated round draws six balls and scores every line with AND +
-// popcount on 64-bit masks. Backends are injected (--backend cpu | threads) behind one interface.
+// The kernel (kernel.hpp) is shared with the browser build; backends are injected (--backend cpu | threads).
 //
-//   nested_mc --first-draw 2026-11-07 [--csv data/uk_lotto_59.csv] [--wheel results/exports/frozen_wheel.csv]
+//   nested_mc --first-draw 2026-11-07 [--csv data/uk_lotto_full.csv] [--wheel results/exports/frozen_wheel.csv]
 //             [--out results/nested_mc.json]
-#include <algorithm>
-#include <array>
-#include <bit>
 #include <cmath>
-#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
@@ -30,83 +25,16 @@
 #include <sstream>
 #include <string>
 #include <thread>
-#include <vector>
 
-constexpr int POOL = 59, PICK = 6, SET = 15;
-constexpr int PAY[7] = {0, 0, 2, 30, 140, 1750, 0};  // fixed prizes per line by matches; 2 = a free Lucky Dip
+#include "kernel.hpp"
+
+constexpr int SET = 15;
 // 15 lines on 15 points in which any 4 points share 3 with some line ("3 if 4"); as in scripts/consensus_wheels.py
 constexpr int W34[15][6] = {{0, 1, 6, 10, 12, 14}, {0, 2, 4, 9, 10, 11}, {3, 8, 9, 10, 13, 14}, {1, 2, 3, 4, 6, 8},
     {2, 5, 8, 11, 12, 14}, {0, 4, 5, 6, 8, 13}, {5, 6, 7, 8, 9, 12}, {1, 2, 5, 7, 10, 13}, {3, 5, 6, 7, 10, 11},
     {3, 4, 7, 10, 12, 14}, {1, 4, 9, 11, 12, 13}, {0, 1, 7, 8, 11, 14}, {0, 1, 3, 5, 9, 14}, {0, 2, 3, 7, 12, 13},
     {2, 6, 9, 11, 13, 14}};
 
-using Mask = uint64_t;  // bit n-1 set for number n
-struct Wheel { std::vector<Mask> lines; Mask set = 0; };
-struct Job {  // paths futures of `horizon` rounds from `weights`, totals recorded at each checkpoint
-    std::array<float, POOL> weights; bool weighted; int paths, horizon; const Wheel* wheel;
-    std::vector<int> checkpoints; uint64_t seed;
-};
-struct Result {  // path-major: [path * checkpoints + c]
-    std::vector<int> prize, money, hits4, k1;
-};
-
-struct Rng {  // splitmix64
-    uint64_t s;
-    uint64_t next() { uint64_t z = (s += 0x9E3779B97F4A7C15ull); z = (z ^ (z >> 30)) * 0xBF58476D1CE4E5B9ull;
-                      z = (z ^ (z >> 27)) * 0x94D049BB133111EBull; return z ^ (z >> 31); }
-    uint32_t below(uint32_t n) { return uint32_t(((next() >> 32) * uint64_t(n)) >> 32); }
-    float unit() { return float(next() >> 40) * (1.0f / 16777216.0f); }
-};
-
-static void run_paths(const Job& j, Result& r, int from, int to) {
-    const size_t nck = j.checkpoints.size();
-    std::array<float, POOL> w;
-    for (int p = from; p < to; p++) {
-        Rng rng{j.seed ^ (uint64_t(p) * 0xD1B54A32D192ED03ull)};
-        if (j.weighted) w = j.weights;
-        int prize = 0, money = 0, hits4 = 0; size_t ck = 0;
-        for (int h = 1; h <= j.horizon; h++) {
-            Mask draw = 0;
-            if (!j.weighted) {
-                for (int n = 0; n < PICK;) { Mask b = Mask(1) << rng.below(POOL); if (!(draw & b)) { draw |= b; n++; } }
-            } else {
-                float total = 0;
-                for (float v : w) total += v;
-                for (int n = 0; n < PICK; n++) {
-                    float u = rng.unit() * total; int i = 0;
-                    for (; i < POOL - 1; i++) { if (draw >> i & 1) continue; u -= w[i]; if (u < 0) break; }
-                    while (draw >> i & 1) i--;  // float round-off at the end of the scan
-                    draw |= Mask(1) << i; total -= w[i];
-                }
-                for (int i = 0; i < POOL; i++) if (draw >> i & 1) w[i] += 1;  // the path learns from its own draws
-            }
-            int best = 0;
-            for (Mask l : j.wheel->lines) { int m = std::popcount(draw & l); money += PAY[m]; best = std::max(best, m); }
-            int k = std::popcount(draw & j.wheel->set);
-            prize += best >= 3; hits4 += k >= 4;
-            if (h == 1) r.k1[p] = k;
-            while (ck < nck && j.checkpoints[ck] == h) {
-                r.prize[p * nck + ck] = prize; r.money[p * nck + ck] = money; r.hits4[p * nck + ck] = hits4; ck++;
-            }
-        }
-    }
-}
-
-struct Backend {
-    virtual ~Backend() = default;
-    virtual const char* name() const = 0;
-    virtual void run(const Job& j, Result& r) = 0;
-    Result simulate(const Job& j) {
-        size_t n = size_t(j.paths) * j.checkpoints.size();
-        Result r{std::vector<int>(n), std::vector<int>(n), std::vector<int>(n), std::vector<int>(j.paths)};
-        run(j, r);
-        return r;
-    }
-};
-struct CpuBackend : Backend {
-    const char* name() const override { return "cpu"; }
-    void run(const Job& j, Result& r) override { run_paths(j, r, 0, j.paths); }
-};
 struct ThreadsBackend : Backend {
     unsigned n = std::max(1u, std::thread::hardware_concurrency());
     const char* name() const override { return "threads"; }
@@ -154,18 +82,13 @@ static Wheel wheel_on(std::array<int, SET> nums) {  // the 3-if-4 design on thes
 }
 
 // ---------------------------------------------------------------- statistics
-static double quantile(std::vector<double> v, double q) {
-    std::sort(v.begin(), v.end());
-    double pos = q * (v.size() - 1); size_t i = size_t(pos);
-    return i + 1 < v.size() ? v[i] + (pos - i) * (v[i + 1] - v[i]) : v.back();
-}
 static double mean(const std::vector<double>& v) { double s = 0; for (double x : v) s += x; return v.empty() ? 0 : s / v.size(); }
 static double choose(int n, int k) { double r = 1; for (int i = 0; i < k; i++) r = r * (n - i) / (i + 1); return r; }
 
 struct ModelStats { std::vector<double> logk, pred, pit, p4, pprize; int inside = 0; };
 
 int main(int argc, char** argv) {
-    std::string csv = "data/uk_lotto_59.csv", wheel_csv = "results/exports/frozen_wheel.csv", out = "results/nested_mc.json";
+    std::string csv = "data/uk_lotto_full.csv", wheel_csv = "results/exports/frozen_wheel.csv", out = "results/nested_mc.json";
     std::string start = "2017-01-01", first_draw, backend_name = "threads";
     int horizon = 26, paths = 2000, forward_paths = 20000; double price = 2.0;
     for (int i = 1; i + 1 < argc; i += 2) {
@@ -179,9 +102,10 @@ int main(int argc, char** argv) {
     auto backend = make_backend(backend_name);
 
     auto rows = read_csv(csv);
-    int c_date = column(rows[0], "date"), c_n1 = column(rows[0], "n1");
+    int c_date = column(rows[0], "date"), c_n1 = column(rows[0], "n1"), c_draw = column(rows[0], "draw_no");
     std::vector<Round> rounds;
-    for (size_t i = 1; i < rows.size(); i++) if (rows[i].size() > size_t(c_n1 + 5)) rounds.push_back({rows[i][c_date], numbers_mask(rows[i], c_n1)});
+    for (size_t i = 1; i < rows.size(); i++)  // the 59-ball era starts at draw 2066
+        if (rows[i].size() > size_t(c_n1 + 5) && std::stoi(rows[i][c_draw]) >= 2066) rounds.push_back({rows[i][c_date], numbers_mask(rows[i], c_n1)});
     const int T = int(rounds.size());
     std::vector<std::array<float, POOL>> counts(T + 1);  // counts[t]: draws of each number before round t, plus 1
     counts[0].fill(1.0f);
