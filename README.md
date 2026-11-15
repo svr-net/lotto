@@ -27,6 +27,11 @@ results are published as a report at https://svr-net.github.io/lotto/.
   as a model of the machine, blended with fair walk-forward) and two walk-forward choosers, best-so-far and a
   Bayesian mixture, the log-score optimum. `web.cpp` is a thin WebAssembly wrapper the report calls on the
   viewer's device, on the CPU or on WebGPU; both give the same histograms.
+  `assimilate.cpp` learns the machine from every real draw, all in C++: a Rao-Blackwellised particle filter
+  (`assimilate.hpp`) whose bias scale and drift are learned, a family of small neural networks (`nn.hpp`)
+  weighted by their real predictions, and a mixture with fair at equal prior weight; each night's forecasts are
+  simulated to choose the wheel's 15, and the same pipeline runs on machines with a planted bias to show what it
+  can find. Nothing is tuned by hand.
 - `lotto_nn/`: the small transformer and n-gram models the studies use.
 - `tests/`: `python -m pytest`.
 
@@ -40,6 +45,7 @@ python -I scripts/fetch_merseyworld.py && python scripts/score_live.py
 python scripts/walk_forward_backtest.py --out results               # then each study script
 python scripts/strategy_weights.py                                  # ~2 min on 4 cores
 ./sim/bin/nested_mc --first-draw 2026-11-07
+./sim/bin/assimilate                                               # results/assimilation.json, ~2 min
 python scripts/build_report.py
 ```
 

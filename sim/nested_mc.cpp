@@ -26,6 +26,7 @@
 #include <memory>
 #include <sstream>
 
+#include "data.hpp"
 #include "models.hpp"
 #include "threads.hpp"
 
@@ -35,28 +36,6 @@ static std::unique_ptr<Backend> make_backend(const std::string& name) {
     std::fprintf(stderr, "unknown backend %s\n", name.c_str()); std::exit(2);
 }
 
-// ---------------------------------------------------------------- data
-struct Round { std::string date; Mask draw; };
-static std::vector<std::vector<std::string>> read_csv(const std::string& path) {
-    std::ifstream in(path);
-    if (!in) { std::fprintf(stderr, "cannot read %s\n", path.c_str()); std::exit(2); }
-    std::vector<std::vector<std::string>> rows; std::string line, cell;
-    while (std::getline(in, line)) {
-        std::stringstream ss(line); rows.emplace_back();
-        while (std::getline(ss, cell, ',')) rows.back().push_back(cell);
-    }
-    return rows;
-}
-static int column(const std::vector<std::string>& head, const std::string& name) {
-    auto it = std::find(head.begin(), head.end(), name);
-    if (it == head.end()) { std::fprintf(stderr, "no column %s\n", name.c_str()); std::exit(2); }
-    return int(it - head.begin());
-}
-static Mask numbers_mask(const std::vector<std::string>& row, int first) {
-    Mask m = 0;
-    for (int i = 0; i < PICK; i++) m |= Mask(1) << (std::stoi(row[first + i]) - 1);
-    return m;
-}
 struct ModelStats { std::vector<double> logk, pred, pit, p4, pprize; int inside = 0; };
 
 // ---------------------------------------------------------------- every strategy, reset to the real draws
@@ -248,11 +227,7 @@ int main(int argc, char** argv) {
     }
     auto backend = make_backend(backend_name);
 
-    auto rows = read_csv(csv);
-    int c_date = column(rows[0], "date"), c_n1 = column(rows[0], "n1"), c_draw = column(rows[0], "draw_no");
-    std::vector<Round> rounds;
-    for (size_t i = 1; i < rows.size(); i++)  // the 59-ball era starts at draw 2066
-        if (rows[i].size() > size_t(c_n1 + 5) && std::stoi(rows[i][c_draw]) >= 2066) rounds.push_back({rows[i][c_date], numbers_mask(rows[i], c_n1)});
+    const std::vector<Round> rounds = load_rounds(csv);
     const int T = int(rounds.size());
     std::vector<std::array<float, POOL>> counts(T + 1);  // counts[t]: draws of each number before round t, plus 1
     counts[0].fill(1.0f);
