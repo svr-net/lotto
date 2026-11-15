@@ -1,7 +1,7 @@
 // The fused Monte Carlo kernel shared by the native driver (nested_mc.cpp) and the browser build (web.cpp).
 //
 // One pass per simulated round draws six of 59 balls (uniformly, or in proportion to per-path weights that
-// learn from the path's own draws) and scores every line with AND + popcount on 64-bit masks. Backends
+// can learn from the path's own draws) and scores every line with AND + popcount on 64-bit masks. Backends
 // implement Backend::run; CpuBackend is the single-threaded reference.
 #pragma once
 #include <algorithm>
@@ -17,6 +17,7 @@ struct Wheel { std::vector<Mask> lines; Mask set = 0; };
 struct Job {  // paths futures of `horizon` rounds from `weights`, totals recorded at each checkpoint
     std::array<float, POOL> weights; bool weighted; int paths, horizon; const Wheel* wheel;
     std::vector<int> checkpoints; uint64_t seed;
+    bool learn = true;  // weighted paths add each of their own draws to the weights (false: weights stay fixed)
 };
 struct Result {  // path-major: [path * checkpoints + c]
     std::vector<int> prize, money, hits4, k1;
@@ -50,7 +51,7 @@ inline void run_paths(const Job& j, Result& r, int from, int to) {
                     while (draw >> i & 1) i--;  // float round-off at the end of the scan
                     draw |= Mask(1) << i; total -= w[i];
                 }
-                for (int i = 0; i < POOL; i++) if (draw >> i & 1) w[i] += 1;  // the path learns from its own draws
+                if (j.learn) for (int i = 0; i < POOL; i++) if (draw >> i & 1) w[i] += 1;  // the path learns from its own draws
             }
             int best = 0;
             for (Mask l : j.wheel->lines) { int m = std::popcount(draw & l); money += PAY[m]; best = std::max(best, m); }
