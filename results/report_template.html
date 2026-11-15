@@ -207,6 +207,17 @@ nav.tabs a:focus-visible { outline: 2px solid var(--s1); outline-offset: 2px; }
   <p class="note" id="mc-cost-note"></p>
 </section>
 
+<section data-tab="backtest" id="nmc-section" hidden>
+  <div class="eyebrow">Nested Monte Carlo</div>
+  <h2>Simulations reset to the real draws</h2>
+  <p id="nmc-lede"></p>
+  <div class="table-wrap"><table id="nmc-models"></table></div>
+  <h3 class="h3">Your frozen wheel, forecast from the latest draw</h3>
+  <p id="nmc-fwd-lede"></p>
+  <div class="table-wrap"><table id="nmc-fwd"></table></div>
+  <p class="note" id="nmc-note"></p>
+</section>
+
 <section data-tab="backtest" id="seq-section" hidden>
   <div class="eyebrow">Sequence over time</div>
   <h2>The draws as one continuous sequence</h2>
@@ -459,6 +470,29 @@ const P3_LINE = 0.0108641, P2_LINE = 0.1083479;
     WD.slice().reverse().map((d) => { const w = d.rounds.map((_, j) => won(d, j)).reduce((a, b) => a + b, 0);
       return `<tr><td>${d.draw_no} · ${dfmt(d.date, false)}</td><td>${d.rounds.map((_, j) => bcell(d, j)).join(" / ")}</td><td class="${w ? "good" : ""}">${w}</td></tr>`; }).join("") + "</tbody>";
   $("#replay-note").textContent = `Figures in brackets are what random lines average. z compares the mean with the 36/59 chance rate; anything inside about ±2.5 is chance. Bold numbers are 3-match hits, worth the lowest prize.`;
+})();
+
+// ---------- nested Monte Carlo: inner simulations reset to the real draws at every outer step
+(function () {
+  const N = D.nested_mc;
+  if (!N) return;
+  $("#nmc-section").hidden = false;
+  const pc = (x, d = 1) => (x * 100).toFixed(d) + "%", sg = (z) => (z >= 0 ? "+" : "") + z.toFixed(2);
+  const gbp = (x) => (x < 0 ? "−" : "") + "£" + Math.abs(Math.round(x)).toLocaleString("en-GB");
+  const F = N.models.fair, Hm = N.models["hindsight as reality"], d = N.log_score_diff, A = N.actual;
+  const yr = new Date(N.start + "T12:00:00Z").getUTCFullYear();
+  const better = d.mean > 0 ? "hindsight as reality" : "fair";
+  $("#nmc-lede").textContent = `A nested Monte Carlo: an outer loop walks through every real draw night since ${yr} (${N.resets.toLocaleString("en-GB")} nights) and, at each one, resets the simulation to reality, the real history up to that night and nothing simulated before it. From there an inner loop simulates ${N.paths.toLocaleString("en-GB")} possible futures of ${N.horizon} rounds under each model: "fair" (every number equally likely) and "hindsight as reality" (numbers favoured by how often they have been drawn, each simulated path learning from its own draws). The real rounds that followed are then laid over the forecasts. The target is a 15-line "3 if 4" wheel on the 15 numbers the fitted machine favoured at each reset, chosen only from earlier draws. Over the next round, the ${better} model gave the real outcome the higher probability (log score per night ${sg(d.mean)} for hindsight against fair, z ${sg(d.z)}); over ${N.horizon}-round windows (${N.windows} that don't overlap) the fair model forecast ${F.pred_prize_mean.toFixed(2)} prize rounds and hindsight ${Hm.pred_prize_mean.toFixed(2)}, against ${A.prize_rounds_mean.toFixed(2)} in reality.`;
+  const row = (name, m) => `<tr><td>${name}</td><td>${m.log_score_k1.toFixed(4)}</td><td>${m.pred_prize_mean.toFixed(2)} <span class="muted">(${A.prize_rounds_mean.toFixed(2)})</span></td><td>${pc(m.coverage90, 0)}</td><td class="${m.pit_p < 0.05 ? "flag" : ""}">p ${m.pit_p.toFixed(2)}</td><td>${pc(m.pred_any4, 0)} <span class="muted">(${pc(A.any4_rate, 0)})</span></td><td>${m.brier_any4.toFixed(3)}</td></tr>`;
+  $("#nmc-models").innerHTML = `<thead><tr><th>Model</th><th>Next round, log score</th><th>Prize rounds per ${N.horizon}</th><th>90% range held</th><th>Calibration</th><th>Any 4+ in ${N.horizon}</th><th>Brier</th></tr></thead><tbody>${row("Fair", F)}${row("Hindsight as reality", Hm)}</tbody>`;
+  const W = N.forward, R = W.real_since_frozen, M = W.models;
+  const dl = (s) => new Date(s + "T12:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+  $("#nmc-fwd-lede").textContent = `The same nested simulation, reset to the latest real draw (${dl(W.from)}) and run 104 rounds ahead for your frozen wheel (${N.frozen_numbers.join(" ")}), at ${gbp(N.cost_per_round)} a round. ` +
+    (R.rounds ? `Its real record since ${dl(R.first_draw)} is laid on the forecast reset to that day: ${R.rounds} rounds, ${R.prize_rounds} prize round${R.prize_rounds === 1 ? "" : "s"}, net ${gbp(R.net)}, at the ${Math.round(M.fair.real_rank.net_pct)}th percentile of the fair model's forecast and the ${Math.round(M["hindsight as reality"].real_rank.net_pct)}th of the hindsight model's (${pc(M.fair.real_rank.p_no_prize_so_far, 0)} of fair futures had no prize by now either).` : "");
+  const q = (v, f) => `${f(v[1])} <span class="muted">(${f(v[0])} to ${f(v[2])})</span>`;
+  $("#nmc-fwd").innerHTML = `<thead><tr><th>Model</th><th>Rounds ahead</th><th>Prize rounds</th><th>Net</th><th>No prize at all</th></tr></thead><tbody>` +
+    Object.entries(M).map(([name, m]) => Object.entries(m.checkpoints).map(([n, c], i) => `<tr><td>${i ? "" : name === "fair" ? "Fair" : "Hindsight as reality"}</td><td>${n}</td><td>${q(c.prize_rounds, (v) => v.toFixed(0))}</td><td>${q(c.net, gbp)}</td><td>${pc(c.p_no_prize, 0)}</td></tr>`).join("")).join("") + "</tbody>";
+  $("#nmc-note").textContent = `Log score: the average log-probability each model gave the real number of drawn balls among the 15 in the round after each reset (higher is better; the fair model's is exact). Prize rounds: rounds in which some line matched 3+, forecast mean with the real mean in brackets. "90% range held": how often the real count fell inside the model's 90% forecast range (90% for an honest forecast). Calibration: whether the real counts fell evenly across each forecast's distribution (a chi-square on where they fell; a small p means the forecasts were systematically off). Any 4+: the forecast chance of at least one round with 4+ of the six among the 15, with the real rate in brackets; Brier scores those forecasts (lower is better). Window statistics use resets ${N.horizon} rounds apart so the real windows don't overlap. Forward table: median with the 90% range in brackets; net counts the fixed prizes only (see the cost section above for the jackpot's expected value).`;
 })();
 
 // ---------- the draws as one continuous sequence: memory, sequence-aware choice of 15, timing, waits

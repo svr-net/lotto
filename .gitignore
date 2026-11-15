@@ -223,3 +223,4 @@ __marimo__/
 /predictions.txt
 /backtest.txt
 results/.prime_radix_*.csv
+sim/bin/
