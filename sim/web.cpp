@@ -1,6 +1,6 @@
 // The browser build: a thin set of exports over kernel.hpp, compiled to WebAssembly (clang, wasm32-wasi). Nothing
-// is calculated here. The page writes the wheel and the weights into the staging buffers, picks a backend, and
-// reads back 7 floats per checkpoint (26, 52, 104 rounds; see summarise in kernel.hpp).
+// is calculated here. The page writes the wheel and a forecast's ball probabilities into the staging buffers, picks
+// a backend, and reads back 7 floats per checkpoint (26, 52, 104 rounds; see summarise in kernel.hpp).
 //   cpu     run_cpu(): the fused kernel in WebAssembly.
 //   webgpu  gpu_prepare() lays out the kernel's WGSL and its four bindings (gpu_plan) as a descriptor the page
 //           turns into one compute pass without knowing what is in it; the page copies binding 3, the
@@ -25,6 +25,7 @@ static void stage(int nlines, int weighted, int paths, uint32_t seed) {
     wheel = {};
     for (int i = 0; i < nlines && i < MAX_LINES; i++) { Mask m = Mask(lines_in[i * 2]) | Mask(lines_in[i * 2 + 1]) << 32; wheel.lines.push_back(m); wheel.set |= m; }
     job = {{}, weighted != 0, paths, HORIZON, &wheel, CHECKPOINTS, seed};
+    job.learn = false;  // the weights are a forecast's ball probabilities: they stay as given
     for (int i = 0; i < POOL; i++) job.weights[i] = weights_in[i];
     result = Backend::empty(job);
 }

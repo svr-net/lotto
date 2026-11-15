@@ -1,5 +1,5 @@
-// Runs the report's simulator in headless Chromium: WebAssembly (run_cpu) against WebGPU (SwiftShader), which must
-// fill the same histograms word for word, and the page's own button. Usage: node web_sim_check.js <site url>
+// Runs the report's simulator in headless Chromium on the wheel: WebAssembly (run_cpu) against WebGPU (SwiftShader),
+// which must fill the same histograms word for word, and the page's own button. Usage: node web_sim_check.js <site url>
 const { chromium } = require('playwright');
 (async () => {
   const b = await chromium.launch({ args: ['--enable-unsafe-webgpu', '--use-webgpu-adapter=swiftshader'] });
@@ -7,9 +7,7 @@ const { chromium } = require('playwright');
   await p.goto(process.argv[2] + '/index.html?sim=webgpu#next');
   const runs = await p.evaluate(async () => {
     const { k, device } = await window.lottoSim.load();
-    const F = D.frozen, n = F.lines.length, out = [];
-    new Uint32Array(k.memory.buffer, k.lines_ptr(), n * 2).set(F.lines.flatMap((l) => [0, 32].map((o) => l.reduce((m, x) => x > o && x <= o + 32 ? (m | (1 << (x - o - 1))) >>> 0 : m, 0))));
-    new Float32Array(k.memory.buffer, k.weights_ptr(), 59).set(D.fairness.counts.map((c) => c + 1));
+    const n = D.assimilation.real.next.lines.length, out = [];  // load() staged the wheel's lines and the model's weights
     for (const weighted of [0, 1]) {
       const seed = 12345 + weighted, paths = 2000;
       const pc = k.run_cpu(n, weighted, paths, seed, 30), cpu = new Float32Array(k.memory.buffer, pc, 21).slice();

@@ -2,8 +2,8 @@
 <html lang="en">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="UK Lotto walk-forward backtest, six statistical investigations, live results and next-draw lines, updated after every draw.">
-<title>UK Lotto Strategy Backtest</title>
+<meta name="description" content="The one 15-number UK Lotto wheel: radix digits and a neural network over a particle filter, learned from every real draw and scored walk-forward against chance.">
+<title>UK Lotto Wheel</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,750&family=Source+Sans+3:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
@@ -99,277 +99,40 @@ nav.tabs a:focus-visible { outline: 2px solid var(--s1); outline-offset: 2px; }
 <div class="wrap">
 <header>
   <div class="eyebrow">UK National Lottery · Lotto 6/59</div>
-  <h1>Strategy backtest &amp; wheel for <span id="nd"></span></h1>
+  <h1>The 15-number wheel for <span id="nd"></span></h1>
 </header>
 
 <nav class="tabs" id="tabs" aria-label="Sections">
   <a href="#next">Next draw</a>
-  <a href="#live">Live results</a>
-  <a href="#replay">3-month replay</a>
-  <a href="#players">Other players</a>
   <a href="#backtest">Backtest</a>
-  <a href="#grammar">Grammar</a>
-  <a href="#radix">Prime radix</a>
-  <a href="#rhythms">Rhythms</a>
-  <a href="#ml">Machine learning</a>
-  <a href="#bayes">Bayesian</a>
-  <a href="#rl">Reinforcement learning</a>
   <a href="#about">About</a>
 </nav>
 
-<div class="picks5" id="frozen5" data-tab="next" hidden>
-    <div class="picks5-head"><strong>Your frozen wheel</strong><span class="note" id="fz-sub"></span></div>
-    <div class="picks5-lines" id="fz-lines"></div>
-    <p class="note" id="fz-links"></p>
-    <p class="note" id="fz-record"></p>
-    <div id="sim" style="display:grid;gap:8px">
-      <div class="picks5-head"><button id="sim-run" type="button" style="font:600 0.9rem var(--body);padding:8px 14px;border-radius:999px;border:1px solid var(--s2);background:var(--surface);color:var(--fg);cursor:pointer">Simulate the next year on this device</button><span class="note" id="sim-status"></span></div>
-      <div class="table-wrap" id="sim-wrap" hidden><table id="sim-table"></table></div>
-    </div>
+<div class="picks5" id="wheel" data-tab="next">
+  <div class="picks5-head"><strong>Wheel for <span id="nd5"></span></strong><span class="note" id="wheel-sub"></span></div>
+  <div class="picks5-lines" id="wheel-nums"></div>
+  <p class="note" id="wheel-lede"></p>
+  <details open><summary id="wheel-sum"></summary><div class="picks5-lines" id="wheel-lines" style="margin-top:8px"></div></details>
+  <p class="note" id="wheel-links"></p>
+  <div id="sim" style="display:grid;gap:8px">
+    <div class="picks5-head"><button id="sim-run" type="button" style="font:600 0.9rem var(--body);padding:8px 14px;border-radius:999px;border:1px solid var(--s2);background:var(--surface);color:var(--fg);cursor:pointer">Simulate the next year on this device</button><span class="note" id="sim-status"></span></div>
+    <div class="table-wrap" id="sim-wrap" hidden><table id="sim-table"></table></div>
   </div>
-<div class="picks5" id="picks5" data-tab="next" hidden>
-    <div class="picks5-head"><strong>Wheel for <span id="nd5"></span></strong><span class="note" id="wheel-sub"></span></div>
-    <div class="picks5-lines" id="wheel-cands"></div>
-    <details open><summary id="wheel-sum"></summary><div class="picks5-lines" id="wheel-lines" style="margin-top:8px"></div></details>
-    <p class="note" id="wheel-note"></p>
-  </div>
-<div class="picks5" id="cons5" data-tab="next" hidden>
-    <div class="picks5-head"><strong>Consensus 15: hindsight as reality</strong><span class="note" id="cons-sub"></span></div>
-    <div class="picks5-lines" id="cons-nums"></div>
-    <p class="note" id="cons-lede"></p>
-    <div class="picks5-head"><strong>"3 if 4" wheel</strong><span class="note" id="w34-sub"></span></div>
-    <details open><summary id="w34-sum"></summary><div class="picks5-lines" id="w34-lines" style="margin-top:8px"></div></details>
-    <div class="picks5-head"><strong>"4 if 4" wheel</strong><span class="note" id="w44-sub"></span></div>
-    <details><summary id="w44-sum"></summary><div class="picks5-lines" id="w44-lines" style="margin-top:8px"></div></details>
-    <div class="table-wrap"><table id="cons-odds"></table></div>
-    <details><summary>The 15 numbers each model names</summary><div class="table-wrap" style="margin-top:8px"><table id="cons-models"></table></div></details>
-    <p class="note" id="cons-note"></p>
-  </div>
-<div data-tab="backtest" style="display:grid;gap:16px">
-  <p id="lede"></p>
-  <div class="facts" id="facts"></div>
-  <div class="verdict" id="verdict"></div>
 </div>
 
-<section id="replay-section" data-tab="replay" hidden>
-  <div class="eyebrow">Three-month replay</div>
-  <h2>How the wheel would have done since <span id="replay-since"></span></h2>
-  <p id="replay-lede"></p>
-  <div class="table-wrap"><table id="replay-table"></table></div>
-  <div class="table-wrap"><table id="replay-draws"></table></div>
-  <p class="note" id="replay-note"></p>
-</section>
-
-<section id="pop-section" data-tab="players" hidden>
-  <div class="eyebrow">Other players</div>
-  <h2>Which lines do other players pick?</h2>
-  <p id="pop-lede"></p>
-  <div class="table-wrap"><table id="pop-table"></table></div>
-  <div class="table-wrap"><table id="pop-birthday"></table></div>
-  <div class="table-wrap"><table id="pop-examples"></table></div>
-  <p class="note" id="pop-note"></p>
-</section>
-
-<section id="live-section" data-tab="live" hidden>
-  <div class="eyebrow">Live results</div>
-  <h2>How the wheel did in real draws</h2>
-  <p id="live-lede"></p>
-  <div class="table-wrap"><table id="live-table"></table></div>
-  <div id="live-draws" style="display:grid;gap:24px"></div>
-  <p class="note" id="live-note"></p>
-</section>
-
-<section data-tab="backtest">
-  <div class="eyebrow">Walk-forward backtest</div>
-  <h2>Matches per ticket against real draws</h2>
-  <p id="bt-lede"></p>
-  <div class="legend"><span style="--c:var(--s1)">Single strategy</span><span style="--c:var(--s2)">Ensemble of all strategies</span><span style="--c:var(--fg2)">Bar ends: lowest and highest result across seeds</span></div>
-  <div class="chart" id="bt-chart"></div>
-  <div class="table-wrap"><table id="bt-table"></table></div>
-  <p class="note" id="stack-note"></p>
-</section>
-
-<section data-tab="backtest" id="real-section" hidden>
-  <div class="eyebrow">Wheel backtest</div>
-  <h2>The wheel on real draws</h2>
-  <p id="real-lede"></p>
-  <div class="table-wrap"><table id="real-table"></table></div>
-  <p class="note" id="real-note"></p>
-</section>
-
-<section data-tab="backtest" id="mc-cost-section" hidden>
-  <div class="eyebrow">Monte Carlo</div>
-  <h2>What playing the wheel costs and returns</h2>
-  <p id="mc-cost-lede"></p>
-  <div class="table-wrap"><table id="mc-cost-table"></table></div>
-  <p class="note" id="mc-cost-note"></p>
-</section>
-
-<section data-tab="backtest" id="nmc-section" hidden>
-  <div class="eyebrow">Nested Monte Carlo</div>
-  <h2>Simulations reset to the real draws</h2>
-  <p id="nmc-lede"></p>
-  <div class="table-wrap"><table id="nmc-models"></table></div>
-  <h3 class="h3">Every strategy, reset to the real draws</h3>
-  <p id="nmc-strat-lede"></p>
-  <div class="table-wrap"><table id="nmc-strat"></table></div>
-  <p class="note" id="nmc-strat-note"></p>
-  <h3 class="h3">Your frozen wheel, forecast from the latest draw</h3>
-  <p id="nmc-fwd-lede"></p>
-  <div class="table-wrap"><table id="nmc-fwd"></table></div>
-  <p class="note" id="nmc-note"></p>
-</section>
-
-<section data-tab="backtest" id="as-section" hidden>
-  <div class="eyebrow">Particle filter and neural network</div>
-  <h2>Learning the machine from every real draw</h2>
+<section data-tab="backtest" id="as-section">
+  <div class="eyebrow">Radix digits, neural network, particle filter</div>
+  <h2>How the 15 are chosen, and how they have done</h2>
   <p id="as-lede"></p>
   <div class="table-wrap"><table id="as-real"></table></div>
+  <p class="note" id="as-real-note"></p>
+  <h3 class="h3">What the draws taught it</h3>
+  <p id="as-learn"></p>
+  <div class="table-wrap"><table id="as-radix"></table></div>
   <h3 class="h3">What it finds when there is something to find</h3>
   <p id="as-val-lede"></p>
   <div class="table-wrap"><table id="as-val"></table></div>
   <p class="note" id="as-note"></p>
-</section>
-
-<section data-tab="backtest" id="seq-section" hidden>
-  <div class="eyebrow">Sequence over time</div>
-  <h2>The draws as one continuous sequence</h2>
-  <p id="seq-lede"></p>
-  <h3 class="h3">Do the draws remember?</h3>
-  <div class="table-wrap"><table id="seq-memory"></table></div>
-  <h3 class="h3">Choosing 15 numbers from the sequence, and when to play</h3>
-  <div class="table-wrap"><table id="seq-rules"></table></div>
-  <div class="table-wrap"><table id="seq-time"></table></div>
-  <p class="note" id="seq-note"></p>
-</section>
-
-<section data-tab="backtest" id="mc-power-section" hidden>
-  <div class="eyebrow">Monte Carlo</div>
-  <h2>How small a bias the tests would catch</h2>
-  <p id="mc-power-lede"></p>
-  <div class="table-wrap"><table id="mc-power-table"></table></div>
-  <p class="note" id="mc-power-note"></p>
-</section>
-
-<section data-tab="backtest">
-  <div class="eyebrow">Correlation</div>
-  <h2>How the strategies relate</h2>
-  <p>The left map compares how many numbers each strategy matched, round by round. If one method had real skill, the rounds it did well would differ from the rounds a random ticket did well. The right map compares which numbers each strategy picked. High values mean two strategies kept choosing the same numbers.</p>
-  <div class="two">
-    <div class="chart" id="perf-corr"></div>
-    <div class="chart" id="pick-corr"></div>
-  </div>
-  <div class="legend"><span style="--c:var(--neg)">Negative correlation</span><span style="--c:var(--mid)">None</span><span style="--c:var(--pos)">Positive correlation</span></div>
-  <p class="note" id="corr-note"></p>
-</section>
-
-<section data-tab="backtest">
-  <div class="eyebrow">Draw order</div>
-  <h2>Does the order the balls come out tell us anything?</h2>
-  <p id="do-lede"></p>
-  <div class="table-wrap"><table id="do-table"></table></div>
-  <p class="note" id="do-note"></p>
-</section>
-
-<section id="grammar-section" data-tab="grammar">
-  <div class="eyebrow">Grammar search</div>
-  <h2>Is the Lotto speaking a grammar?</h2>
-  <p id="gr-lede"></p>
-  <div class="verdict" id="gr-verdict"></div>
-  <h3 class="h3">1. Can any model predict unseen draws better than a fair machine?</h3>
-  <p class="note" id="gr-ce-note"></p>
-  <div class="table-wrap"><table id="gr-ce"></table></div>
-  <h3 class="h3">2. Does the draw stream compress better than fair noise?</h3>
-  <div class="table-wrap"><table id="gr-comp"></table></div>
-  <h3 class="h3">3. Do any "rules" occur more often than chance allows?</h3>
-  <p class="note" id="gr-rules-note"></p>
-  <div class="table-wrap"><table id="gr-rules"></table></div>
-  <h3 class="h3">4. Do draws echo earlier draws?</h3>
-  <p class="note" id="gr-lag-note"></p>
-  <div class="table-wrap"><table id="gr-lags"></table></div>
-</section>
-
-<section id="radix-section" data-tab="radix">
-  <div class="eyebrow">Prime radix</div>
-  <h2>Conditional probabilities and copulas on prime-base digits</h2>
-  <p id="rx-lede"></p>
-  <div class="verdict" id="rx-verdict"></div>
-  <h3 class="h3">Do the digits carry structure?</h3>
-  <p class="note" id="rx-tests-note"></p>
-  <div class="table-wrap"><table id="rx-tests"></table></div>
-  <h3 class="h3">Do radix strategies pick better numbers?</h3>
-  <p class="note" id="rx-bt-note"></p>
-  <div class="table-wrap"><table id="rx-bt"></table></div>
-</section>
-
-<section id="radix-strat-section" data-tab="radix" hidden>
-  <div class="eyebrow">Prime radix · every strategy</div>
-  <h2>Every strategy, played on prime-base digits</h2>
-  <p id="rs-lede"></p>
-  <div class="table-wrap"><table id="rs-table"></table></div>
-  <div class="verdict" id="rs-verdict"></div>
-  <p class="note" id="rs-note"></p>
-</section>
-
-<section id="spectral-section" data-tab="rhythms">
-  <div class="eyebrow">Fourier and wavelets</div>
-  <h2>Do the draws have rhythms or bursts?</h2>
-  <p id="sp-lede"></p>
-  <div class="verdict" id="sp-verdict"></div>
-  <h3 class="h3">Rhythm and burst tests</h3>
-  <p class="note" id="sp-tests-note"></p>
-  <div class="table-wrap"><table id="sp-tests"></table></div>
-  <h3 class="h3">Do spectral strategies pick better numbers?</h3>
-  <p class="note" id="sp-bt-note"></p>
-  <div class="table-wrap"><table id="sp-bt"></table></div>
-</section>
-
-<section id="ml-section" data-tab="ml">
-  <div class="eyebrow">Machine learning</div>
-  <h2>Can gradient boosting and friends learn the draws?</h2>
-  <p id="ml-lede"></p>
-  <div class="verdict" id="ml-verdict"></div>
-  <div class="table-wrap"><table id="ml-table"></table></div>
-  <p class="note" id="ml-note"></p>
-  <h3 class="h3">What the gradient-boosting model leaned on</h3>
-  <p class="note" id="ml-imp"></p>
-</section>
-
-<section id="bayes-section" data-tab="bayes">
-  <div class="eyebrow">Bayesian inference</div>
-  <h2>How strongly do the draws say "fair"?</h2>
-  <p id="by-lede"></p>
-  <div class="verdict" id="by-verdict"></div>
-  <div class="table-wrap"><table id="by-table"></table></div>
-  <p class="note" id="by-table-note"></p>
-  <h3 class="h3">How biased could each ball be? (59-ball era, 95% credible intervals)</h3>
-  <div class="chart" id="by-forest"></div>
-  <p class="note" id="by-forest-note"></p>
-  <h3 class="h3">Evidence for a fair machine, draw by draw</h3>
-  <div class="legend"><span style="--c:var(--s1)">59-ball era</span><span style="--c:var(--s2)">49-ball era</span></div>
-  <div class="chart" id="by-path"></div>
-  <h3 class="h3">Bayesian strategies</h3>
-  <div class="table-wrap"><table id="by-bt"></table></div>
-  <p class="note" id="by-bt-note"></p>
-</section>
-
-<section id="rl-section" data-tab="rl">
-  <div class="eyebrow">Reinforcement learning</div>
-  <h2>Can an agent learn to play better than chance?</h2>
-  <p id="rl-lede"></p>
-  <div class="verdict" id="rl-verdict"></div>
-  <div class="table-wrap"><table id="rl-table"></table></div>
-  <h3 class="h3">Matches above or below chance through the test period (59-ball era)</h3>
-  <div class="legend" id="rl-legend"></div>
-  <div class="chart" id="rl-path"></div>
-  <p class="note" id="rl-note"></p>
-</section>
-
-<section data-tab="backtest">
-  <div class="eyebrow">Fairness check</div>
-  <h2>How often each ball came up since October 2015</h2>
-  <p id="fair-lede"></p>
-  <div class="chart" id="freq-chart"></div>
 </section>
 
 <section data-tab="about">
@@ -379,68 +142,33 @@ nav.tabs a:focus-visible { outline: 2px solid var(--s1); outline-offset: 2px; }
 </div>
 
 <script>
-const DATA = /*DATA*/null;
+const D = /*DATA*/null;
 const $ = (s) => document.querySelector(s);
-const fmt = (x, d = 3) => Number(x).toFixed(d);
-const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-const D = DATA, S = D.strategies, isEns = (s) => s.startsWith("ENSEMBLE");
-const DO = new Set(D.draw_order_strategies || []);
-const NB = S.filter((s) => !isEns(s)).length, ND = DO.size;
-const pretty = (s) => s.replace("ENSEMBLE ", "Ensemble: ");
-const ndDate = new Date(D.next_draw_date + "T12:00:00Z");
-$("#nd").textContent = ndDate.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+const A = D.assimilation, R = A.real, M = R.models, N = R.next;
+const pc = (x, d = 2) => (x * 100).toFixed(d) + "%", sg = (x, d = 2) => (x >= 0 ? "+" : "") + x.toFixed(d);
+const day = (s, o) => new Date(s + "T12:00:00Z").toLocaleDateString("en-GB", Object.assign({ timeZone: "UTC" }, o));
+const gbp = (x) => (x < 0 ? "−" : "") + "£" + Math.abs(Math.round(x)).toLocaleString("en-GB");
+$("#nd").textContent = day(N.night, { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+const ball = (n, cls = "") => `<span class="ball ${cls}">${n}</span>`;
 
-const exp = D.expected.mean;
-const A = D.across_seeds;
-const best = S.slice().sort((a, b) => A[b].z_mean - A[a].z_mean)[0];
-$("#lede").textContent = `Every UK Lotto draw from ${D.era.first_date} (the first 59-ball draw) to ${D.era.last_date}: ${D.era.rounds.toLocaleString()} rounds, including the two-round draws held since June 2026. ${NB} prediction strategies (${ND} of them built on the order the balls came out of the machine) and three kinds of ensemble were each replayed against the ${D.test_rounds} rounds drawn since ${D.split_date}, seeing only draws that came before each one.`;
-$("#facts").innerHTML = [
-  ["Rounds tested", D.test_rounds], ["Seeds", D.seeds.length], ["Tickets/round", D.tickets_per_round],
-  ["Chance mean", fmt(exp)], ["Chance 3+ hits", fmt(D.expected.pct_3plus, 2) + "%"],
-].map(([k, v]) => `<span>${k} <b>${v}</b></span>`).join("");
-const wide = S.slice().sort((a, b) => (A[b].z_max - A[b].z_min) - (A[a].z_max - A[a].z_min))[0];
-const ensBest = Math.max(...S.filter(isEns).map((s) => A[s].z_mean));
-const zCut = 2.9; // about p < 0.05 after allowing for ~20 one-sided tests
-const standout = S.filter((s) => A[s].z_mean > zCut && A[s].z_min > 0);
-$("#verdict").innerHTML = `<strong>${standout.length ? esc(`${pretty(standout[0])} beat chance in every seed. Treat it with caution.`) : "No strategy beat random chance."}</strong><span>${esc(
-  `Random tickets average ${fmt(exp)} matching numbers. Averaged over ${D.seeds.length} seeds, every strategy and every ensemble land within normal chance variation of that (z-scores between ${fmt(Math.min(...S.map((s) => A[s].z_mean)), 2)} and ${fmt(Math.max(...S.map((s) => A[s].z_mean)), 2)}; best ensemble ${fmt(ensBest, 2)}). Single runs that looked promising reversed under another seed: the widest swing was ${pretty(wide)}, from z = ${fmt(A[wide].z_min, 2)} to ${fmt(A[wide].z_max, 2)} across seeds. The lowest average, repeating the last draw, is one fixed ticket per round. With ${S.length} methods tested, a z of ${fmt(Math.min(...S.map((s) => A[s].z_mean)), 2)} is within what chance alone produces. The ball counts are consistent with a fair draw (p = ${fmt(D.fairness.p, 2)}).`)}</span>`;
-
-// chance a single line matches 3+ / 2+ (exact)
-const P3_LINE = 0.0108641, P2_LINE = 0.1083479;
-
-// ---------- the wheel at the top
+// ---------- the wheel
 (function () {
-  const C = D.combined;
-  if (!C || !C.wheel) return;
-  $("#picks5").hidden = false;
-  $("#nd5").textContent = ndDate.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
+  $("#nd5").textContent = day(N.night, { weekday: "long", day: "numeric", month: "long" });
+  const W = R.mixture_weights, lead = Object.entries(W).sort((a, b) => b[1] - a[1])[0];
+  $("#wheel-sub").textContent = `${N.lines.length} lines · £${N.lines.length * 2} a draw`;
+  $("#wheel-nums").innerHTML = `<div class="line"><span class="ln"></span><div class="balls">${N.numbers.map((n) => ball(n, "lead")).join("")}</div></div>`;
+  $("#wheel-lede").textContent = `The 15 numbers the combined model (radix digits, a neural network and a particle filter, with fair, each weighted by how well it has predicted the real draws) finds most likely to hold 4 or more of the six, laid out as a "3 if 4" wheel: whenever 4 of the six drawn are among these 15, at least one line matches 3. Its own chance of 4+ is ${pc(N.forecast4)}, against ${pc(A.chance.rate4)} for any 15 numbers; the model now leans ${pc(lead[1], 0)} on ${lead[0]}. Over ${R.rounds.toLocaleString("en-GB")} past rounds its 15 held 4+ in ${pc(M.mixture.rate4)} of them (p ${M.mixture.p4.toFixed(2)} against chance): no better than any other 15 numbers so far.`;
+  $("#wheel-sum").textContent = `The ${N.lines.length} lines`;
+  $("#wheel-lines").innerHTML = N.lines.map((l, i) => `<div class="line"><span class="ln">${i + 1}</span><div class="balls">${l.map((n) => ball(n)).join("")}</div></div>`).join("");
+  $("#wheel-links").innerHTML = `For the app: <a href="data/wheel_app.txt">wheel_app.txt</a> (one line per board) · <a href="data/wheel.csv">wheel.csv</a>`;
 })();
 
-// ---------- the frozen wheel: the same lines every draw, for entering in the app once
-(function () {
-  const F = D.frozen;
-  if (!F) return;
-  $("#frozen5").hidden = false;
-  const pc = (x, d = 1) => (x * 100).toFixed(d) + "%", gbp = (x) => "£" + Math.round(x).toLocaleString("en-GB");
-  const dl = (d) => new Date(d + "T12:00:00Z").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
-  $("#fz-sub").textContent = `"${F.wheel}" on ${F.numbers.join(" ")}: ${F.lines.length} lines, ${gbp(F.lines.length * F.price)} a draw, the same every draw from ${dl(F.first_draw)}`;
-  $("#fz-lines").innerHTML = F.lines.map((l, i) => `<div class="line"><span class="ln">${i + 1}</span><div class="balls">${l.map((b) => `<span class="ball lead">${b}</span>`).join("")}</div></div>`).join("");
-  $("#fz-links").innerHTML = `Frozen on ${dl(F.frozen_on)} from the consensus 15, so the lines can be entered in the app once (or set up as a subscription) and kept. Download: <a href="data/frozen_wheel_app.txt">lines for the app (text)</a> · <a href="data/frozen_wheel.csv">CSV</a>. Whenever 4 of the drawn numbers are among the 15, some line matches 3. For fair draws some line matches 3+ in ${pc(F.p["3"])} of draws and 4+ in ${pc(F.p["4"], 2)}; changing the lines every draw would not change these odds.`;
-  const LV = D.live, E = LV ? LV.draws.filter((e) => e.frozen_wheel) : [];
-  if (!E.length) { $("#fz-record").textContent = `Its results will show here from ${dl(F.first_draw)}, once that draw is scored.`; return; }
-  const rounds = E.flatMap((e) => e.rounds.map((_, j) => ({ best: Math.max(...e.frozen_wheel.lines.map((s) => s.matches[j])), inN: e.frozen_wheel.in_numbers[j] })));
-  const t = LV.summary.frozen_lines || { line_rounds: 0, prize: 0, mean: 0 };
-  const last = E[E.length - 1], lb = last.rounds.map((_, j) => Math.max(...last.frozen_wheel.lines.map((s) => s.matches[j])));
-  $("#fz-record").textContent = `Since ${dl(F.first_draw)}: ${E.length} draw${E.length > 1 ? "s" : ""}, ${rounds.length} rounds; some line matched 3+ in ${rounds.filter((r) => r.best >= 3).length} rounds and 2+ in ${rounds.filter((r) => r.best >= 2).length}; ${t.prize} prize-winning line${t.prize === 1 ? "" : "s"} in ${t.line_rounds} line-rounds (mean ${t.mean != null ? t.mean.toFixed(2) : "–"} matches, 0.61 by chance). Last draw (${dl(last.date)}): ${last.frozen_wheel.in_numbers.join(" / ")} of the drawn numbers among the 15, best line ${lb.join(" / ")}.`;
-})();
-
-// ---------- the frozen wheel simulated on the viewer's device: a thin wrapper over sim/web.cpp (WebAssembly).
+// ---------- the wheel simulated on the viewer's device: a thin wrapper over sim/web.cpp (WebAssembly).
 // Every calculation is in the kernel; this only moves bytes: inputs in, a compute pass the kernel describes, 7 floats
 // per checkpoint out.
 (function () {
-  const F = D.frozen;
-  if (!F || typeof WebAssembly === "undefined") { const el = $("#sim"); if (el) el.hidden = true; return; }
-  const PATHS = 20000, q = new URLSearchParams(location.search).get("sim"), gbp = (x) => (x < 0 ? "−" : "") + "£" + Math.abs(Math.round(x)).toLocaleString("en-GB");
+  if (typeof WebAssembly === "undefined") { $("#sim").hidden = true; return; }
+  const PATHS = 20000, q = new URLSearchParams(location.search).get("sim");
   let k, device;
   const bytes = (p, n) => new Uint8Array(k.memory.buffer, p, n);
   async function load() {
@@ -471,700 +199,69 @@ const P3_LINE = 0.0108641, P2_LINE = 0.1083479;
     read.unmap();
     [...b, read].forEach((g) => g.destroy());
   }
+  function stage() {  // the wheel's lines as 64-bit masks, and the model's ball probabilities
+    new Uint32Array(k.memory.buffer, k.lines_ptr(), N.lines.length * 2).set(N.lines.flatMap((l) => [0, 32].map((o) => l.reduce((m, x) => x > o && x <= o + 32 ? (m | (1 << (x - o - 1))) >>> 0 : m, 0))));
+    new Float32Array(k.memory.buffer, k.weights_ptr(), 59).set(N.weights);
+  }
   async function simulate(weighted, seed, cost) {  // the kernel's summary: 7 floats per checkpoint
-    const n = F.lines.length;
+    const n = N.lines.length;
     const out = device ? (await gpu(k.gpu_prepare(n, weighted, PATHS, seed)), k.gpu_finish(cost)) : k.run_cpu(n, weighted, PATHS, seed, cost);
     return new Float32Array(k.memory.buffer, out, 21).slice();
   }
-  window.lottoSim = { load: async () => (await load(), { k, device }), gpu, simulate };  // for the tests
+  window.lottoSim = { load: async () => (await load(), stage(), { k, device }), gpu, simulate };  // for the tests
   $("#sim-run").addEventListener("click", async () => {
     const status = $("#sim-status");
     status.textContent = "Simulating…";
     try {
-      await load();
-      new Uint32Array(k.memory.buffer, k.lines_ptr(), F.lines.length * 2).set(F.lines.flatMap((l) => [0, 32].map((o) => l.reduce((m, x) => x > o && x <= o + 32 ? (m | (1 << (x - o - 1))) >>> 0 : m, 0))));
-      new Float32Array(k.memory.buffer, k.weights_ptr(), 59).set(D.fairness.counts.map((c) => c + 1));
-      const cost = F.lines.length * F.price, seed = (Math.random() * 4294967296) >>> 0, t0 = performance.now(), rows = [];
-      for (const [name, weighted] of [["Fair", 0], ["Hindsight as reality", 1]]) {
+      await load(); stage();
+      const cost = N.lines.length * 2, seed = (Math.random() * 4294967296) >>> 0, t0 = performance.now(), rows = [];
+      for (const [name, weighted] of [["Fair", 0], ["As the model sees the machine", 1]]) {
         const o = await simulate(weighted, seed, cost);
         [26, 52, 104].forEach((n, c) => rows.push(`<tr><td>${c ? "" : name}</td><td>${n}</td><td>${o[c * 7 + 1].toFixed(0)} <span class="muted">(${o[c * 7].toFixed(0)} to ${o[c * 7 + 2].toFixed(0)})</span></td><td>${gbp(o[c * 7 + 4])} <span class="muted">(${gbp(o[c * 7 + 3])} to ${gbp(o[c * 7 + 5])})</span></td><td>${(o[c * 7 + 6] * 100).toFixed(0)}%</td></tr>`));
       }
       const ms = performance.now() - t0, rounds = 2 * PATHS * 104;
-      $("#sim-table").innerHTML = `<thead><tr><th>Model</th><th>Rounds ahead</th><th>Prize rounds</th><th>Net</th><th>No prize</th></tr></thead><tbody>${rows.join("")}</tbody>`;
+      $("#sim-table").innerHTML = `<thead><tr><th>Machine</th><th>Rounds ahead</th><th>Prize rounds</th><th>Net</th><th>No prize</th></tr></thead><tbody>${rows.join("")}</tbody>`;
       $("#sim-wrap").hidden = false;
-      status.textContent = `${rounds.toLocaleString("en-GB")} simulated rounds in ${ms.toFixed(0)} ms on this device's ${device ? "GPU (WebGPU)" : "CPU (WebAssembly)"}. Median with the 90% range in brackets; net counts fixed prizes only. Each run draws fresh futures.`;
+      status.textContent = `${rounds.toLocaleString("en-GB")} simulated rounds in ${ms.toFixed(0)} ms on this device's ${device ? "GPU (WebGPU)" : "CPU (WebAssembly)"}. Median with the 90% range in brackets; net counts the fixed prizes only (2 matches a free Lucky Dip at £2, 3 matches £30, 4 £140, 5 £1,750). Each run draws fresh futures.`;
     } catch (e) { status.textContent = `Couldn't run the simulation here (${e.message}).`; }
   });
 })();
 
-// ---------- consensus 15 (hindsight as reality) and its two wheels
+// ---------- the backtest
 (function () {
-  const K = D.consensus;
-  if (!K || !K.wheels) return;
-  $("#cons5").hidden = false;
-  const pc = (x, d = 1) => (x * 100).toFixed(d) + "%", one = (x) => `1 in ${Math.round(1 / x).toLocaleString("en-GB")}`;
-  const pv = (v) => (v >= 1 ? "+" : "") + ((v - 1) * 100).toFixed(1) + "%", gbp = (x) => "£" + Math.round(x).toLocaleString("en-GB");
-  const nModels = Object.keys(K.models).length, W3 = K.wheels["3 if 4"], W4 = K.wheels["4 if 4"];
-  $("#cons-sub").textContent = `the 15 numbers named most often by ${nModels} models fitted to all ${K.rounds.toLocaleString("en-GB")} rounds`;
-  $("#cons-nums").innerHTML = `<div class="line"><span class="ln"></span><div class="balls">${K.consensus.map((b) => `<span class="ball lead" title="named by ${K.votes[b]} of ${nModels} models">${b}</span>`).join("")}</div></div>`;
-  $("#cons-lede").textContent = `Every model here is fitted to the whole history as if the past draws showed how the machine truly behaves: the 15 numbers that would have caught 4+ most often, the most likely biased machine, the combined support, the strategies' vote, the sequence rules and the frequency rules. Each names 15 numbers and the consensus keeps the 15 named most often. In the past draws, 4 or more of a round's six fell among them in ${pc(K.consensus_history_rate, 2)} of rounds, against ${pc(K.fair_4plus, 2)} for any 15 numbers; but sets fitted this way drop back to about ${pc(K.fair_4plus, 2)} on draws they weren't fitted to (see the Backtest tab), so treat the "if the fitted machine were real" odds as a ceiling and the fair odds as what to expect.`;
-  const lines = (W) => W.lines.map((l, i) => `<div class="line"><span class="ln">${i + 1}</span><div class="balls">${l.map((b) => `<span class="ball">${b}</span>`).join("")}</div></div>`).join("");
-  $("#w34-sub").textContent = `${W3.lines.length} lines, ${gbp(W3.cost)} a draw: whenever 4 of the drawn numbers are among the 15, some line matches 3`;
-  $("#w34-sum").textContent = `Show the ${W3.lines.length} lines`;
-  $("#w34-lines").innerHTML = lines(W3);
-  $("#w44-sub").textContent = `${W4.lines.length} lines, ${gbp(W4.cost)} a draw: whenever 4 of the drawn numbers are among the 15, some line matches 4`;
-  $("#w44-sum").textContent = `Show the ${W4.lines.length} lines`;
-  $("#w44-lines").innerHTML = lines(W4);
-  const row = (name, W) => `<tr><td>${name}</td><td>${gbp(W.cost)}</td><td>${pc(W.p["2"])}</td><td>${pc(W.p["3"])} <span class="muted">(${pc(W.fitted["3"])})</span></td><td>${pc(W.p["4"], 2)} <span class="muted">(${pc(W.fitted["4"], 2)})</span></td><td>${one(W.p["5"])}</td><td>${gbp(W.fixed_prizes)}</td><td>${W.jackpot_value ? pv(W.jackpot_value[0]) + " to " + pv(W.jackpot_value[1]) : "–"}</td></tr>`;
-  $("#cons-odds").innerHTML = `<thead><tr><th>Wheel</th><th>Cost</th><th>2+</th><th>3+</th><th>4+</th><th>5+</th><th>Prizes</th><th>Jackpot</th></tr></thead><tbody>${row('"3 if 4"', W3)}${row('"4 if 4"', W4)}</tbody>`;
-  $("#cons-models").innerHTML = `<thead><tr><th>Model</th><th>15 numbers</th><th>4+ in past draws</th></tr></thead><tbody>` +
-    Object.entries(K.models).map(([m, v]) => `<tr><td>${m}</td><td style="white-space:normal">${v.numbers.join(" ")}</td><td>${pc(v.history_rate, 2)}</td></tr>`).join("") + "</tbody>";
-  $("#cons-note").textContent = `2+ to 5+ are the chances, per draw, that some line matches that many: exact for fair draws, with the chance if the fitted machine were real in brackets. Prizes are the fixed prizes won per draw on average (a free Lucky Dip counted as ${gbp(K.price)}); either wheel returns about 42p in the pound once the jackpot and 5 plus the bonus are counted. Jackpot is the range of the lines' jackpot value against an average line (shared with fewer players when it holds fewer popular numbers). Both guarantees are checked on all 1,365 sets of 4 of the 15. ${W4.pattern_lines ? `${W4.pattern_lines} of the "4 if 4" lines have two consecutive pairs, which the run of consecutive numbers in the 15 makes unavoidable; it doesn't change their odds.` : ""} Prices are per round played.`;
-})();
-
-// ---------- replay of the wheel over recent draws
-(function () {
-  const RP = D.replay;
-  if (!RP || !RP.draws.length) return;
-  const WD = RP.draws.filter((d) => d.wheel && d.wheel.lines);
-  if (!WD.length) return;
-  $("#replay-section").hidden = false;
-  const dfmt = (d, y) => new Date(d + "T12:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "long", ...(y ? { year: "numeric" } : {}), timeZone: "UTC" });
-  const n = WD.length, Sm = RP.summary, P = Sm.chance, p3 = [3, 4, 5, 6].reduce((a, j) => a + P[j], 0), t = Sm.wheel_lines;
-  $("#replay-since").textContent = dfmt(WD[0].date, false);
-  const wr = WD.flatMap((d) => d.rounds.map((_, j) => ({ best: Math.max(...d.wheel.lines.map((l) => l.matches[j])), hits: d.wheel.lines.filter((l) => l.matches[j] >= 3).length })));
-  const any3 = wr.filter((r) => r.best >= 3).length, any2 = wr.filter((r) => r.best >= 2).length, multi = wr.filter((r) => r.hits > 1).length;
-  const W = D.combined && D.combined.wheel, cov = W && W.coverage;
-  $("#replay-lede").textContent = `For each of the ${n} draws from ${dfmt(WD[0].date, true)} to ${dfmt(WD[n - 1].date, true)}, every investigation's picks were rebuilt from the draws before it only, using the same code and seeds as the routine, combined into the wheel's support and laid out as its ${WD[0].wheel.lines.length} lines, then scored against both rounds. It uses today's method for every draw, so its lines can differ from the ones committed at the time; the live results score what was actually committed. Some line matched 3+ in ${any3} of ${wr.length} rounds${cov ? ` (about ${(wr.length * cov.p3).toFixed(1)} expected)` : ""} and 2+ in ${any2}${cov ? ` (about ${(wr.length * cov.p2).toFixed(1)})` : ""}; ${multi} round${multi === 1 ? "" : "s"} had more than one winning line.`;
-  const z = (t.mean - Sm.chance_mean) / Math.sqrt(6 * (6 / 59) * (53 / 59) * (53 / 58) / t.line_rounds);
-  $("#replay-table").innerHTML = `<thead><tr><th>Lines</th><th>Line-rounds</th><th>0 hits</th><th>1 hit</th><th>2 hits</th><th>3+ (a prize)</th><th>Mean</th><th>z</th></tr></thead><tbody>` +
-    `<tr><td>Wheel lines (${WD[0].wheel.lines.length} per round)</td><td>${t.line_rounds}</td>${[0, 1, 2].map((k) => `<td>${t.counts[k]} <span class="muted">(${(t.line_rounds * P[k]).toFixed(1)})</span></td>`).join("")}<td class="${t.prize ? "good" : ""}">${t.prize} <span class="muted">(${(t.line_rounds * p3).toFixed(1)})</span></td><td>${fmt(t.mean, 3)}</td><td>${(z >= 0 ? "+" : "") + z.toFixed(2)}</td></tr>` +
-    `<tr class="base-row"><td>Random line (chance)</td><td></td><td>${fmt(P[0] * 100, 1)}%</td><td>${fmt(P[1] * 100, 1)}%</td><td>${fmt(P[2] * 100, 1)}%</td><td>${fmt(p3 * 100, 2)}%</td><td>${fmt(Sm.chance_mean, 3)}</td><td></td></tr></tbody>`;
-  const bcell = (d, j) => { const b = Math.max(...d.wheel.lines.map((l) => l.matches[j])); return b >= 3 ? `<b>${b}</b>` : b; };
-  const won = (d, j) => d.wheel.lines.filter((l) => l.matches[j] >= 3).length;
-  $("#replay-draws").innerHTML = `<thead><tr><th>Draw</th><th>Best line (R1 / R2)</th><th>Lines with 3+</th></tr></thead><tbody>` +
-    WD.slice().reverse().map((d) => { const w = d.rounds.map((_, j) => won(d, j)).reduce((a, b) => a + b, 0);
-      return `<tr><td>${d.draw_no} · ${dfmt(d.date, false)}</td><td>${d.rounds.map((_, j) => bcell(d, j)).join(" / ")}</td><td class="${w ? "good" : ""}">${w}</td></tr>`; }).join("") + "</tbody>";
-  $("#replay-note").textContent = `Figures in brackets are what random lines average. z compares the mean with the 36/59 chance rate; anything inside about ±2.5 is chance. Bold numbers are 3-match hits, worth the lowest prize.`;
-})();
-
-// ---------- nested Monte Carlo: inner simulations reset to the real draws at every outer step
-(function () {
-  const N = D.nested_mc;
-  if (!N) return;
-  $("#nmc-section").hidden = false;
-  const pc = (x, d = 1) => (x * 100).toFixed(d) + "%", sg = (z) => (z >= 0 ? "+" : "") + z.toFixed(2);
-  const gbp = (x) => (x < 0 ? "−" : "") + "£" + Math.abs(Math.round(x)).toLocaleString("en-GB");
-  const F = N.models.fair, Hm = N.models["hindsight as reality"], d = N.log_score_diff, A = N.actual;
-  const yr = new Date(N.start + "T12:00:00Z").getUTCFullYear();
-  const better = d.mean > 0 ? "hindsight as reality" : "fair";
-  $("#nmc-lede").textContent = `A nested Monte Carlo: an outer loop walks through every real draw night since ${yr} (${N.resets.toLocaleString("en-GB")} nights) and, at each one, resets the simulation to reality, the real history up to that night and nothing simulated before it. From there an inner loop simulates ${N.paths.toLocaleString("en-GB")} possible futures of ${N.horizon} rounds under each model: "fair" (every number equally likely) and "hindsight as reality" (numbers favoured by how often they have been drawn, each simulated path learning from its own draws). The real rounds that followed are then laid over the forecasts. The target is a 15-line "3 if 4" wheel on the 15 numbers the fitted machine favoured at each reset, chosen only from earlier draws. Over the next round, the ${better} model gave the real outcome the higher probability (log score per night ${sg(d.mean)} for hindsight against fair, z ${sg(d.z)}); over ${N.horizon}-round windows (${N.windows} that don't overlap) the fair model forecast ${F.pred_prize_mean.toFixed(2)} prize rounds and hindsight ${Hm.pred_prize_mean.toFixed(2)}, against ${A.prize_rounds_mean.toFixed(2)} in reality.`;
-  const row = (name, m) => `<tr><td>${name}</td><td>${m.log_score_k1.toFixed(4)}</td><td>${m.pred_prize_mean.toFixed(2)} <span class="muted">(${A.prize_rounds_mean.toFixed(2)})</span></td><td>${pc(m.coverage90, 0)}</td><td class="${m.pit_p < 0.05 ? "flag" : ""}">p ${m.pit_p.toFixed(2)}</td><td>${pc(m.pred_any4, 0)} <span class="muted">(${pc(A.any4_rate, 0)})</span></td><td>${m.brier_any4.toFixed(3)}</td></tr>`;
-  $("#nmc-models").innerHTML = `<thead><tr><th>Model</th><th>Next round, log score</th><th>Prize rounds per ${N.horizon}</th><th>90% range held</th><th>Calibration</th><th>Any 4+ in ${N.horizon}</th><th>Brier</th></tr></thead><tbody>${row("Fair", F)}${row("Hindsight as reality", Hm)}</tbody>`;
-  const ST = N.strategies;
-  if (ST) {
-    const ms = Object.entries(ST.models).sort((x, y) => y[1].log_score_diff - x[1].log_score_diff);
-    const mix = ST.models["Bayesian mixture (walk-forward)"], ftl = ST.models["best so far (walk-forward)"];
-    const base = ms.filter(([n]) => !n.includes("walk-forward")), beat = base.filter(([, m]) => m.z >= ST.best_of_luck_z.p95);
-    const nights = ST.nights.toLocaleString("en-GB"), fy = new Date(ST.first_night + "T12:00:00Z").getUTCFullYear();
-    $("#nmc-strat-lede").textContent = `The same nested loop over all ${base.length} strategies: at each of the ${nights} real draw nights since ${fy} every strategy is refitted on the real draws before that night only, and its picks become a model of the machine (balls drawn in proportion to its weights, blended with the fair model by an amount itself fitted walk-forward on the earlier nights). Each model's inner simulations start from that night, and the real draw that followed is scored exactly, by the probability the model gave it. ` +
-      (beat.length ? `${beat.map(([n]) => n).join(", ")} beat the fair model by more than the best of ${base.length} reaches by luck.` : `None beat the fair model: the best, ${base[0][0]}, gave the real draws ${base[0][1].log_score_diff >= 0 ? "the same" : "less"} probability (z ${sg(base[0][1].z)}; the best of ${base.length} reaches ${ST.best_of_luck_z.median.toFixed(2)} by luck alone). `) +
-      `The optimum forecaster for this score, a Bayesian mixture of every strategy at every blend and the fair model, updated by each real draw, ends with ${pc(ST.mixture_weights.fair, 1)} of its weight on fair; it scored ${sg(mix.log_score_diff * 1000)} thousandths of a nat a draw against fair (z ${sg(mix.z)}), within the log 2 it can lose by design. Picking whichever strategy led so far did worse (z ${sg(ftl.z)}) and chose fair on ${ST.best_so_far_chosen.fair} of ${nights} nights.`;
-    const cz = (z) => `<td class="${z >= ST.best_of_luck_z.p95 ? "good" : ""}">${sg(z)}</td>`;
-    $("#nmc-strat").innerHTML = `<thead><tr><th>Strategy</th><th>Log score vs fair, per draw</th><th>z</th><th>Blend (fair share), last</th><th>Top 15: mean caught</th><th>z</th><th>Top 6: mean matches</th><th>z</th><th>Prize rounds per ${N.horizon}: real / model / fair</th><th>90% range held</th></tr></thead><tbody>` +
-      ms.map(([n, m]) => `<tr class="${n.includes("walk-forward") ? "base-row" : ""}"><td>${n}</td><td>${sg(m.log_score_diff * 1000)}‰</td>${cz(m.z)}<td>${pc(m.lambda_final, 0)}</td><td>${m.matches15.toFixed(3)} <span class="muted">(${ST.chance.matches15.toFixed(3)})</span></td>${cz(m.z15)}<td>${m.matches6.toFixed(3)} <span class="muted">(${ST.chance.matches6.toFixed(3)})</span></td>${cz(m.z6)}<td>${m.real_prize_mean.toFixed(2)} / ${m.pred_prize_mean.toFixed(2)} / ${m.fair_pred_prize_mean.toFixed(2)}</td><td>${pc(m.coverage90, 0)}</td></tr>`).join("") + "</tbody>";
-    $("#nmc-strat-note").textContent = `Log score: the mean, over the ${nights} nights, of the log-probability the model gave the real set of six minus the fair model's (${ST.fair_log_score.toFixed(2)}), in thousandths of a nat; above 0 would mean it predicted the real draws better than chance. Blend: the fair model's share of the forecast at the last night, chosen from ${ST.lambda_grid.join(", ")} by the earlier nights (100% means the strategy's picks only ever made the forecast worse). Top 15 and top 6: how many of each night's six fell among the model's 15 and 6 highest-weighted numbers, chance in brackets. Prize rounds: the 3-if-4 wheel on the model's 15, real against the model's and the fair model's simulated futures over ${ST.windows} windows that don't overlap. Shaded rows choose among the others using earlier nights only. A z above ${ST.best_of_luck_z.p95.toFixed(2)} (the best of ${base.length} by luck, 95%) would be highlighted.` +
-      (ST.next_night ? ` For the draw on ${new Date(ST.next_night + "T12:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" })}, the mixture's 15 are ${mix.next15.join(" ")}, a choice no better than any other 15.` : "");
-  }
-  const W = N.forward, R = W.real_since_frozen, M = W.models;
-  const dl = (s) => new Date(s + "T12:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
-  $("#nmc-fwd-lede").textContent = `The same nested simulation, reset to the latest real draw (${dl(W.from)}) and run 104 rounds ahead for your frozen wheel (${N.frozen_numbers.join(" ")}), at ${gbp(N.cost_per_round)} a round. ` +
-    (R.rounds ? `Its real record since ${dl(R.first_draw)} is laid on the forecast reset to that day: ${R.rounds} rounds, ${R.prize_rounds} prize round${R.prize_rounds === 1 ? "" : "s"}, net ${gbp(R.net)}, better than ${Math.round(M.fair.real_rank.net_pct)}% of the fair model's simulated futures and ${Math.round(M["hindsight as reality"].real_rank.net_pct)}% of the hindsight model's (${pc(M.fair.real_rank.p_no_prize_so_far, 0)} of fair futures had no prize by now either).` : "");
-  const q = (v, f) => `${f(v[1])} <span class="muted">(${f(v[0])} to ${f(v[2])})</span>`;
-  $("#nmc-fwd").innerHTML = `<thead><tr><th>Model</th><th>Rounds ahead</th><th>Prize rounds</th><th>Net</th><th>No prize at all</th></tr></thead><tbody>` +
-    Object.entries(M).map(([name, m]) => Object.entries(m.checkpoints).map(([n, c], i) => `<tr><td>${i ? "" : name === "fair" ? "Fair" : "Hindsight as reality"}</td><td>${n}</td><td>${q(c.prize_rounds, (v) => v.toFixed(0))}</td><td>${q(c.net, gbp)}</td><td>${pc(c.p_no_prize, 0)}</td></tr>`).join("")).join("") + "</tbody>";
-  $("#nmc-note").textContent = `Log score: the average log-probability each model gave the real number of drawn balls among the 15 in the round after each reset (higher is better; the fair model's is exact). Prize rounds: rounds in which some line matched 3+, forecast mean with the real mean in brackets. "90% range held": how often the real count fell inside the model's 90% forecast range (90% for an honest forecast). Calibration: whether the real counts fell evenly across each forecast's distribution (a chi-square on where they fell; a small p means the forecasts were systematically off). Any 4+: the forecast chance of at least one round with 4+ of the six among the 15, with the real rate in brackets; Brier scores those forecasts (lower is better). Window statistics use resets ${N.horizon} rounds apart so the real windows don't overlap. Forward table: median with the 90% range in brackets; net counts the fixed prizes only (see the cost section above for the jackpot's expected value).`;
-})();
-
-// ---------- particle filter and neural network, reset to every real draw (sim/assimilate.cpp)
-(function () {
-  const A = D.assimilation;
-  if (!A || !A.real || !A.real.models) return;
-  $("#as-section").hidden = false;
-  const R = A.real, M = R.models, pc = (x, d = 2) => (x * 100).toFixed(d) + "%", sg = (x, d = 2) => (x >= 0 ? "+" : "") + x.toFixed(d);
   const yr = new Date(R.first_night + "T12:00:00Z").getUTCFullYear(), F = R.filter, W = R.mixture_weights;
-  const best = Object.entries(M).filter(([n]) => n !== "fair").sort((a, b) => b[1].log_lik_ratio - a[1].log_lik_ratio)[0];
-  $("#as-lede").textContent = `The machine is treated as a hidden state and learned from the draws, nothing set by hand to lean either way. A particle filter (${A.particles.toLocaleString("en-GB")} particles) tracks the 59 numbers' weights, learning how far they could stray from fair and how fast they could drift; after every real round it is reset to reality, reweighted by the exact probability of the order the balls came out in. A family of ${A.networks} small neural networks, learning rates and penalties weighted by how well each predicted, adjusts the filter's forecast per number from its uncertainty, gaps and recent counts. Fair, filter and networks start with equal weight. Each night, thousands of simulated draws from each forecast choose its 15 numbers for the 3-if-4 wheel. Over ${R.rounds.toLocaleString("en-GB")} rounds since ${yr}, the filter settled on a bias scale of ${(F.tau[1] * 100).toFixed(2)}% (90% range ${(F.tau[0] * 100).toFixed(2)}% to ${(F.tau[2] * 100).toFixed(1)}%), the draws' evidence ${F.log_evidence_vs_fair >= 0 ? "for" : "against"} it ${Math.abs(F.log_evidence_vs_fair).toFixed(2)} nats against fair, and the mixture ended with ${pc(W.fair, 0)} on fair. The best model, ${best[0]}, gave the real draws ${best[1].log_lik_ratio >= 0 ? "more" : "less"} probability than fair (${sg(best[1].log_lik_ratio)} nats in all, p ${best[1].p_better.toFixed(2)}). The 15 numbers it chose caught 4+ in ${pc(best[1].rate4)} of rounds, against ${pc(A.chance.rate4)} for any 15.`;
-  const row = (n, m) => `<tr class="${n === "fair" ? "base-row" : ""}"><td>${n === "fair" ? "Fair (any 15)" : n}</td><td>${n === "fair" ? "–" : sg(m.log_lik_ratio)}</td><td>${n === "fair" ? "–" : m.p_better.toFixed(2)}</td><td>${m.hits4} <span class="muted">(${(m.rounds * A.chance.rate4).toFixed(1)})</span></td><td>${pc(m.rate4)}</td><td>${pc(m.forecast4)}</td><td class="${m.p4 < 0.01 ? "good" : ""}">${m.p4.toFixed(2)}</td><td>${pc(m.rate3, 1)} <span class="muted">(${pc(A.chance.rate3, 1)})</span></td><td class="${m.p3 < 0.01 ? "good" : ""}">${m.p3.toFixed(2)}</td></tr>`;
+  $("#as-lede").textContent = `Before every real draw night since ${yr} (${R.nights.toLocaleString("en-GB")} nights, ${R.rounds.toLocaleString("en-GB")} rounds), four forecasts are made from the draws before it only, and every round that night then resets them to reality. A particle filter (${A.particles.toLocaleString("en-GB")} particles) treats the machine as hidden, learning how far each number could stray from fair and how fast that could drift, updated on the exact probability of the order the balls came out in. A family of ${A.networks} small neural networks adjusts its forecast per number from its uncertainty, the gaps, recent and first-ball counts and every number's digits in the first ten prime bases. ${A.radix_experts} radix strategies score each number by how its digits in those bases have been drawn. Fair, filter, networks and radix start with equal weight and are reweighted by every real draw. Each night thousands of simulated draws from each forecast choose its 15 numbers; the mixture's 15 are the wheel.`;
   const head = `<thead><tr><th>Forecast</th><th>Log score vs fair (nats)</th><th>p</th><th>Rounds with 4+ of 15</th><th>Rate</th><th>Its own forecast</th><th>p</th><th>3+ line</th><th>p</th></tr></thead>`;
+  const row = (n, m) => `<tr class="${n === "fair" ? "base-row" : n === "mixture" ? "ens" : ""}"><td>${n === "fair" ? "Fair (any 15)" : n === "mixture" ? "Mixture: the wheel" : n}</td><td>${n === "fair" ? "–" : sg(m.log_lik_ratio)}</td><td>${n === "fair" ? "–" : m.p_better.toFixed(2)}</td><td>${m.hits4} <span class="muted">(${(m.rounds * A.chance.rate4).toFixed(1)})</span></td><td>${pc(m.rate4)}</td><td>${pc(m.forecast4)}</td><td class="${m.p4 < 0.01 ? "good" : ""}">${m.p4.toFixed(2)}</td><td>${pc(m.rate3, 1)} <span class="muted">(${pc(A.chance.rate3, 1)})</span></td><td class="${m.p3 < 0.01 ? "good" : ""}">${m.p3.toFixed(2)}</td></tr>`;
   $("#as-real").innerHTML = head + "<tbody>" + Object.entries(M).map(([n, m]) => row(n, m)).join("") + "</tbody>";
+  $("#as-real-note").textContent = `Log score: the sum over the rounds of the log-probability each forecast gave the real set of six, minus fair's; p from flipping the signs of the per-round differences at random (one-sided). Rounds with 4+: expected by chance in brackets, p exact binomial against ${pc(A.chance.rate4)}. "Its own forecast": the model's stated chance of 4+ for its 15, on simulated draws it did not choose them from. 3+ line: a 3-match line on the 3-if-4 wheel, ${pc(A.chance.rate3, 1)} by chance.`;
+  const bases = Object.entries(R.radix.bases).sort((a, b) => b[1] - a[1]), rules = Object.entries(R.radix.rules).sort((a, b) => b[1] - a[1]);
+  const nbest = R.networks.slice().sort((a, b) => b.weight - a.weight)[0];
+  $("#as-learn").textContent = `The filter settled on a bias of ${(F.tau[1] * 100).toFixed(2)}% per number (90% range ${(F.tau[0] * 100).toFixed(2)}% to ${(F.tau[2] * 100).toFixed(1)}%), the draws' evidence ${F.log_evidence_vs_fair >= 0 ? "for" : "against"} it ${Math.abs(F.log_evidence_vs_fair).toFixed(2)} nats against fair. The networks lean on learning rate ${nbest.lr} with penalty ${nbest.penalty} (${pc(nbest.weight, 0)}), and nudge the filter by ${(R.nudge_rms * 100).toFixed(2)}% on average. Among the radix strategies, base ${bases[0][0]} and "${rules[0][0]}" carry the most weight. The mixture weights below are the wheel's.`;
+  $("#as-radix").innerHTML = `<thead><tr><th>Part of the mixture</th><th>Weight now</th></tr></thead><tbody>` + Object.entries(W).map(([n, w]) => `<tr><td>${n}</td><td>${pc(w, 1)}</td></tr>`).join("") +
+    `<tr class="base-row"><td>Radix: by base</td><td>${bases.slice(0, 3).map(([b, w]) => `${b}: ${pc(w, 0)}`).join(" · ")}</td></tr><tr class="base-row"><td>Radix: by rule</td><td>${rules.slice(0, 2).map(([r, w]) => `${r}: ${pc(w, 0)}`).join(" · ")}</td></tr></tbody>`;
   const V = A.validation || [];
-  if (V.length) {
-    const lock = V.find((v) => v.models.mixture.p4 < 0.01 && v.models.mixture.log_lik_ratio > 5);
-    $("#as-val-lede").textContent = `The same pipeline on simulated histories as long as the real one, from a machine with six numbers made likelier by the stated amount. ` +
-      (lock ? `From six numbers ${Math.round(lock.delta * 100)}% likelier, it locks on: the mixture gains ${lock.models.mixture.log_lik_ratio.toFixed(0)} nats over fair and its 15 catch 4+ in ${pc(lock.models.mixture.rate4)} of rounds (knowing the planted numbers, the best 15 reach ${pc(lock.oracle_rate4)}). ` : "") +
-      `Smaller biases stay hidden in about ${R.rounds.toLocaleString("en-GB")} rounds: even knowing them, the best 15 would barely beat chance. On the real draws the pipeline behaves like it does on the fair simulated machine.`;
-    $("#as-val").innerHTML = `<thead><tr><th>Simulated machine</th><th>Bias scale learned</th><th>Mixture vs fair (nats)</th><th>4+ of 15</th><th>Knowing the bias</th><th>3+ line</th><th>Weight on fair</th></tr></thead><tbody>` +
-      V.map((v) => { const m = v.models.mixture; return `<tr><td>${v.delta ? `six numbers +${Math.round(v.delta * 100)}%` : "fair"}</td><td>${(v.filter.tau[1] * 100).toFixed(2)}%</td><td class="${m.log_lik_ratio > 5 ? "good" : ""}">${sg(m.log_lik_ratio, 1)}</td><td class="${m.p4 < 0.01 ? "good" : ""}">${pc(m.rate4)}</td><td>${pc(v.oracle_rate4)}</td><td>${pc(m.rate3, 1)}</td><td>${pc(v.mixture_weights.fair, 0)}</td></tr>`; }).join("") +
-      `<tr class="base-row"><td>The real draws</td><td>${(F.tau[1] * 100).toFixed(2)}%</td><td>${sg(M.mixture.log_lik_ratio, 1)}</td><td>${pc(M.mixture.rate4)}</td><td>–</td><td>${pc(M.mixture.rate3, 1)}</td><td>${pc(W.fair, 0)}</td></tr></tbody>`;
-  }
-  const N = R.next;
-  $("#as-note").textContent = `Log score: the sum over the rounds of the log-probability each forecast gave the real set of six, minus fair's; p from flipping the signs of the per-round differences at random (one-sided). Rounds with 4+: expected by chance in brackets, p exact binomial against ${pc(A.chance.rate4)}; "its own forecast" is the model's stated chance of 4+ for its 15, measured on simulated draws it did not choose them from. 3+ line: a 3-match line on the 3-if-4 wheel, ${pc(A.chance.rate3, 1)} by chance. Bias scale: the filter's median for how far each number's log-weight strays from fair. Only the particle counts, the number of simulated draws and the network sizes are fixed; they set the computing budget, not the answer.` +
-    (N ? ` For ${new Date(N.night + "T12:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" })} the mixture's 15 are ${N.numbers.join(" ")} (its own chance of 4+: ${pc(N.forecast4)}), no better than any other 15 while the draws look fair.` : "");
+  const lock = V.find((v) => v.models.mixture.p4 < 0.01 && v.models.mixture.log_lik_ratio > 5);
+  $("#as-val-lede").textContent = `The same pipeline on simulated histories as long as the real one, from a machine with six numbers made likelier by the stated amount. ` +
+    (lock ? `From six numbers ${Math.round(lock.delta * 100)}% likelier it locks on: the mixture gains ${lock.models.mixture.log_lik_ratio.toFixed(0)} nats over fair and its 15 catch 4+ in ${pc(lock.models.mixture.rate4)} of rounds (knowing the planted numbers, the best 15 reach ${pc(lock.oracle_rate4)}). ` : "") +
+    `Smaller biases stay hidden in this many rounds: even knowing them, the best 15 would barely beat chance. On the real draws the model behaves as it does on the fair simulated machine.`;
+  $("#as-val").innerHTML = `<thead><tr><th>Simulated machine</th><th>Bias learned</th><th>Mixture vs fair (nats)</th><th>4+ of 15</th><th>Knowing the bias</th><th>3+ line</th><th>Weight on fair</th></tr></thead><tbody>` +
+    V.map((v) => { const m = v.models.mixture; return `<tr><td>${v.delta ? `six numbers +${Math.round(v.delta * 100)}%` : "fair"}</td><td>${(v.filter.tau[1] * 100).toFixed(2)}%</td><td class="${m.log_lik_ratio > 5 ? "good" : ""}">${sg(m.log_lik_ratio, 1)}</td><td class="${m.p4 < 0.01 ? "good" : ""}">${pc(m.rate4)}</td><td>${pc(v.oracle_rate4)}</td><td>${pc(m.rate3, 1)}</td><td>${pc(v.mixture_weights.fair, 0)}</td></tr>`; }).join("") +
+    `<tr class="base-row"><td>The real draws</td><td>${(F.tau[1] * 100).toFixed(2)}%</td><td>${sg(M.mixture.log_lik_ratio, 1)}</td><td>${pc(M.mixture.rate4)}</td><td>–</td><td>${pc(M.mixture.rate3, 1)}</td><td>${pc(W.fair, 0)}</td></tr></tbody>`;
+  $("#as-note").textContent = `Only the particle count, the number of simulated draws and the network sizes are fixed; they set the computing budget, not the answer. Every weight, bias scale, drift, learning rate and penalty is learned from the draws.`;
 })();
 
-// ---------- the draws as one continuous sequence: memory, sequence-aware choice of 15, timing, waits
-(function () {
-  const Q = D.sequence;
-  if (!Q) return;
-  $("#seq-section").hidden = false;
-  const pc = (x, d = 1) => x == null ? "–" : (x * 100).toFixed(d) + "%", sg = (z) => (z >= 0 ? "+" : "") + z.toFixed(2);
-  const p = Q.p_hit_59, eras = Object.entries(Q.memory), nTests = eras.length * 3, cutP = 0.05 / nTests;
-  const flags = eras.flatMap(([label, m]) => [["hazard", m.hazard.p], ["lag1", m.lag1.p], ["lag2", m.lag2.p]].filter(([, v]) => v < cutP).map(([k]) => [label, k, m]));
-  const R = Q.rules, names = Object.keys(R), best = names.filter((n) => n !== "random").sort((a, b) => R[b].z_mean - R[a].z_mean)[0];
-  $("#seq-lede").textContent = `Each draw is one event in a sequence of ${eras.reduce((a, [, m]) => a + m.rounds, 0).toLocaleString("en-GB")} rounds since 1994. Choosing 15 numbers, the chance that 4 or more of a round's six are among them is ${pc(p, 2)} (1 in ${(1 / p).toFixed(1)}) if every round is independent of the ones before. Time could only raise it if the sequence remembers: if a number's chance depended on how long it had been away, or on the last few rounds. ` +
-    (flags.length ? `One memory shows: ${flags.map(([label, k, m]) => `in the ${label.split(" (")[0]}, numbers came back ${k === "lag2" ? "two rounds later" : k === "lag1" ? "in the next round" : "after different gaps"} ${k === "hazard" ? "unevenly" : (m[k].observed < m[k].expected ? "less" : "more") + ` often than chance (${Math.round(m[k].observed).toLocaleString("en-GB")} times against ${Math.round(m[k].expected).toLocaleString("en-GB")})`}, p ${m[k].p.toFixed(3)}`).join("; ")}, below the cut of ${cutP.toFixed(4)} for these ${nTests} tests. ${flags.every(([label]) => !label.startsWith("59")) ? "It does not carry into the 59-ball era, so it can't help choose numbers today." : ""} ` : `No memory shows in either era. `) +
-    `Walk-forward over the ${R[best].rounds.toLocaleString("en-GB")} rounds since ${new Date(Q.split + "T12:00:00Z").getUTCFullYear() + 1}, the best sequence-aware way of choosing the 15, ${best}, caught 4+ in ${R[best].hits_mean.toFixed(0)} rounds against ${R[best].expected.toFixed(0)} expected (z ${sg(R[best].z_mean)}), below the cut of ${Q.z_cut.toFixed(2)} and ${R[best].z_mean < Q.expected_best ? "below" : "close to"} the ${Q.expected_best.toFixed(2)} the best of ${names.length - 1} reaches by luck. Playing only after a hit or after a long drought doesn't help either: those rounds hit about as often as the rest, and the waits between hits look like those of independent rounds.`;
-  $("#seq-memory").innerHTML = `<thead><tr><th>Era</th><th>Rounds</th><th>Chance by gap since last drawn</th><th>Back in the next round</th><th>Back two rounds later</th></tr></thead><tbody>` +
-    eras.map(([label, m]) => { const c = (v) => `<td class="${v < cutP ? "flag" : ""}">p ${v.toFixed(3)}</td>`;
-      return `<tr><td>${label}</td><td>${m.rounds.toLocaleString("en-GB")}</td>${c(m.hazard.p)}<td class="${m.lag1.p < cutP ? "flag" : ""}">${Math.round(m.lag1.observed).toLocaleString("en-GB")} vs ${Math.round(m.lag1.expected).toLocaleString("en-GB")}, p ${m.lag1.p.toFixed(3)}</td><td class="${m.lag2.p < cutP ? "flag" : ""}">${Math.round(m.lag2.observed).toLocaleString("en-GB")} vs ${Math.round(m.lag2.expected).toLocaleString("en-GB")}, p ${m.lag2.p.toFixed(3)}</td></tr>`; }).join("") + "</tbody>";
-  $("#seq-rules").innerHTML = `<thead><tr><th>Choosing the 15</th><th>Rounds with 4+</th><th>z (range over seeds)</th><th>After a hit</th><th>After a drought</th><th>Otherwise</th></tr></thead><tbody>` +
-    names.map((n) => { const r = R[n], t = Q.timing[n]; return `<tr><td>${n}</td><td>${r.hits_mean.toFixed(0)} <span class="muted">(${r.expected.toFixed(0)})</span></td><td class="${r.z_mean >= Q.z_cut ? "good" : ""}">${sg(r.z_mean)} <span class="muted">(${sg(r.z_min)} to ${sg(r.z_max)})</span></td><td>${pc(t.after_hit[0])} <span class="muted">(${t.after_hit[1]})</span></td><td>${pc(t.after_drought[0])} <span class="muted">(${t.after_drought[1]})</span></td><td>${pc(t.otherwise[0])} <span class="muted">(${t.otherwise[1]})</span></td></tr>`; }).join("") + "</tbody>";
-  const W = Q.over_time.random || Q.over_time[names[0]];
-  $("#seq-time").innerHTML = `<thead><tr><th>Choosing the 15</th>${Object.keys(W.windows).map((n) => `<th>${n} rounds</th>`).join("")}<th>Mean wait</th><th>Waits</th></tr></thead><tbody>` +
-    names.map((n) => { const o = Q.over_time[n]; return `<tr><td>${n}</td>${Object.values(o.windows).map((w) => `<td>${pc(w.real, 0)} <span class="muted">(${pc(w.theory, 0)})</span></td>`).join("")}<td>${o.waits ? `${o.waits.mean.toFixed(1)} <span class="muted">(${o.waits.theory_mean.toFixed(1)})</span>` : "–"}</td><td>${o.waits ? "p " + o.waits.p.toFixed(2) : "–"}</td></tr>`; }).join("") + "</tbody>";
-  $("#seq-note").textContent = `Memory: the chance of a number by how many rounds it has been away (a chi-square over gap buckets) and how often numbers repeat one or two rounds later, each against ${Q.sims.toLocaleString("en-GB")} simulated fair histories of the same length; flagged cells are below ${cutP.toFixed(4)}, the 0.05 cut over the ${nTests} tests. Choosing the 15: each night's 15 numbers are picked from the rounds before only, and play both of the night's rounds; "hazard" picks the numbers whose current gap has had the highest drawn rate, "transitions" those most often drawn after rounds holding the last round's numbers, "momentum" those whose last 26 rounds beat their last 208, "due" those away longest against their own typical gap. Rounds with 4+ count the rounds in which 4 or more of the six drawn were among the 15 (expected in brackets). "After a hit", "after a drought" (more than 32 rounds without one) and "otherwise" give the hit rate of the next round, with how many such rounds in brackets; with independent rounds all three are ${pc(p, 2)}. The "n rounds" columns give how often the real sequence held at least one hit in a window of n rounds (independent rounds in brackets); waits are the rounds between hits (mean ${(1 / p).toFixed(1)} for independent rounds), and the p-value compares their spread with independent rounds'.`;
-})();
+$("#method").textContent = `Data: the full UK Lotto history from lottery.merseyworld.com; only the ${A.rounds_total.toLocaleString("en-GB")} rounds since October 2015 are used, when the pool grew from 49 to 59 balls, up to ${day(A.last_draw, { day: "numeric", month: "long", year: "numeric" })}. Everything is computed in C++ (sim/assimilate.cpp, built on Alpine by sim/Dockerfile): the particle filter, the neural networks and their training, the radix strategies, the simulations and the tests; the page only displays the results, and its simulator runs the same C++ kernel as WebAssembly or WebGPU. Every line of six numbers has the same chance of winning. Nothing here changes that.`;
 
-// ---------- Monte Carlo: what the wheel costs, and how small a bias the tests would catch
-(function () {
-  const MC = D.monte_carlo;
-  if (!MC) return;
-  const gbp = (x) => (x < 0 ? "−" : "") + "£" + Math.abs(Math.round(x)).toLocaleString("en-GB");
-  const pc = (x, d = 1) => (x * 100).toFixed(d) + "%";
-  const odds = (p) => p > 0 ? `1 in ${Math.round(1 / p).toLocaleString("en-GB")}` : "–";
-  const W = MC.season, R = W.per_round, S = W.seasons;
-  $("#mc-cost-section").hidden = false;
-  $("#mc-cost-lede").textContent = `The wheel's ${W.lines} lines played on ${MC.rounds_sim.toLocaleString("en-GB")} simulated fair rounds, then strung into seasons of two draws a week. One round costs ${gbp(R.cost)} (${gbp(W.price)} a line). On average the lines win back £${R.fixed_mean.toFixed(2)} in fixed prizes and £${R.rare_ev.toFixed(2)} in expected value from the rare top tiers (5 plus the bonus, and the jackpot), ${R.return_pct.toFixed(0)}p of every pound: that is the lottery's payout, and no choice of lines changes it. Some line wins a cash prize (3+) in ${pc(R.p_any_prize)} of rounds and at least a free Lucky Dip (2+) in ${pc(R.p_free_line)}.`;
-  const rows = Object.entries(S).map(([label, s]) => `<tr><td>${label} <span class="muted">(${s.rounds})</span></td><td>${gbp(s.cost)}</td><td>${gbp(s.net_median)}</td><td>${gbp(s.net_p5)} to ${gbp(s.net_p95)}</td><td>${pc(1 - s.p_no_prize)} <span class="muted">(${s.prizes_mean.toFixed(1)})</span></td><td>${pc(s.p_break_even)}</td><td>${odds(s.p_five)}</td><td>${odds(s.p_jackpot)}</td></tr>`).join("");
-  $("#mc-cost-table").innerHTML = `<thead><tr><th>Playing</th><th>Cost</th><th>Net</th><th>Net, 90%</th><th>Cash prize</th><th>Break even</th><th>Any 5</th><th>Jackpot</th></tr></thead><tbody>${rows}</tbody>`;
-  $("#mc-cost-note").textContent = `Assumes ${gbp(W.price)} a line for each round played and one round per draw; playing both rounds of a two-round draw doubles the cost and the prizes. Fixed prizes: 2 matches a free Lucky Dip (counted as ${gbp(W.price)}), 3 matches £30, 4 matches £140, 5 matches £1,750, 5 plus the bonus £1,000,000. The jackpot is the median jackpot of the era shared with the expected number of other winners (${gbp(W.jackpot)}). Net excludes the rare tiers, whose chances are given separately: they almost never happen, and when they do they outweigh everything else. Rounds played are in brackets. Net is the median result and "Net, 90%" the range of 90% of seasons; "Cash prize" is the chance of at least one 3+ win, with the average number of them in brackets; "Break even" is the share of seasons whose fixed prizes cover the cost; "Any 5" and "Jackpot" are the chances of at least one 5-match and of the jackpot.`;
-
-  const PW = MC.power, one = PW["one number"], six = PW["six numbers"];
-  $("#mc-power-section").hidden = false;
-  const d90 = (x) => x == null ? "not within +100%" : `+${Math.round(x * 100)}%`;
-  $("#mc-power-lede").textContent = `Finding no pattern only means something if the tests could have found one. Here ${MC.sims} simulated histories as long as the real era (${MC.rounds.toLocaleString("en-GB")} rounds) are drawn with a planted bias, one number or a set of six made likelier, and each is put through the report's fairness test, a most-drawn-number test and a walk-forward hot-numbers strategy like the backtest's. A set of six numbers would be caught nine times in ten if it were ${d90(Math.min(six.detect90.chi_square ?? 9, six.detect90.max_count ?? 9))} likelier than the rest; a single number only if it were ${d90(Math.min(one.detect90.chi_square ?? 9, one.detect90.max_count ?? 9))} likelier. The real draws pass every test, so a bias that large is very unlikely; a smaller one could go unseen. For scale, six numbers ${d90(six.detect90.chi_square)} likelier would lift a line holding all of them from ${fmt(MC.chance_line, 3)} matches to about ${fmt(interp(six.rows, six.detect90.chi_square), 3)}; anything the tests could miss would lift it by less.`;
-  function interp(rows, d) { if (d == null) return NaN; for (let i = 1; i < rows.length; i++) if (rows[i].delta >= d) { const a = rows[i - 1], b = rows[i]; return a.line_mean + (d - a.delta) / (b.delta - a.delta) * (b.line_mean - a.line_mean); } return rows[rows.length - 1].line_mean; }
-  const cell = (v) => `<td class="${v >= 0.9 ? "good" : ""}">${pc(v, 0)}</td>`;
-  const body = (label, sc) => sc.rows.map((r, i) => `<tr><td>${i === 0 ? label : ""}</td><td>${r.delta ? "+" + Math.round(r.delta * 100) + "%" : "none (fair)"}</td>${cell(r.chi_square)}${cell(r.max_count)}${cell(r.strategy)}<td>${fmt(r.line_mean, 3)}</td></tr>`).join("");
-  $("#mc-power-table").innerHTML = `<thead><tr><th>Planted bias</th><th>Likelier by</th><th>Fairness test</th><th>Most-drawn number</th><th>Hot-numbers strategy</th><th>Line on them</th></tr></thead><tbody>${body("One number", one)}${body("Six numbers", six)}</tbody>`;
-  $("#mc-power-note").textContent = `Each cell is the share of biased histories a test flags (power); with no bias it should be about 5% for the two tests (their false-alarm rate) and lower for the strategy, whose cut is stricter. The fairness test is the chi-square of the 59 numbers' counts, calibrated on fair histories; the most-drawn test compares the top number's count with fair histories'; the strategy plays the six numbers drawn most often before each of the last ${MC.test_rounds} rounds and must clear z ${MC.z_cut}. "Line on them" is the matches a line holding the favoured numbers would average, against ${fmt(MC.chance_line, 3)} by chance. Detection points ("+X%") are interpolated between the rows.`;
-})();
-
-// ---------- the wheel on every real draw of the backtest periods
-(function () {
-  const WS = D.wheel_study, R = WS && WS.real, sim = WS && WS.layouts["spread (59 numbers, no shared pair)"];
-  if (!R || !sim || !R["test period"]) return;
-  $("#real-section").hidden = false;
-  const pc = (x, d = 1) => (x * 100).toFixed(d) + "%", sg = (z) => (z >= 0 ? "+" : "") + z.toFixed(2);
-  const yr = (d) => new Date(d + "T12:00:00Z").getUTCFullYear() + 1;
-  const z3 = (o) => (o.rounds_3plus - o.rounds * sim.p3) / Math.sqrt(o.rounds * sim.p3 * (1 - sim.p3));
-  const T = R["test period"], A = R["since 2017"];
-  $("#real-lede").textContent = `The wheel's 15 lines on all 59 numbers, played walk-forward on every real round: over the backtest's ${T.rounds} rounds since ${yr(T.split)} (the same test period as the strategies above) and over all ${A.rounds.toLocaleString()} rounds since ${yr(A.split)}. Before each draw the lines are laid out from support the earlier draws give (recent frequencies); the 31 best-supported numbers are played twice. Since ${yr(T.split)}, some line won something (3+) in ${T.rounds_3plus} rounds, ${pc(T.p3)} against ${pc(sim.p3)} on ${WS.sims.toLocaleString()} simulated fair draws (z ${sg(z3(T))}), and matched 2+ in ${pc(T.p2)}. Its lines averaged ${fmt(T.line_mean, 3)} matches against ${fmt(36 / 59, 3)} by chance (z ${sg(T.line_z)}): like every strategy, the wheel doesn't make numbers likelier; it wins in more rounds because its lines don't overlap.`;
-  const row = (label, o) => `<tr><td>${label}</td><td>${o.rounds.toLocaleString()}</td><td>${o.rounds_2plus} <span class="muted">(${(o.rounds * sim.p2).toFixed(0)})</span></td><td class="good">${o.rounds_3plus} <span class="muted">(${(o.rounds * sim.p3).toFixed(0)})</span></td><td>${o.rounds_4plus} <span class="muted">(${(o.rounds * sim.p4).toFixed(1)})</span></td><td>${fmt(o.line_mean, 3)}</td><td>${sg(o.line_z)}</td><td>${o.money_mean.toFixed(2)} <span class="muted">(${sim.money_mean.toFixed(2)})</span></td></tr>`;
-  $("#real-table").innerHTML = `<thead><tr><th>Period</th><th>Rounds</th><th>2+</th><th>3+</th><th>4+</th><th>Mean</th><th>z</th><th>Prizes</th></tr></thead><tbody>` +
-    row(`Test period, since ${yr(T.split)}`, T) + row(`Since ${yr(A.split)}`, A) + "</tbody>";
-  $("#real-note").textContent = `2+, 3+ and 4+ count the rounds in which some line matched that many; figures in brackets are what simulated fair draws give. Mean is matches per line (36/59 = 0.610 by chance) and z compares it with chance. Prizes are the fixed prizes won per round with the 15 lines (a free Lucky Dip counted as 2, 3 matches 30, 4 matches 140, 5 matches 1,750). The two periods overlap: the test period is the last part of the longer one.`;
-})();
-
-// ---------- classic strategies on prime-base digits
-(function () {
-  const RS = D.radix_strat;
-  if (!RS) return;
-  $("#radix-strat-section").hidden = false;
-  const zf = (z) => (z >= 0 ? "+" : "") + z.toFixed(2);
-  $("#rs-lede").textContent = `The strategies of every investigation, played on digits instead of numbers. Each ball is written in each of the first ten prime bases, and a number is scored by how its digits, position by position, have behaved: 23 in base 5 is 043, so it borrows from every number with a 4 in the middle. Digit classes aren't equally common over 1-59, so each count is compared with what a fair draw gives that class. There are ${RS.strategies.length} strategies from ${Object.keys(RS.groups).length} families: the backtest's classic ones, a digit grammar over the sorted draw, the draw-order ones (early balls, a drawn-order chain, the machine, the bonus ball), Fourier extrapolation and wavelet-style smoothing, Bayesian posterior-mean and Thompson sampling, logistic regression on digit features, and a Hedge agent that learns which of the others to back in each base. The transformer on digits is the prime-radix transformer above. Every strategy is replayed over the ${RS.test_rounds} rounds since ${RS.split}, seeing only earlier draws; the "numbers" column plays the same strategies on whole numbers for comparison. Cells are z-scores against the 36/59 chance rate${RS.seeds.length > 1 ? `, averaged over ${RS.seeds.length} seeds for the sampled strategies` : ""}.`;
-  const bases = RS.bases;
-  $("#rs-table").innerHTML = `<thead><tr><th>Strategy</th>${bases.map((b) => `<th>${esc(b.replace("base ", ""))}</th>`).join("")}</tr></thead><tbody>` +
-    Object.entries(RS.groups || { "": RS.strategies }).map(([g, ss]) => (g ? `<tr class="base-row"><td colspan="${bases.length + 1}" style="text-align:left;font-weight:600">${esc(g)}</td></tr>` : "") +
-      ss.map((s) => `<tr><td>${esc(s)}</td>${bases.map((b) => { const r = RS.results[`${s}, ${b}`]; return `<td class="${r.z_mean >= RS.z_cut ? "good" : ""}" title="${esc(s)}, ${esc(b)}: z ${zf(r.z_mean)}">${zf(r.z_mean)}</td>`; }).join("")}</tr>`).join("")).join("") + "</tbody>";
-  const b = RS.results[RS.best], beat = Object.values(RS.results).filter((r) => r.base !== "numbers" && r.z_mean >= RS.z_cut);
-  $("#rs-verdict").innerHTML = beat.length
-    ? `<strong>A digit strategy beats chance.</strong><span>${esc(beat.map((r) => `${r.strategy} in ${r.base} (z ${zf(r.z_mean)})`).join(", ") + ` clears the corrected threshold of ${RS.z_cut.toFixed(2)}. Treat it with caution until it holds up over more draws.`)}</span>`
-    : `<strong>Digits don't help.</strong><span>${esc(`The best of the ${RS.pairs} base and strategy pairs is ${b.strategy} in ${b.base}, at z ${zf(b.z_mean)}. With ${RS.pairs} tries the best one is expected to reach about ${zf(RS.expected_best)} by chance alone, and the corrected threshold is ${RS.z_cut.toFixed(2)}. No strategy does better on digits than on whole numbers in any consistent way.`)}</span>`;
-  const P = RS.planted.hot_weighted_z;
-  $("#rs-note").textContent = `Could these strategies find a digit pattern if there was one? On simulated draws where ${RS.planted.favoured} are ${RS.planted.boost} times as likely, hot-weighted scores z ${zf(P["base 5"])} in base 5, ${zf(P["numbers"])} on whole numbers and ${zf(P["base 7"])} in base 7: a real digit bias shows up strongly in the base that carries it. The real draws show nothing of the kind. Every digit strategy's next-draw line votes within the prime-radix investigation.`;
-})();
-
-// ---------- which lines other players pick: the popularity model
-(function () {
-  const PM = D.popularity, C = D.combined;
-  if (!PM) return;
-  const pc = (v) => (v >= 1 ? "+" : "") + ((v - 1) * 100).toFixed(1) + "%";
-  $("#pop-section").hidden = false;
-  $("#pop-lede").textContent = `Every line is equally likely to be drawn, but the jackpot is split between everyone who holds the winning line. The number of jackpot winners in each of the ${PM.rounds.toLocaleString()} rounds since 1994 shows which lines people play: when a popular line comes up, more people win. A Poisson regression of the winner count on features of the drawn line, allowing for ticket sales (year, era and round effects plus the size of the pot), measures how much each feature adds. Together the features explain far more than sales alone (likelihood-ratio test ${PM.lr_stat.toFixed(0)} on ${PM.df} degrees of freedom, p = ${PM.p.toExponential(1)}).`;
-  $("#pop-table").innerHTML = `<thead><tr><th>Feature of the line</th><th>Popularity per unit</th><th>z</th></tr></thead><tbody>` +
-    PM.features.map((f) => `<tr><td>${esc(f.name)}</td><td class="${Math.abs(f.z) >= 3 ? "flag" : ""}">×${f.multiplier.toFixed(2)}</td><td>${(f.z >= 0 ? "+" : "") + f.z.toFixed(1)}</td></tr>`).join("") + "</tbody>";
-  const bt = PM.birthday_table.filter((r) => r.rounds >= 10);
-  $("#pop-birthday").innerHTML = `<thead><tr><th>Numbers 1-31 in the drawn line</th>${bt.filter((r) => r.era === 49).map((r) => `<th>${r.low}</th>`).join("")}</tr></thead><tbody>` +
-    [49, 59].map((e) => `<tr><td>${e}-ball era: mean jackpot winners</td>${bt.filter((r) => r.era === 49).map((c) => { const r = bt.find((x) => x.era === e && x.low === c.low); return `<td>${r ? r.mean_wins.toFixed(2) : "–"}</td>`; }).join("")}</tr>`).join("") + "</tbody>";
-  $("#pop-examples").innerHTML = `<thead><tr><th>Example line</th><th>Popularity</th><th>Jackpot value</th></tr></thead><tbody>` +
-    PM.examples.map((x) => `<tr><td style="white-space:normal">${esc(x.label)}</td><td>×${x.popularity.toFixed(2)}</td><td>${pc(x.value)}</td></tr>`).join("") + "</tbody>";
-  $("#pop-note").textContent = `Each number from 1 to 31 makes a line more popular, months (1-12) more so, and 7 most of all; consecutive numbers are played less, because people avoid them when they try to look random. Pattern tickets such as 1-2-3-4-5-6 or 7-14-21-28-35-42 are played by thousands but have never been drawn, so the data can't measure them; the wheels avoid them, and lines with two or more consecutive pairs, where the model would be extrapolating. Draw 9 in January 1995 had 133 jackpot winners, far more than the model expects, possibly because the line also formed a shape on the playslip, which these features cannot see. None of this changes the chance of winning: it only affects how many people share a jackpot.`;
-})();
-
-// ---------- wheel option: 15 lines on all 59 numbers, no pair of numbers in two lines
-(function () {
-  const C = D.combined, W = C && C.wheel;
-  if (!W) return;
-  const L = W.lines.length, n = C.sources.length;
-  const pc = (x, d = 1) => (x * 100).toFixed(d) + "%", pv = (v) => (v >= 1 ? "+" : "") + ((v - 1) * 100).toFixed(1) + "%";
-  const ind3 = 1 - Math.pow(1 - P3_LINE, L), ind2 = 1 - Math.pow(1 - P2_LINE, L);
-  const tw = W.twice || [];
-  $("#wheel-sub").textContent = `${L} lines on all ${W.coverage.distinct} numbers, no pair of numbers in two lines`;
-  $("#wheel-cands").innerHTML = tw.length ? `<div class="line"><span class="ln"></span><div class="balls">${tw.map((b) => `<span class="ball lead">${b}</span>`).join("")}</div><span class="tag">played twice: the ${tw.length} numbers with most support from ${n} investigations</span></div>` : "";
-  $("#wheel-sum").textContent = `Show the ${L} lines`;
-  $("#wheel-lines").innerHTML = W.lines.map((line, i) => `<div class="line"><span class="ln">${i + 1}</span><div class="balls">${line.map((b) => `<span class="ball${tw.includes(b) ? " lead" : ""}">${b}</span>`).join("")}</div>${W.popularity ? `<span class="tag">${W.popularity[i].popularity.toFixed(2)}× as popular · jackpot ${pv(W.popularity[i].value)}</span>` : ""}</div>`).join("");
-  let note = `Every number from 1 to 59 is in at least one line, so every drawn number matches somewhere, and no two lines share a pair of numbers, so two lines can only win together if four or more drawn numbers fall across them: the wins are spread over rounds instead of bunched. Some line matches 3+ (a prize) in ${pc(W.coverage.p3, 2)} of rounds and 2+ (a free Lucky Dip) in ${pc(W.coverage.p2)}`;
-  note += `, and ${pc(ind3, 2)} and ${pc(ind2)} for ${L} lines picked independently. The average number of matches and of prize money is exactly the same for any ${L} lines; the layout only changes how often something is won. 15 lines need 90 places, so 31 numbers are played twice: the ones with the most combined support, where each investigation gets one equal vote spread over its own next-draw lines (${C.sources.map((s) => `${s.investigation}, ${s.lines} lines`).join("; ")}). That support is no likelier to be drawn than other numbers. No line is a pattern ticket or has two consecutive pairs.`;
-  if (W.popularity) note += ` "Jackpot" is the expected jackpot payout if the line wins, compared with an average line; a wheel on all 59 numbers can't avoid the birthday numbers (1 to 31) other players crowd onto.`;
-  $("#wheel-note").textContent = note;
-  const WS = D.wheel_study;
-  if (WS) {
-    const best = Object.entries(WS.rules).filter(([k]) => k !== "random").sort((a, b) => b[1].z_mean - a[1].z_mean)[0];
-    $("#wheel-note").textContent += ` The wheel study tried ${Object.keys(WS.rules).length} ways of choosing the ${WS.candidates} numbers played twice on the ${WS.rounds} rounds since ${new Date(WS.split + "T12:00:00Z").getUTCFullYear() + 1}: the best, ${best[0]}, put ${fmt(best[1].mean_in, 3)} drawn numbers among its ${WS.candidates} against ${fmt(WS.chance_in, 3)} by chance (z ${(best[1].z_mean >= 0 ? "+" : "") + best[1].z_mean.toFixed(2)}, below the cut of ${WS.z_cut.toFixed(2)} and ${best[1].z_mean < WS.expected_best ? "below" : "close to"} the ${WS.expected_best.toFixed(2)} the best of that many reaches by luck)` +
-      (WS.replay ? `, and the combined support put ${fmt(WS.replay.mean_in, 3)} among its ${WS.candidates} over ${WS.replay.rounds} replayed rounds (z ${(WS.replay.z >= 0 ? "+" : "") + WS.replay.z.toFixed(2)}, also within chance)` : "") + `.`;
-  }
-})();
-
-// ---------- live results: the wheel on all 59 numbers scored against the real draws
-(function () {
-  const LV = D.live;
-  if (!LV) return;
-  const WD = LV.draws.filter((e) => e.wheel59 && e.wheel59.lines.length);
-  if (!WD.length) return;
-  $("#live-section").hidden = false;
-  const Sm = LV.summary, P = LV.summary.chance, dfmt = (d) => new Date(d + "T12:00:00Z").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
-  const n = WD.length, p3 = [3, 4, 5, 6].reduce((a, j) => a + P[j], 0);
-  const counts = [0, 0, 0, 0, 0, 0, 0]; let bonus = 0;
-  WD.forEach((e) => e.wheel59.lines.forEach((s) => s.matches.forEach((m, j) => { counts[m]++; bonus += s.bonus[j] ? 1 : 0; })));
-  const lr = counts.reduce((a, b) => a + b, 0);
-  const t = { line_rounds: lr, counts, bonus, mean: counts.reduce((a, c, k) => a + k * c, 0) / lr, prize: counts.slice(3).reduce((a, b) => a + b, 0) };
-  const rounds = WD.flatMap((e) => e.rounds.map((_, j) => Math.max(...e.wheel59.lines.map((s) => s.matches[j]))));
-  const r3 = rounds.filter((b) => b >= 3).length, r2 = rounds.filter((b) => b >= 2).length;
-  const cov = D.combined && D.combined.wheel && D.combined.wheel.coverage;
-  const rebuilt = WD.filter((e) => e.wheel59.source !== "committed").length, fromReplay = WD.filter((e) => e.wheel59.source === "rebuilt from the replay");
-  $("#live-lede").textContent = `The wheel's 15 lines on all 59 numbers, scored against every draw since ${dfmt(WD[0].date)}: ${n} draw${n > 1 ? "s" : ""} and ${rounds.length} rounds. Each line is checked against every round, so a two-round draw scores each line twice.` +
-    (rebuilt ? ` The wheel was first committed for 31 October 2026, so for the ${rebuilt} draw${rebuilt > 1 ? "s" : ""} before that its lines are rebuilt exactly as today's wheel makes them, from the combined support committed on main before each draw${fromReplay.length ? ` (for ${fromReplay.map((e) => dfmt(e.date)).join(", ")}, when no picks were committed in time, from the support the three-month replay rebuilt from the earlier draws)` : ""}. Nothing after the draw is used.` : "") +
-    ` Some line matched 3 or more (a prize) in ${r3} of ${rounds.length} rounds${cov ? `, about ${(rounds.length * cov.p3).toFixed(1)} expected` : ""}, and 2 or more in ${r2}${cov ? `, about ${(rounds.length * cov.p2).toFixed(1)} expected` : ""}.`;
-  const exp = (k) => t.line_rounds * (k === 3 ? p3 : P[k]);
-  $("#live-table").innerHTML = `<thead><tr><th>Lines</th><th>Line-rounds</th><th>0 hits</th><th>1 hit</th><th>2 hits</th><th>3+ (a prize)</th><th>Bonus</th><th>Mean</th></tr></thead><tbody>` +
-    `<tr><td>Wheel lines</td><td>${t.line_rounds}</td>${[0, 1, 2].map((k) => `<td>${t.counts[k]} <span class="muted">(${exp(k).toFixed(1)})</span></td>`).join("")}<td class="${t.prize ? "good" : ""}">${t.prize} <span class="muted">(${exp(3).toFixed(1)})</span></td><td>${t.bonus}</td><td>${fmt(t.mean, 2)}</td></tr>` +
-    `<tr class="base-row"><td>Random line (chance)</td><td></td><td>${fmt(P[0] * 100, 1)}%</td><td>${fmt(P[1] * 100, 1)}%</td><td>${fmt(P[2] * 100, 1)}%</td><td>${fmt(p3 * 100, 2)}%</td><td></td><td>${fmt(Sm.chance_mean, 2)}</td></tr></tbody>`;
-  const ball = (b, r) => `<span class="ball${r.numbers.includes(b) ? " hit" : b === r.bonus ? " bonus-hit" : ""}">${b}</span>`;
-  $("#live-draws").innerHTML = WD.slice().reverse().map((e, k) => {
-    const L = e.wheel59.lines;
-    const res = e.rounds.map((r, j) => { const bw = Math.max(...L.map((s) => s.matches[j])), won = L.filter((s) => s.matches[j] >= 3).length;
-      return `<div class="line"><span class="ln">R${r.round}</span><div class="balls">${r.numbers.map((b) => `<span class="ball lead">${b}</span>`).join("")}<span class="ball bonus-hit" title="Bonus ball">${r.bonus}</span></div><span class="tag">drawn · best line ${bw}${won ? ` · ${won} line${won > 1 ? "s" : ""} with 3+` : ""}</span></div>`; }).join("");
-    const best = Math.max(...L.flatMap((s) => s.matches));
-    const lines = L.map((s, i) => `<div class="line"><span class="ln">${i + 1}</span>${e.rounds.map((r, j) => `<span class="grp"><div class="balls">${s.line.map((b) => ball(b, r)).join("")}</div><span class="tag">${e.rounds.length > 1 ? `R${r.round}: ` : ""}${s.matches[j]}${s.bonus[j] ? " + bonus" : ""}</span></span>`).join("")}</div>`).join("");
-    const src = e.wheel59.source === "committed" ? "committed before the draw" : "rebuilt from the support committed before the draw";
-    return `<div class="live-draw"><h3 class="h3">Draw ${e.draw_no} · ${dfmt(e.date)} · best wheel line ${best} match${best === 1 ? "" : "es"}</h3>${res}<details${k === 0 ? " open" : ""}><summary>The ${L.length} lines (${src})</summary><div style="display:grid;gap:8px;margin-top:8px">${lines}</div></details></div>`;
-  }).join("");
-  $("#live-note").textContent = `Filled balls are numbers that came up in that round; a dashed outline is the bonus ball. Figures in brackets are how many line-rounds random tickets would put in each column on average. The lowest prize needs 3 matching numbers. These results are expected to track chance: the backtests over ${D.test_rounds} past rounds found no method that beats it, and the wheel's layout changes how often something is won, not how much on average.`;
-})();
-
-// ---------- stacking's learned weights
-(function () {
-  const W = D.stack_weights;
-  if (!W) return;
-  const e = Object.entries(W).sort((a, b) => b[1] - a[1]);
-  const f = (v) => (v >= 0 ? "+" : "") + v.toFixed(3);
-  $("#stack-note").textContent = `The stacked ensemble learns how much each strategy's vote says about whether a number is drawn (a logistic regression refitted every 26 rounds). Its learned weights, averaged over ${D.seeds.length} seeds and given per standard deviation of a strategy's vote, run from ${f(e[e.length - 1][1])} (${e[e.length - 1][0]}) to ${f(e[0][1])} (${e[0][0]}); the random baseline gets ${f(W["random (baseline)"])}. Weights this close to zero mean no strategy's votes carry information about the draw.`;
-})();
-
-// ---------- tooltip helper
-function attachTip(container) {
-  const tip = document.createElement("div"); tip.className = "tip"; tip.hidden = true; container.appendChild(tip);
-  container.addEventListener("pointermove", (e) => {
-    const t = e.target.closest("[data-tip]");
-    if (!t) { tip.hidden = true; return; }
-    tip.textContent = t.getAttribute("data-tip"); tip.hidden = false;
-    const r = container.getBoundingClientRect();
-    let x = e.clientX - r.left + container.scrollLeft + 12, y = e.clientY - r.top + 12;
-    if (x + tip.offsetWidth > container.scrollWidth - 4) x -= tip.offsetWidth + 24;
-    tip.style.left = x + "px"; tip.style.top = y + "px";
-  });
-  container.addEventListener("pointerleave", () => (tip.hidden = true));
-}
-
-// ---------- backtest chart: horizontal bars of mean matches with seed range whiskers
-(function () {
-  const rows = S.slice();
-  const W = 900, rowH = 30, L = 250, R = 70, T = 24, H = T + rows.length * rowH + 30;
-  const seMean = (s) => Math.sqrt(D.expected.dist.reduce((a, p, k) => a + p * (k - exp) ** 2, 0) / D.backtest[s].tickets);
-  const allM = rows.flatMap((s) => [exp + A[s].z_min * seMean(s), exp + A[s].z_max * seMean(s)]);
-  const lo = Math.floor(Math.min(0.56, ...allM) * 50) / 50, hi = Math.ceil(Math.max(0.66, ...allM) * 50) / 50, x = (v) => L + (v - lo) / (hi - lo) * (W - L - R);
-  let g = "";
-  for (let v = lo; v <= hi + 1e-9; v += 0.02) g += `<line x1="${x(v)}" x2="${x(v)}" y1="${T - 6}" y2="${H - 26}" stroke="var(--grid)"/><text x="${x(v)}" y="${H - 10}" text-anchor="middle">${v.toFixed(2)}</text>`;
-  rows.forEach((s, i) => {
-    const y = T + i * rowH, a = A[s], col = isEns(s) ? "var(--s2)" : "var(--s1)";
-    const mlo = exp + a.z_min * seMean(s), mhi = exp + a.z_max * seMean(s), m = exp + a.z_mean * seMean(s);
-    const x0 = x(Math.min(m, exp)), x1 = x(Math.max(m, exp));
-    g += `<text x="${L - 10}" y="${y + rowH / 2 + 4}" text-anchor="end" style="fill:var(--fg);font-family:var(--body);font-size:13px">${esc(pretty(s))}</text>`;
-    g += `<rect x="${x0}" y="${y + 7}" width="${Math.max(2, x1 - x0)}" height="${rowH - 14}" rx="3" fill="${col}"/>`;
-    g += `<line x1="${x(mlo)}" x2="${x(mhi)}" y1="${y + rowH / 2}" y2="${y + rowH / 2}" stroke="var(--fg2)" stroke-width="1.5"/>`;
-    g += `<line x1="${x(mlo)}" x2="${x(mlo)}" y1="${y + 9}" y2="${y + rowH - 9}" stroke="var(--fg2)" stroke-width="1.5"/><line x1="${x(mhi)}" x2="${x(mhi)}" y1="${y + 9}" y2="${y + rowH - 9}" stroke="var(--fg2)" stroke-width="1.5"/>`;
-    g += `<text x="${W - R + 8}" y="${y + rowH / 2 + 4}">${m.toFixed(3)}</text>`;
-    g += `<rect x="0" y="${y}" width="${W}" height="${rowH}" fill="transparent" data-tip="${esc(pretty(s))}: mean ${m.toFixed(4)} · z ${a.z_mean.toFixed(2)} (seed range ${a.z_min.toFixed(2)} to ${a.z_max.toFixed(2)}) · 3+ hits ${a.pct_3plus.toFixed(2)}%"/>`;
-  });
-  g += `<line x1="${x(exp)}" x2="${x(exp)}" y1="${T - 10}" y2="${H - 26}" stroke="var(--fg)" stroke-width="2" stroke-dasharray="4 3"/><text x="${x(exp)}" y="${T - 12}" text-anchor="middle" style="fill:var(--fg)">chance ${exp.toFixed(3)}</text>`;
-  $("#bt-chart").innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="min-width:640px" role="img" aria-label="Mean matched numbers per ticket by strategy, compared with the random-chance expectation">${g}</svg>`;
-  attachTip($("#bt-chart"));
-})();
-$("#bt-lede").textContent = `Each bar runs from the chance line (${fmt(exp)} matching numbers per ticket) to the strategy's average across ${D.seeds.length} seeds. The whiskers show the lowest and highest seed. Seeded strategies played ${D.tickets_per_round} tickets per round. "Top-6" strategies and "repeat last draw" play one fixed ticket per round.`;
-
-// ---------- backtest table
-(function () {
-  const head = `<tr><th>Strategy</th><th>Tickets</th><th>Mean hits</th><th>z (avg)</th><th>z range</th><th>3+ hits</th>${[0, 1, 2, 3, 4, 5, 6].map((k) => `<th>${k}</th>`).join("")}</tr>`;
-  const expRow = `<tr class="base-row"><td>Random chance (exact)</td><td>–</td><td>${fmt(exp, 4)}</td><td>0</td><td>–</td><td>${fmt(D.expected.pct_3plus, 2)}%</td>${D.expected.dist.map((p) => `<td>${(p * 100).toFixed(p < 0.001 ? 4 : 2)}%</td>`).join("")}</tr>`;
-  const body = S.map((s) => {
-    const r = D.backtest[s], a = A[s];
-    return `<tr class="${isEns(s) ? "ens" : ""}"><td>${esc(pretty(s))}${DO.has(s) ? ' <span class="pill">draw order</span>' : ""}</td><td>${r.tickets.toLocaleString()}</td><td>${fmt(a.mean_matches, 4)}</td><td>${a.z_mean >= 0 ? "+" : ""}${fmt(a.z_mean, 2)}</td><td>${fmt(a.z_min, 1)} to ${fmt(a.z_max, 1)}</td><td>${fmt(a.pct_3plus, 2)}%</td>${r.dist.map((c) => `<td>${c}</td>`).join("")}</tr>`;
-  }).join("");
-  $("#bt-table").innerHTML = `<thead>${head}</thead><tbody>${expRow}${body}</tbody><caption style="caption-side:bottom;text-align:left;padding:8px 12px;color:var(--muted);font-size:0.8rem">Columns 0–6 count tickets by numbers matched, from the first seed (${D.seeds[0]}). Mean, z and 3+ are averaged over all seeds.</caption>`;
-})();
-
-// ---------- heatmaps
-function divColor(v) {
-  const cs = getComputedStyle(document.documentElement);
-  const hex = (h) => { h = h.trim().replace("#", ""); return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16)); };
-  const mid = hex(cs.getPropertyValue("--mid")), end = hex(cs.getPropertyValue(v < 0 ? "--neg" : "--pos"));
-  const t = Math.min(1, Math.abs(v));
-  return `rgb(${mid.map((m, i) => Math.round(m + (end[i] - m) * t)).join(",")})`;
-}
-function heatmap(el, names, M, title) {
-  const n = names.length, cell = Math.max(30, Math.min(44, 520 / n)), L = 210, T = 34;
-  const W = L + n * cell + 8, H = T + n * cell + 8;
-  let g = `<text x="0" y="16" style="fill:var(--fg);font-family:var(--body);font-size:14px;font-weight:600">${esc(title)}</text>`;
-  names.forEach((s, i) => {
-    g += `<text x="${L - 8}" y="${T + i * cell + cell / 2 + 4}" text-anchor="end">${esc(pretty(s).replace("Ensemble: ", "Ens: "))}</text>`;
-    names.forEach((s2, j) => {
-      const v = M[i][j];
-      g += `<rect x="${L + j * cell + 1}" y="${T + i * cell + 1}" width="${cell - 2}" height="${cell - 2}" rx="3" fill="${divColor(v)}" data-tip="${esc(pretty(s))} × ${esc(pretty(s2))}: r = ${v.toFixed(2)}"/>`;
-      g += `<text x="${L + j * cell + cell / 2}" y="${T + i * cell + cell / 2 + 4}" text-anchor="middle" style="pointer-events:none;font-size:${cell < 36 ? 9 : 10}px;fill:${Math.abs(v) > 0.6 ? "#ffffff" : "var(--fg)"}">${i === j ? "" : v.toFixed(2).replace("0.", ".")}</text>`;
-    });
-  });
-  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="min-width:${Math.min(W, 560)}px" role="img" aria-label="${esc(title)}">${g}</svg>`;
-  attachTip(el);
-}
-function drawHeatmaps() {
-  heatmap($("#perf-corr"), S, D.perf_corr, `Round-by-round hits (all ${S.length})`);
-  heatmap($("#pick-corr"), D.pick_corr_names, D.pick_corr, `Numbers picked (the ${NB} strategies)`);
-}
-drawHeatmaps();
-matchMedia("(prefers-color-scheme: dark)").addEventListener("change", drawHeatmaps);
-new MutationObserver(drawHeatmaps).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-(function () {
-  const base = S.filter((s) => !isEns(s)), idx = (s) => S.indexOf(s), P = D.perf_corr;
-  const pairs = [];
-  base.forEach((a, i) => base.forEach((b, j) => { if (j > i) pairs.push(P[idx(a)][idx(b)]); }));
-  const avg = pairs.reduce((x, y) => x + y, 0) / pairs.length;
-  const pc = D.pick_corr, pp = [];
-  pc.forEach((r, i) => r.forEach((v, j) => { if (j > i) pp.push([v, D.pick_corr_names[i], D.pick_corr_names[j]]); }));
-  pp.sort((a, b) => b[0] - a[0]);
-  const ensAvg = (e) => base.reduce((t, b) => t + P[idx(e)][idx(b)], 0) / base.length;
-  const eNames = S.filter(isEns), eMax = Math.max(...eNames.map(ensAvg));
-  const link = Math.abs(avg) < 0.1
-    ? `Between single strategies, round-by-round hits correlate at only r = ${avg.toFixed(2)} on average, so each method's good and bad rounds fall at different times, the way independent random tickets would.`
-    : `Between single strategies, round-by-round hits correlate at r = ${avg.toFixed(2)} on average. Every ticket is scored against the same six balls, so some rounds favour every method at once.`;
-  $("#corr-note").textContent = `${link} The pick map shows the most similar pair is ${pretty(pp[0][1])} and ${pretty(pp[0][2])} (r = ${pp[0][0].toFixed(2)}). Each ensemble's hits correlate with its ${base.length} members at r ≤ ${eMax.toFixed(2)} on average. Blending the strategies averages away their individual quirks, but none of them carried a real signal to begin with, so the blend has no edge either.`;
-})();
-
-// ---------- frequency chart
-(function () {
-  const c = D.fairness.counts, mean = c.reduce((a, b) => a + b, 0) / c.length;
-  const W = 900, H = 250, L = 40, R = 10, T = 30, B = 30, max = Math.ceil(Math.max(...c) / 20) * 20;
-  const bw = (W - L - R) / 59, y = (v) => T + (1 - v / max) * (H - T - B);
-  let g = "";
-  for (let v = 0; v <= max; v += 40) g += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--grid)"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${v}</text>`;
-  c.forEach((v, i) => {
-    const x = L + i * bw;
-    g += `<path d="M${x + 1},${y(0)} V${y(v) + 3} q0,-3 3,-3 H${x + bw - 4} q3,0 3,3 V${y(0)} Z" fill="var(--s1)" data-tip="Ball ${i + 1}: drawn ${v} times (${((v - mean) / mean * 100).toFixed(1)}% vs average)"/>`;
-    if ((i + 1) % 5 === 0 || i === 0) g += `<text x="${x + bw / 2}" y="${H - 10}" text-anchor="middle">${i + 1}</text>`;
-  });
-  g += `<line x1="${L}" x2="${W - R}" y1="${y(mean)}" y2="${y(mean)}" stroke="var(--fg)" stroke-width="2" stroke-dasharray="4 3"/><text x="${W - R}" y="14" text-anchor="end" style="fill:var(--fg)">dashed line: average ${mean.toFixed(1)}</text>`;
-  $("#freq-chart").innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="min-width:640px" role="img" aria-label="Times each ball 1 to 59 was drawn since October 2015">${g}</svg>`;
-  attachTip($("#freq-chart"));
-  const lo = c.indexOf(Math.min(...c)) + 1, hi = c.indexOf(Math.max(...c)) + 1;
-  $("#fair-lede").textContent = `Ball ${hi} came up most (${Math.max(...c)} times) and ball ${lo} least (${Math.min(...c)}), against an average of ${mean.toFixed(1)}. A chi-square test gives χ² = ${D.fairness.chi2.toFixed(1)} on ${D.fairness.dof} degrees of freedom, p = ${D.fairness.p.toFixed(2)}. The spread is, if anything, slightly smaller than random draws would usually produce, so the "hot" and "cold" numbers come from noise.`;
-})();
-
-(function () {
-  const O = D.draw_order;
-  if (!O) return;
-  const cut = O.bonferroni_alpha;
-  $("#do-lede").textContent = `Every result in the feed lists the balls in the order the machine released them. These ${O.tests.length} tests look for structure in that order across ${O.rounds.toLocaleString()} rounds since ${D.era.first_date}. Tests without an exact formula are compared against ${O.sims.toLocaleString()} simulated fair histories of the same size. Because ${O.tests.length} tests are run, a result needs p < ${cut.toFixed(4)} to count as a real finding, not p < 0.05.`;
-  const rows = O.tests.map((t) => {
-    const tag = t.p < cut ? '<span class="pill" style="background:var(--s2-soft);color:var(--fg)">finding</span>' : t.p < 0.05 ? '<span class="pill">weak, likely chance</span>' : '<span class="pill">consistent with chance</span>';
-    return `<tr><td style="white-space:normal;min-width:16rem">${esc(t.test)}</td><td>${esc(t.stat)}</td><td>${t.p < 0.001 ? "<0.001" : t.p.toFixed(3)}</td><td>${tag}</td></tr>`;
-  }).join("");
-  $("#do-table").innerHTML = `<thead><tr><th>Question</th><th>Result</th><th>p</th><th>Verdict</th></tr></thead><tbody>${rows}</tbody>`;
-  const hits = O.tests.filter((t) => t.p < cut).length, weak = O.tests.filter((t) => t.p >= cut && t.p < 0.05).length;
-  const minP = Math.min(...O.tests.map((t) => t.p));
-  const dz = [...DO].map((s) => `${pretty(s)} ${A[s].z_mean >= 0 ? "+" : ""}${fmt(A[s].z_mean, 2)}`).join(", ");
-  $("#do-note").textContent = (hits
-    ? `${hits} of ${O.tests.length} tests clear the corrected threshold.`
-    : `None of the ${O.tests.length} tests clears the corrected threshold; the smallest p-value is ${minP.toFixed(3)}${weak ? `, and the ${weak} below 0.05 are about what chance alone produces across this many tests` : ""}.`)
-    + ` The machines compared are those with at least 100 rounds in this period (${O.machines.groups.join(", ")}). The ${ND} draw-order strategies in the backtest above scored average z-scores of ${dz}, so using the order did not help pick numbers.`;
-})();
-
-(function () {
-  const G = D.grammar;
-  if (!G) { document.getElementById("grammar-section").hidden = true; return; }
-  const E = G.eras, f2 = (x) => (x >= 0 ? "+" : "") + x.toFixed(3);
-  const pf = (p) => (p < 0.001 ? "<0.001" : p.toFixed(3));
-  $("#gr-lede").textContent = `If the draws followed any grammar, a model that learned it from earlier draws would encode later, unseen draws in fewer bits than a fair machine needs. A fair 59-ball draw costs ${E[0].order_limit_bits.toFixed(2)} bits to write down in the order the balls came out, or ${E[0].set_limit_bits.toFixed(2)} bits as a set of numbers. No honest model can go below that unless the machine has structure. Each era is tested on its own: the 59-ball era (models trained up to ${E[0].split}, tested on ${E[0].test} later rounds) and the 49-ball era from 1994 to 2015 (trained up to ${E[1].split}, tested on ${E[1].test}), which gives a second, independent check. Simulated fair histories (${G.sims} per test) supply the chance baselines.`;
-
-  // 1. held-out cross-entropy
-  const models = E[0].order_models.map((m, i) => [m, E[1].order_models[i]]).concat(E[0].set_models.map((m, i) => [m, E[1].set_models[i]]));
-  const nOrder = E[0].order_models.length;
-  const beat = models.filter(([a, b]) => a.excess < 0 && a.p_better < 0.05 || b.excess < 0 && b.p_better < 0.05);
-  const cell = (m) => `<td>${m.bits.toFixed(3)}</td><td class="${m.excess < 0 && m.p_better < 0.05 ? "good" : ""}">${m.model.startsWith("fair") ? "limit" : f2(m.excess)}</td>`;
-  $("#gr-ce").innerHTML = `<thead><tr><th>Model</th><th>Bits, 59-ball</th><th>vs fair</th><th>Bits, 49-ball</th><th>vs fair</th></tr></thead><tbody>` +
-    models.map(([a, b], i) => `${i === 0 ? '<tr><td colspan="5" class="h3" style="font-size:0.85rem">Balls in the order drawn</td></tr>' : ""}${i === nOrder ? '<tr><td colspan="5" class="h3" style="font-size:0.85rem">Sets of numbers (order ignored)</td></tr>' : ""}<tr><td style="white-space:normal;min-width:14rem">${esc(a.model)}</td>${cell(a)}${cell(b)}</tr>`).join("") + "</tbody>";
-  const worse = [...new Set(models.filter(([a, b]) => a.excess > 0.05 || b.excess > 0.05).map(([a]) => `"${a.model}"`))];
-  const closest = models.filter(([a]) => !a.model.startsWith("fair")).flatMap(([a, b]) => [[a, E[0].label], [b, E[1].label]]).sort((x, y) => x[0].excess - y[0].excess)[0];
-  $("#gr-ce-note").textContent = `Bits per draw on the test period; lower is better, and "vs fair" below zero would mean a real grammar. ${beat.length ? `${beat.length} model(s) beat the fair limit.` : `No model gets significantly below the fair limit in either era. The closest is "${closest[0].model}" in the ${closest[1].split(" (")[0]}, at ${f2(closest[0].excess)} bits (z = ${closest[0].z.toFixed(2)}, well within chance)${/alpha=(1000|10000|100000)$/.test(closest[0].setting) ? `. Its tuning on held-back training draws chose heavy smoothing (${closest[0].setting}), which makes it almost exactly the fair machine` : ""}. ${worse.length ? `${worse.join(" and ")} do clearly worse than fair, because the patterns they learned from the training years were noise that didn't recur.` : ""}`}`;
-
-  // 2. compression
-  $("#gr-comp").innerHTML = `<thead><tr><th>Era</th><th>Stream</th><th>Compressor</th><th>Real draws</th><th>Fair average</th><th>p</th></tr></thead><tbody>` +
-    E.flatMap((e) => e.compression.map((c) => `<tr><td>${e.pool}-ball</td><td>${c.stream}</td><td>${c.compressor}</td><td>${c.bytes.toLocaleString()} bytes</td><td>${c.fair_mean.toFixed(0)}</td><td class="${c.p_more_compressible < 0.01 ? "flag" : ""}">${pf(c.p_more_compressible)}</td></tr>`)).join("") + "</tbody>";
-
-  // 3. rules
-  const kinds = { pair: "Pair in the same draw", triple: "Triple in the same draw", digram: "Ball a, then ball b next" };
-  $("#gr-rules").innerHTML = `<thead><tr><th>Era</th><th>Rule type</th><th>Most frequent rule</th><th>Times seen</th><th>Expected each</th><th>Fair top rule (95%)</th><th>p</th></tr></thead><tbody>` +
-    E.flatMap((e) => Object.entries(e.rules).map(([k, r]) => `<tr><td>${e.pool}-ball</td><td>${kinds[k]}</td><td>${esc(r.top[0].rule)}</td><td>${r.observed_max}</td><td>${r.expected_each.toFixed(2)}</td><td>${r.fair_max_95.toFixed(0)}</td><td>${pf(r.p)}</td></tr>`)).join("") + "</tbody>";
-  $("#gr-rules-note").textContent = `There are 1,711 possible pairs in the 59-ball era (1,176 with 49 balls), tens of thousands of triples and thousands of ordered pairs, so some rule always looks frequent. The real test is whether the most frequent rule beats the most frequent rule in a fair history of the same length. "Fair top rule (95%)" is how often the top rule appears in the 95th-percentile fair history.`;
-
-  // 4. lags
-  const L = E.map((e) => e.lags);
-  $("#gr-lags").innerHTML = `<thead><tr><th>Era</th>${L[0].map((l) => `<th>${l.lag} back</th>`).join("")}</tr></thead><tbody>` +
-    E.map((e, i) => `<tr><td>${e.pool}-ball</td>${L[i].map((l) => `<td class="${Math.abs(l.z) >= 3 ? "flag" : ""}">${(l.z >= 0 ? "+" : "") + l.z.toFixed(1)}</td>`).join("")}</tr>`).join("") + "</tbody>";
-  const all = E.flatMap((e, i) => L[i].map((l) => ({ ...l, era: e.pool, other: E[1 - i].lags.find((o) => o.lag === l.lag) })));
-  const top = all.sort((a, b) => Math.abs(b.z) - Math.abs(a.z))[0];
-  const nTests = E.reduce((t, e) => t + e.order_models.length - 1 + e.set_models.length - 1 + e.compression.length + Object.keys(e.rules).length + e.lags.length, 0);
-  $("#gr-lag-note").textContent = `z-scores for how many numbers each round shares with the round k rounds earlier, against the 36/59 (or 36/49) expected by chance. The largest is ${(top.z >= 0 ? "+" : "") + top.z.toFixed(1)} in the ${top.era}-ball era at ${top.lag} back (p = ${top.p.toFixed(4)}): draws shared ${(Math.abs(top.mean_overlap / top.expected - 1) * 100).toFixed(0)}% ${top.z < 0 ? "fewer" : "more"} numbers with that round than chance predicts. In the other era the same lag gives ${(top.other.z >= 0 ? "+" : "") + top.other.z.toFixed(1)}, so it does not replicate. Across all ${nTests} tests on this page, a result this extreme somewhere has about a ${Math.min(99, Math.round((1 - Math.pow(1 - top.p, nTests)) * 100))}% chance of turning up with no grammar at all.`;
-
-  const compHit = E.some((e) => e.compression.some((c) => c.p_more_compressible < 0.01));
-  const ruleHit = E.some((e) => Object.values(e.rules).some((r) => r.p < 0.01));
-  const found = beat.length || compHit || ruleHit;
-  $("#gr-verdict").innerHTML = found
-    ? `<strong>Possible structure found.</strong><span>${esc("At least one test points to structure; see the flagged rows below. Treat it with caution until it replicates in the other era.")}</span>`
-    : `<strong>The Lotto speaks no grammar.</strong><span>${esc(`Its "language" is maximum-entropy noise. No model trained on earlier draws predicts later ones better than a fair machine, in either era. Compressors cannot shrink the real draw stream more than fair streams. The most frequent pairs, triples and ordered pairs are no more frequent than the top ones in simulated fair histories. ${Math.abs(top.other.z) < 2 ? `The one echo that stood out, at ${top.lag} rounds back in the ${top.era}-ball era, did not appear in the other era.` : `The strongest echo, at ${top.lag} rounds back, appeared in both eras and is worth watching, but on its own it is not enough to call a grammar.`}`)}</span>`;
-})();
-
-(function () {
-  const R = D.prime_radix;
-  if (!R) { document.getElementById("radix-section").hidden = true; return; }
-  const T = R.tests, rows = T.rows, keys = Object.keys(T.labels), cut = 0.05 / T.n_tests;
-  const pf = (p) => (p < 0.001 ? "<0.001" : p.toFixed(3));
-  const zf = (z) => (z >= 0 ? "+" : "") + z.toFixed(2);
-  const ex = (b) => { const w = rows.find((r) => r.base === b).width; let n = 59, d = []; for (let i = 0; i < w; i++) { d.unshift(n % b); n = Math.floor(n / b); } return d.join("-"); };
-  $("#rx-lede").textContent = `Each ball is rewritten in the first ten prime bases, as the repo's prime-radix pipeline does: 59 is ${ex(2)} in base 2, ${ex(7)} in base 7 and ${ex(29)} in base 29. The digits are then searched for structure. Conditional probabilities ask whether a digit depends on the digit before it or on the previous round. Copulas, measured with rank correlations that ignore each digit's own distribution, ask whether digits move together within a draw or from one round to the next. ${R.rounds.toLocaleString()} rounds from the 59-ball era are compared against ${T.sims} simulated fair histories, because drawing without replacement makes digits slightly dependent even in a fair machine.`;
-  $("#rx-tests").innerHTML = `<thead><tr><th>Base</th><th>Digits</th>${keys.map((k) => `<th style="white-space:normal;min-width:8rem">${esc(T.labels[k])}</th>`).join("")}</tr></thead><tbody>` +
-    rows.map((r) => `<tr><td>${r.base}</td><td>${r.width}</td>${keys.map((k) => `<td class="${r[k + "_p"] < cut ? "flag" : ""}">${pf(r[k + "_p"])}</td>`).join("")}</tr>`).join("") + "</tbody>";
-  const allP = rows.flatMap((r) => keys.map((k) => ({ p: r[k + "_p"], base: r.base, k })));
-  const minP = allP.reduce((a, b) => (b.p < a.p ? b : a));
-  const below05 = allP.filter((x) => x.p < 0.05).length;
-  const hits = allP.filter((x) => x.p < cut);
-  $("#rx-tests-note").textContent = `p-values from the simulated fair histories. ${T.n_tests} tests are run, so a finding needs p < ${cut.toFixed(5)}. ${hits.length ? `${hits.length} clear that threshold.` : `None does. The smallest p is ${pf(minP.p)} (base ${minP.base}: ${T.labels[minP.k]}). ${below05} of ${T.n_tests} fall below 0.05, against about ${(T.n_tests * 0.05).toFixed(0)} expected by chance alone.`}`;
-  const B = R.backtest.strategies, nn = Object.fromEntries(R.prime_nn.map((r) => [r.base, r]));
-  const base = B["random (baseline)"];
-  const cell = (s) => `<td>${zf(s.z_mean)}</td><td>${zf(s.z_min)} to ${zf(s.z_max)}</td>`;
-  $("#rx-bt").innerHTML = `<thead><tr><th>Base</th><th>Conditional probability z</th><th>seed range</th><th>Conditional copula z</th><th>seed range</th><th>Repo transformer z</th></tr></thead><tbody>` +
-    `<tr class="base-row"><td>random tickets</td>${cell(base)}<td></td><td></td><td></td></tr>` +
-    rows.map((r) => `<tr><td>${r.base}</td>${cell(B[`conditional probability, base ${r.base}`])}${cell(B[`conditional copula, base ${r.base}`])}<td>${nn[r.base] ? zf(nn[r.base].z) : "–"}</td></tr>`).join("") + "</tbody>";
-  const strat = Object.entries(B).filter(([k]) => k !== "random (baseline)");
-  const best = strat.reduce((a, b) => (b[1].z_mean > a[1].z_mean ? b : a));
-  const worst = strat.reduce((a, b) => (b[1].z_mean < a[1].z_mean ? b : a));
-  const steady = strat.filter(([, s]) => s.z_min > 0).map(([k]) => k);
-  const nnBest = R.prime_nn.reduce((a, b) => (b.z > a.z ? b : a));
-  $("#rx-bt-note").textContent = `Walk-forward over the ${R.backtest.test_rounds} rounds since ${R.split}, ${R.backtest.tickets_per_round} tickets per round, z-score of mean matches against the 36/59 chance rate, averaged over ${R.backtest.seeds.length} seeds. The best average is "${best[0]}" at ${zf(best[1].z_mean)}, and the worst is "${worst[0]}" at ${zf(worst[1].z_mean)}. With ${strat.length} strategies, averages within about ±3.0 are what chance produces. ${steady.length ? `${steady.length} of ${strat.length} stayed above zero in every seed. All seeds replay the same rounds, so their results move together and this says little on its own.` : "None stayed above zero in every seed."} The repo's prime-radix transformers, trained on draws up to ${R.split} and scored once on the later draws, peak at ${zf(nnBest.z)} (base ${nnBest.base}).`;
-  const found = hits.length || best[1].z_mean > 3.0;
-  $("#rx-verdict").innerHTML = found
-    ? `<strong>Something in the digits stands out.</strong><span>${esc("At least one test or strategy clears the multiple-testing threshold. It needs to replicate on new draws before it means anything.")}</span>`
-    : `<strong>No prime base reveals a pattern.</strong><span>${esc(`Rewriting the numbers in prime bases only changes how they are spelled. A fair draw stays fair in every base: no digit depends on the previous ball or the previous round beyond chance, the copulas match fair draws, and none of the ${strat.length} conditional-probability and copula strategies beats random tickets.`)}</span>`;
-})();
-
-(function () {
-  const S = D.spectral;
-  if (!S) { document.getElementById("spectral-section").hidden = true; return; }
-  const E = S.eras, cut = 0.05 / S.n_tests;
-  const pf = (p) => (p < 0.001 ? "<0.001" : p.toFixed(3));
-  const zf = (z) => (z >= 0 ? "+" : "") + z.toFixed(2);
-  $("#sp-lede").textContent = `Treat each era as a time series of rounds. Fourier analysis (the periodogram) looks for regular rhythms: a ball that keeps coming back every N rounds, or a draw sum that rises and falls on a cycle. Wavelets (Haar and Morlet) look for structure that is local in time: bursts, level shifts after a machine change, or a rhythm that switches on for a while. A fair machine makes every one of these series white noise, so each statistic is compared with ${E[0].sims.toLocaleString()} simulated fair histories of the same length.`;
-  const tests = E[0].tests.map((t, i) => [t, E[1].tests[i]]);
-  $("#sp-tests").innerHTML = `<thead><tr><th>Question</th><th>p, 59-ball</th><th>p, 49-ball</th><th>Strongest feature (59 / 49)</th></tr></thead><tbody>` +
-    tests.map(([a, b]) => `<tr><td style="white-space:normal;min-width:14rem">${esc(a.test)}</td><td class="${a.p < cut ? "flag" : ""}">${pf(a.p)}</td><td class="${b.p < cut ? "flag" : ""}">${pf(b.p)}</td><td style="white-space:normal;min-width:14rem;text-align:left">${esc([a.detail, b.detail].filter(Boolean).join(" / ") || "–")}</td></tr>`).join("") + "</tbody>";
-  const all = E.flatMap((e) => e.tests.map((t) => ({ ...t, era: e.pool })));
-  const minT = all.reduce((x, y) => (y.p < x.p ? y : x));
-  const other = E.find((e) => e.pool !== minT.era).tests.find((t) => t.key === minT.key);
-  const hits = all.filter((t) => t.p < cut);
-  const below = all.filter((t) => t.p < 0.05).length;
-  $("#sp-tests-note").textContent = `${S.n_tests} tests, so a finding needs p < ${cut.toFixed(4)}. ${hits.length ? `${hits.length} clear it.` : `None does. The smallest p is ${pf(minT.p)} in the ${minT.era}-ball era (${minT.test}${minT.detail ? `; ${minT.detail.replace(/^strongest: /, "")}` : ""}); in the other era the same test gives p = ${pf(other.p)}. ${below} of ${S.n_tests} ${below === 1 ? "falls" : "fall"} below 0.05, against about ${(S.n_tests * 0.05).toFixed(1)} expected by chance.`} The Haar scale shares show how each number's on/off series splits its variance from the finest scale (round to round) to the coarsest (about 128 rounds). White noise puts half at the finest scale and halves it at each coarser one, and the real draws do the same.`;
-  const B = S.backtest.strategies;
-  $("#sp-bt").innerHTML = `<thead><tr><th>Strategy</th><th>Average z</th><th>Seed range</th><th>Picks for the next draw</th></tr></thead><tbody>` +
-    Object.entries(B).map(([k, r]) => `<tr class="${k.startsWith("random") ? "base-row" : ""}"><td style="white-space:normal;min-width:14rem">${esc(k)}</td><td>${zf(r.z_mean)}</td><td>${zf(r.z_min)} to ${zf(r.z_max)}</td><td style="text-align:left">${S.backtest.picks[k] ? esc(S.backtest.picks[k][0].join(" ")) : "–"}</td></tr>`).join("") + "</tbody>";
-  const strat = Object.entries(B).filter(([k]) => !k.startsWith("random"));
-  const best = strat.reduce((a, b) => (b[1].z_mean > a[1].z_mean ? b : a));
-  $("#sp-bt-note").textContent = `Walk-forward over ${S.backtest.test_rounds} rounds since ${S.split}, each using the last 256 rounds before it, ${S.backtest.tickets_per_round} tickets per round, ${S.backtest.seeds.length} seeds. The Fourier strategy fits each ball's strongest cycles and projects them one round ahead. The wavelet strategy smooths each ball's recent on/off record at a chosen time scale and favours the balls running hot. The best average is "${best[0]}" at ${zf(best[1].z_mean)}, inside the chance band of about ±2.6 for ${strat.length} strategies.`;
-  const found = hits.length || best[1].z_mean > 2.6;
-  $("#sp-verdict").innerHTML = found
-    ? `<strong>Something rhythmic stands out.</strong><span>${esc("At least one test or strategy clears the multiple-testing threshold. It needs to replicate before it means anything.")}</span>`
-    : `<strong>No rhythms, no bursts.</strong><span>${esc(`The draw sequence is white noise at every frequency and every time scale. No ball returns on a schedule, no summary of the draw cycles, the variance splits across time scales exactly as fair noise does, and no Morlet or Haar burst exceeds what fair histories produce. Projecting cycles forward or riding wavelet-smoothed hot streaks does no better than random tickets.`)}</span>`;
-})();
-
-(function () {
-  const M = D.ml;
-  if (!M) { document.getElementById("ml-section").hidden = true; return; }
-  const E = M.eras, zf = (z) => (z >= 0 ? "+" : "") + z.toFixed(2), avg = (a) => a.reduce((x, y) => x + y, 0) / a.length;
-  const names = Object.keys(E[0].models);
-  $("#ml-lede").textContent = `Every round and number becomes one training example: will this number be drawn in this round? The ${M.features.length} features use only earlier rounds: recent frequency over several windows, rounds since last seen and the usual gap, whether it came up in the last round or two or was the last bonus, its usual position in the drawing order, its rate on the last machine used, its parity, decade and residues, and the previous draw's sum. Gradient boosting, a random forest and logistic regression are retrained every ${M.block} rounds on everything before, and a soft-voting ensemble averages them. Each era is tested on its own: the 59-ball era from ${E[0].split} (${E[0].test_rounds} rounds) and the 49-ball era from ${E[1].split} (${E[1].test_rounds} rounds).`;
-  $("#ml-table").innerHTML = `<thead><tr><th>Model</th><th>Era</th><th>Bits vs fair (z)</th><th>AUC (z)</th><th>Top-6 ticket z</th><th>Sampled tickets z</th></tr></thead><tbody>` +
-    names.flatMap((n) => E.map((e, i) => { const r = e.models[n]; return `<tr class="${n.startsWith("ensemble") ? "ens" : ""}"><td style="white-space:normal;min-width:11rem">${esc(n)}</td><td>${e.pool}-ball</td><td class="${r.excess_bits_z <= -3 ? "flag" : ""}">${(r.excess_bits >= 0 ? "+" : "") + r.excess_bits.toFixed(4)} (${zf(r.excess_bits_z)})</td><td class="${r.auc_z >= 3 ? "flag" : ""}">${r.auc.toFixed(4)} (${zf(r.auc_z)})</td><td>${zf(avg(r.top6_z))}</td><td>${zf(avg(r.sampled_z))}</td></tr>`; })).join("") + "</tbody>";
-  const all = names.flatMap((n) => E.map((e) => ({ n, e: e.pool, r: e.models[n] })));
-  const bestAuc = all.reduce((a, b) => (b.r.auc_z > a.r.auc_z ? b : a));
-  const bestBits = all.reduce((a, b) => (b.r.excess_bits < a.r.excess_bits ? b : a));
-  const learned = all.filter((x) => x.r.auc_z >= 3 && x.r.excess_bits_z <= -3);
-  $("#ml-note").textContent = `"Bits vs fair" is how many more bits per round the model needs than the fair rate of 6/${E[0].pool} (or 6/${E[1].pool}) to encode which numbers came up; below zero would mean it knows something. AUC is how well each round's ranking puts the drawn numbers first; 0.5 is chance. The best AUC is ${bestAuc.r.auc.toFixed(4)} (${bestAuc.n}, ${bestAuc.e}-ball era, z ${zf(bestAuc.r.auc_z)}), and the closest to the fair rate is ${(bestBits.r.excess_bits >= 0 ? "+" : "") + bestBits.r.excess_bits.toFixed(4)} bits (z ${zf(bestBits.r.excess_bits_z)}) (${bestBits.n}, ${bestBits.e}-ball era). Ticket z-scores average ${M.seeds.length} seeds against the 36/N chance rate. Positive bits with a large z mean the model is reliably worse than the fair rate: it learned patterns from the training years that were noise and didn't recur, which is what overfitting looks like. ${(() => { const low = all.reduce((a, b) => (b.r.auc_z < a.r.auc_z ? b : a)); if (low.r.auc_z > -2) return ""; const other = E.find((e) => e.pool !== low.e).models[low.n]; return `The lowest AUC, ${low.r.auc.toFixed(4)} (${low.n}, ${low.e}-ball era, z ${zf(low.r.auc_z)}), would mean the model ranks drawn numbers below chance, but in the other era the same model scores ${other.auc.toFixed(4)} (z ${zf(other.auc_z)}), so it does not replicate.`; })()} With ${all.length} model-era rows and four measures each, z-scores within about ±3 in the useful direction are chance.`;
-  const imp = E[0].importance.slice(0, 6);
-  const nonzero = E[0].importance.filter((r) => r.mean > 2 * r.sd && r.mean > 0);
-  $("#ml-imp").textContent = `Permutation importance on the last test block of the 59-ball era (how much worse log-loss gets when one feature is shuffled): ${imp.map((r) => `${r.feature} ${r.mean >= 0 ? "+" : ""}${r.mean.toExponential(1)}`).join(", ")}. ${nonzero.length ? `${nonzero.length} of ${E[0].importance.length} features (${nonzero.map((r) => r.feature).join(", ")}) ${nonzero.length === 1 ? "clears" : "clear"} twice ${nonzero.length === 1 ? "its" : "their"} own noise, about what chance gives when ${E[0].importance.length} features are shuffled. Every gain is a few ten-thousandths of a bit, against the roughly 0.47 bits per number the model needs either way.` : "None clears twice its own noise: shuffling any feature barely changes the model, because none of them carries information about the next draw."}${E[0].picks ? ` Trained on every round, the ensemble's probabilities for the next draw run from ${E[0].picks.min_prob.toFixed(4)} to ${E[0].picks.max_prob.toFixed(4)}, around the fair ${(6 / 59).toFixed(4)}. Its top-6 ticket is ${E[0].picks.top6.join(" ")}.` : ""}`;
-  $("#ml-verdict").innerHTML = learned.length
-    ? `<strong>A model found something.</strong><span>${esc(`${learned.map((x) => `${x.n} (${x.e}-ball)`).join(", ")} beats the fair rate on both log-loss and AUC. Check it replicates in the other era before trusting it.`)}</span>`
-    : `<strong>Nothing to learn.</strong><span>${esc(`Gradient boosting, the random forest, logistic regression and their ensemble all end up predicting close to the fair rate for every number, in both eras. None predicts held-out draws better than chance, ranks the drawn numbers better than chance, or picks tickets that match more often. The same pipeline catches a rigged "sticky" machine in the tests, so it can find a pattern when one exists.`)}</span>`;
-})();
-
-(function () {
-  const B = D.bayes;
-  if (!B) { document.getElementById("bayes-section").hidden = true; return; }
-  const E = B.eras, zf = (z) => (z >= 0 ? "+" : "") + z.toFixed(2);
-  const odds = (l10) => { const r = Math.pow(10, Math.abs(l10)); const s = r >= 100 ? Math.round(r).toLocaleString() : r.toFixed(1); return `${s} to 1 ${l10 >= 0 ? "for" : "against"}`; };
-  $("#by-lede").textContent = `Bayesian inference weighs two stories against each other and reports how much the draws should shift belief between them. The fair story: every ball equally likely. The biased story: each ball has its own probability, off fair by anything from about 3% to 100%, with the size of the biases itself unknown and averaged over. The Bayes factor is how much more likely the observed counts are under one story than the other. With even prior odds it converts directly into a posterior probability. The same comparison asks whether machines, ball sets or calendar years each favour different balls by 3% or more.`;
-  const rows = E.flatMap((e) => [
-    { era: e.pool, q: "Is the machine fair?", l10: e.log10_bf_fair, v: e.verdict, sims: e.fair_sims_median, extra: `P(fair) = ${(e.p_fair_posterior * 100).toFixed(1)}%` },
-    ...e.groups.map((g) => ({ era: e.pool, q: g.question.replace(/^do /, "Do ").replace(/\?$/, "?"), l10: g.log10_bf_same, v: g.verdict, sims: g.fair_median, extra: `${g.groups.length} groups` })),
-  ]);
-  $("#by-table").innerHTML = `<thead><tr><th>Era</th><th>Question</th><th>Bayes factor</th><th>Evidence</th><th>Typical fair history</th><th></th></tr></thead><tbody>` +
-    rows.map((r) => `<tr><td>${r.era}-ball</td><td style="white-space:normal;min-width:14rem;text-align:left">${esc(r.q)}</td><td>${odds(r.l10)} ${r.q.startsWith("Is") ? "fair" : "no difference"}</td><td style="text-align:left">${esc(r.v)}</td><td>${odds(r.sims)}</td><td>${esc(r.extra)}</td></tr>`).join("") + "</tbody>";
-  const fairRows = rows.filter((r) => r.q.startsWith("Is"));
-  const against = rows.filter((r) => r.l10 < -0.5);
-  $("#by-table-note").textContent = `Evidence labels follow Kass and Raftery: odds of 3 to 1 or more are substantial, 10 to 1 strong, 100 to 1 decisive. "Typical fair history" is the median Bayes factor when the same analysis is run on simulated fair draws of the same length; it calibrates the approximation of treating each ball as a separate draw. ${against.length ? `${against.length} comparison(s) lean towards bias or a difference.` : `Every comparison favours the fair or no-difference story, or is inconclusive${B.eras.every((e) => e.p_low > 0.05 && e.groups.every((g) => g.p_low > 0.05)) ? ", and each sits where fair histories typically land" : ""}.`} Small biases can't be ruled out completely: with a few thousand draws the data can only say that any bias is small.`;
-  // forest plot
-  (function () {
-    const e = E[0], R = e.ball_rel, K = R.mid.length;
-    const W = 900, H = 260, L = 46, Rm = 10, T = 14, Bm = 30;
-    const lo = Math.min(0.8, ...R.lo) - 0.01, hi = Math.max(1.2, ...R.hi) + 0.01;
-    const x = (i) => L + (i + 0.5) * (W - L - Rm) / K, y = (v) => T + (hi - v) / (hi - lo) * (H - T - Bm);
-    let g = "";
-    for (let v = Math.ceil(lo * 20) / 20; v <= hi + 1e-9; v += 0.05) g += `<line x1="${L}" x2="${W - Rm}" y1="${y(v)}" y2="${y(v)}" stroke="var(--grid)"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${Math.round((v - 1) * 100)}%</text>`;
-    g += `<line x1="${L}" x2="${W - Rm}" y1="${y(1)}" y2="${y(1)}" stroke="var(--fg)" stroke-width="1.5" stroke-dasharray="4 3"/>`;
-    for (let i = 0; i < K; i++) {
-      g += `<line x1="${x(i)}" x2="${x(i)}" y1="${y(R.lo[i])}" y2="${y(R.hi[i])}" stroke="var(--s1)" stroke-width="2" stroke-linecap="round"/><circle cx="${x(i)}" cy="${y(R.mid[i])}" r="3.5" fill="var(--s1)" stroke="var(--surface)" stroke-width="1.5"/>`;
-      g += `<rect x="${x(i) - 7}" y="${T}" width="14" height="${H - T - Bm}" fill="transparent" data-tip="Ball ${i + 1}: drawn ${R.count[i]} times; ${Math.round((R.mid[i] - 1) * 100)}% vs fair (95%: ${Math.round((R.lo[i] - 1) * 100)}% to ${Math.round((R.hi[i] - 1) * 100)}%)"/>`;
-      if ((i + 1) % 5 === 0 || i === 0) g += `<text x="${x(i)}" y="${H - 10}" text-anchor="middle">${i + 1}</text>`;
-    }
-    $("#by-forest").innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="min-width:640px" role="img" aria-label="Posterior 95% credible interval of each ball's probability relative to fair">${g}</svg>`;
-    attachTip($("#by-forest"));
-    const widest = Math.max(...R.hi.map((h, i) => Math.max(h - 1, 1 - R.lo[i])));
-    const outside = E.map((ee) => ee.ball_rel.lo.map((l, i) => (l > 1 || ee.ball_rel.hi[i] < 1 ? i + 1 : 0)).filter(Boolean));
-    $("#by-forest-note").textContent = `Each line is a ball's 95% credible interval for how much more or less often it comes out than fair; the dot is the posterior median. ${(() => { const cp = e.concentration_posterior, m = cp.p.indexOf(Math.max(...cp.p)), top = m === cp.p.length - 1; return `The posterior pulls every ball strongly towards fair: the data ${top ? `push the Dirichlet concentration to the top of the range considered (${Math.round(Math.pow(10, cp.log10_a[m])).toLocaleString()}), which means no detectable spread between balls at all` : `prefer a Dirichlet concentration around ${Math.round(Math.pow(10, cp.log10_a[m])).toLocaleString()}`}.`; })()} ${outside[0].length ? `${outside[0].length} ball(s) have intervals that exclude fair (${outside[0].join(", ")}).` : "Even the hottest and coldest balls get intervals that include zero."} The widest interval reaches ${Math.round(widest * 100)}% from fair. The posterior probability that any ball is more than 10% off fair is ${(e.p_any_off_10pct * 100).toFixed(1)}% in the 59-ball era and ${(E[1].p_any_off_10pct * 100).toFixed(1)}% in the 49-ball era.`;
-  })();
-  // evidence path
-  (function () {
-    const W = 900, H = 240, L = 46, Rm = 70, T = 14, Bm = 30;
-    const maxR = Math.max(...E.map((e) => e.rounds));
-    const all = E.flatMap((e) => e.evidence_path.map((p) => p.log10_bf));
-    const lo = Math.min(-0.5, ...all) - 0.1, hi = Math.max(2.2, ...all) + 0.1;
-    const x = (r) => L + r / maxR * (W - L - Rm), y = (v) => T + (hi - v) / (hi - lo) * (H - T - Bm);
-    let g = "";
-    [[0, "even"], [1, "strong for fair"], [2, "decisive"]].forEach(([v, lab]) => { if (v <= hi) g += `<line x1="${L}" x2="${W - Rm}" y1="${y(v)}" y2="${y(v)}" stroke="var(--grid)" ${v === 0 ? 'stroke-width="1.5"' : 'stroke-dasharray="3 3"'}/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${v === 0 ? "1:1" : Math.pow(10, v) + ":1"}</text><text x="${L + 6}" y="${y(v) - 5}">${lab}</text>`; });
-    for (let r = 0; r <= maxR; r += 500) g += `<text x="${x(r)}" y="${H - 10}" text-anchor="middle">${r}</text>`;
-    E.forEach((e, i) => {
-      const col = i === 0 ? "var(--s1)" : "var(--s2)";
-      const pts = e.evidence_path.map((p) => `${x(p.round).toFixed(1)},${y(p.log10_bf).toFixed(1)}`).join(" ");
-      const last = e.evidence_path[e.evidence_path.length - 1];
-      g += `<polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round"/><circle cx="${x(last.round)}" cy="${y(last.log10_bf)}" r="4" fill="${col}" stroke="var(--surface)" stroke-width="2"/><text x="${x(last.round) + 8}" y="${y(last.log10_bf) + 4}" style="fill:var(--fg)">${e.pool}-ball</text>`;
-      e.evidence_path.forEach((p) => { g += `<circle cx="${x(p.round)}" cy="${y(p.log10_bf)}" r="6" fill="transparent" data-tip="${e.pool}-ball era, after ${p.round} rounds: ${odds(p.log10_bf)} fair"/>`; });
-    });
-    g += `<text x="${(W - Rm + L) / 2}" y="${H}" text-anchor="middle">rounds drawn</text>`;
-    $("#by-path").innerHTML = `<svg viewBox="0 0 ${W} ${H + 6}" style="min-width:640px" role="img" aria-label="Bayes factor for a fair machine as rounds accumulate">${g}</svg>`;
-    attachTip($("#by-path"));
-  })();
-  const S = B.backtest.strategies;
-  $("#by-bt").innerHTML = `<thead><tr><th>Strategy</th><th>Average z</th><th>Seed range</th><th>Picks for the next draw</th></tr></thead><tbody>` +
-    Object.entries(S).map(([k, r]) => `<tr class="${k.startsWith("random") ? "base-row" : ""}"><td style="white-space:normal;min-width:14rem">${esc(k)}</td><td>${zf(r.z_mean)}</td><td>${zf(r.z_min)} to ${zf(r.z_max)}</td><td style="text-align:left">${B.backtest.picks[k] ? esc(B.backtest.picks[k][0].join(" ")) : "–"}</td></tr>`).join("") + "</tbody>";
-  const strat = Object.entries(S).filter(([k]) => !k.startsWith("random"));
-  const best = strat.reduce((a, b) => (b[1].z_mean > a[1].z_mean ? b : a));
-  $("#by-bt-note").textContent = `Walk-forward over ${B.backtest.test_rounds} rounds since ${B.split}, ${B.backtest.tickets_per_round} tickets per round, ${B.backtest.seeds.length} seeds. Posterior-mean top 6 plays the six balls with the highest posterior probability. Thompson sampling draws one plausible set of ball probabilities from the posterior per ticket and plays its top six, so it explores in proportion to the remaining uncertainty. Because the posterior is so close to fair, all of them behave like random tickets. The best average is "${best[0]}" at ${zf(best[1].z_mean)}.`;
-  const minFair = Math.min(...fairRows.map((r) => r.l10));
-  const allIn = E.every((ee) => ee.ball_rel.lo.every((l, i) => l <= 1 && ee.ball_rel.hi[i] >= 1));
-  $("#by-verdict").innerHTML = against.length
-    ? `<strong>Some evidence against a fair machine.</strong><span>${esc(`${against.length} comparison(s) lean towards bias or a difference; see the table.`)}</span>`
-    : `<strong>The evidence favours a fair machine.</strong><span>${esc(`In both eras the draws are at least ${Math.pow(10, minFair).toFixed(0)} times more likely under a fair machine than under one with biases of 3% or more (posterior probability of fairness ${E.map((e) => (e.p_fair_posterior * 100).toFixed(1) + "%").join(" and ")}). Machines, ball sets and calendar years show no material differences, ${allIn ? "every ball's credible interval includes fair" : "almost every ball's credible interval includes fair"}, and Bayesian strategies do no better than random tickets.`)}</span>`;
-})();
-
-(function () {
-  const RL = D.rl;
-  if (!RL) { document.getElementById("rl-section").hidden = true; return; }
-  const E = RL.eras, zf = (z) => (z >= 0 ? "+" : "") + z.toFixed(2);
-  const names = Object.keys(E[0].agents);
-  $("#rl-lede").textContent = `Each round an agent buys ${RL.tickets} tickets (its actions) and is rewarded with the number of balls each one matches. Its tickets can't change future draws, so this is the one-step case of reinforcement learning, a contextual bandit. Agents learn online from the first rounds of each era and keep learning through the test period. Three families take part. Bandits choose among ${RL.arms.length} simple strategies; four of them see only the reward of the strategy they played, and Hedge sees every strategy's result. Linear Thompson sampling picks numbers from a Bayesian model of the machine-learning features. REINFORCE learns a softmax policy over the numbers by policy gradient from its own rewards.`;
-  $("#rl-table").innerHTML = `<thead><tr><th>Agent</th><th>59-ball z</th><th>seed range</th><th>49-ball z</th><th>seed range</th></tr></thead><tbody>` +
-    names.map((n) => { const a = E[0].agents[n], b = E[1].agents[n]; return `<tr><td style="white-space:normal;min-width:16rem">${esc(n)}</td><td class="${a.z_mean >= 3 ? "flag" : ""}">${zf(a.z_mean)}</td><td>${zf(a.z_min)} to ${zf(a.z_max)}</td><td class="${b.z_mean >= 3 ? "flag" : ""}">${zf(b.z_mean)}</td><td>${zf(b.z_min)} to ${zf(b.z_max)}</td></tr>`; }).join("") + "</tbody>";
-  const cols = ["var(--s1)", "var(--s2)", "var(--c3)", "var(--c4)", "var(--c5)", "var(--c6)", "var(--c7)"];
-  const short = (n) => n.replace(" over strategies", "").replace(" (sees every strategy's result)", "").replace(" (adversarial bandit)", "").replace(" over numbers (contextual)", "").replace(" over numbers", "");
-  $("#rl-legend").innerHTML = names.map((n, i) => `<span style="--c:${cols[i]}">${esc(short(n))}</span>`).join("") + `<span style="--c:var(--grid)">±2σ chance band</span>`;
-  (function () {
-    const e = E[0], W = 900, H = 280, L = 46, R = 12, T = 12, B = 30, n = e.chance_band.length;
-    const all = names.flatMap((k) => e.paths[k]).concat(e.chance_band, e.chance_band.map((v) => -v));
-    const lo = Math.min(...all) * 1.05, hi = Math.max(...all) * 1.05;
-    const x = (i) => L + i / (n - 1) * (W - L - R), y = (v) => T + (hi - v) / (hi - lo) * (H - T - B);
-    let g = `<path d="M${x(0)},${y(e.chance_band[0])} ${e.chance_band.map((v, i) => `L${x(i)},${y(v)}`).join(" ")} ${e.chance_band.map((v, i) => `L${x(n - 1 - i)},${y(-e.chance_band[n - 1 - i])}`).join(" ")} Z" fill="var(--grid)" opacity="0.7"/>`;
-    const step = Math.pow(10, Math.floor(Math.log10((hi - lo) / 4)));
-    for (let v = Math.ceil(lo / step) * step; v <= hi; v += step) g += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--grid)" ${Math.abs(v) < 1e-9 ? 'stroke-width="1.5" style="stroke:var(--muted)"' : ""}/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${(v > 0 ? "+" : "") + v.toFixed(step < 1 ? 1 : 0)}</text>`;
-    for (let r = 0; r < n; r += 100) g += `<text x="${x(r)}" y="${H - 10}" text-anchor="middle">${r}</text>`;
-    names.forEach((k, i) => { g += `<polyline points="${e.paths[k].map((v, j) => `${x(j).toFixed(1)},${y(v).toFixed(1)}`).join(" ")}" fill="none" stroke="${cols[i]}" stroke-width="2" stroke-linejoin="round" data-tip="${esc(short(k))}: ${zf(e.paths[k][n - 1])} matches per ticket above chance after ${n} rounds"/>`; });
-    g += `<text x="${(W + L) / 2}" y="${H + 4}" text-anchor="middle">test rounds</text>`;
-    $("#rl-path").innerHTML = `<svg viewBox="0 0 ${W} ${H + 8}" style="min-width:640px" role="img" aria-label="Cumulative matches per ticket above chance for each agent">${g}</svg>`;
-    attachTip($("#rl-path"));
-  })();
-  const hedge = E[0].shares[names.find((n) => n.startsWith("Hedge"))];
-  const top = Object.entries(hedge).sort((a, b) => b[1] - a[1]).slice(0, 3);
-  const bestArm = Object.entries(E[0].arms).reduce((a, b) => (b[1].z_mean > a[1].z_mean ? b : a));
-  const ent = E[0].reinforce_entropy_share;
-  $("#rl-note").textContent = `Each line is an agent's running total of matches per ticket minus the 36/59 chance rate, for one seed. The grey band is where ${RL.tickets} independent random tickets per round land 95% of the time. Agents whose tickets are near-copies of each other, such as a bandit backing a fixed top-6 strategy, wander outside it more easily: ${RL.tickets} copies of one line are really a single bet. The z-scores in the table use each round's average, so they allow for that. Hedge, which sees every strategy's result, leaned towards ${top.map(([k, v]) => `${k} (${(v * 100).toFixed(0)}%)`).join(", ")}: whichever strategies happened to be ahead when it was deciding. It scored z ${zf(E[0].agents[names.find((n) => n.startsWith("Hedge"))].z_mean)}, because an early lead in a fair draw doesn't last. The best single strategy in hindsight was "${bestArm[0]}" at z ${zf(bestArm[1].z_mean)}, about what the best of ${RL.arms.length} random strategies usually scores. REINFORCE's policy kept ${(ent * 100).toFixed(1)}% of the maximum possible entropy, so after all that training it still picks numbers almost at random. It is regularized to relax back to uniform when nothing pays: an earlier, unregularized version chased the noise into a narrow, overconfident policy that did no better. On a rigged machine where last round's numbers are four times as likely to repeat, the same agents pull clearly ahead in the tests.`;
-  const learned = names.filter((n) => E.every((e) => e.agents[n].z_mean >= 3));
-  $("#rl-verdict").innerHTML = learned.length
-    ? `<strong>An agent learned something.</strong><span>${esc(`${learned.join(", ")} beat chance in both eras.`)}</span>`
-    : `<strong>There is nothing to learn.</strong><span>${esc(`No agent beats chance in either era: the bandits can't find a strategy worth backing, the contextual bandit can't find numbers worth backing, and the policy gradient never moves far from random. Exploration is wasted here, because the whole draw is revealed every round anyway.`)}</span>`;
-})();
-
-$("#method").textContent = `Data: the full UK Lotto history from lottery.merseyworld.com (${D.era.last_draw.toLocaleString()} draws since 1994). The most recent rounds match the official National Lottery results exactly. Only draws since ${D.era.first_date} are used, when the pool grew from 49 to 59 balls. Each round in the test period was predicted using only draws from earlier dates, and both rounds of a two-round draw count as separate targets. The transformer was retrained every 26 rounds. Performance weights use a softmax over each strategy's mean hits in its last ${D.window} rounds (τ = ${D.tau}). z-scores compare mean hits with the exact hypergeometric expectation of 36/59. Seeds used: ${D.seeds.join(", ")}. This page is a statistics exercise. Lotto draws are independent and random, and no method here changes the odds of any ticket.`;
-// ---------- menu: one tab of sections at a time, chosen by the URL hash (#live, #replay, ...)
+// ---------- menu: one tab of sections at a time, chosen by the URL hash
 (function () {
   const nav = $("#tabs"), links = [...nav.querySelectorAll("a")];
   const parts = [...document.querySelectorAll("[data-tab]")];
-  const has = (t) => parts.some((el) => el.dataset.tab === t && !el.hidden);
-  links.forEach((a) => { if (!has(a.hash.slice(1))) a.hidden = true; });  // studies with no data yet
-  const tabs = links.filter((a) => !a.hidden).map((a) => a.hash.slice(1));
+  const tabs = links.map((a) => a.hash.slice(1));
   function show(scroll) {
     const t = tabs.includes(location.hash.slice(1)) ? location.hash.slice(1) : tabs[0];
     parts.forEach((el) => el.classList.toggle("off", el.dataset.tab !== t));
     links.forEach((a) => (a.hash.slice(1) === t ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current")));
-    const cur = links.find((a) => a.hash.slice(1) === t);
-    if (cur) cur.scrollIntoView({ block: "nearest", inline: "nearest" });
     if (scroll && window.scrollY > nav.offsetTop) window.scrollTo({ top: nav.offsetTop });
   }
   window.addEventListener("hashchange", () => show(true));

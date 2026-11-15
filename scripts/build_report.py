@@ -1,145 +1,16 @@
-"""Inject results/walk_forward.json (plus results/grammar.json, results/prime_radix.json,
-results/spectral.json, results/ml_ensemble.json, results/bayesian.json, results/rl.json and
-results/live_scores.json, if present) into
-results/report_template.html -> results/report.html, and combine every investigation's
-next-draw picks into the wheel (also written to results/combined_picks.json)."""
-import json, os, sys
+"""Build results/report.html: results/assimilation.json (written by sim/bin/assimilate) injected into
+results/report_template.html. No calculation happens here.
 
-import numpy as np
-
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import popularity_study as ps  # noqa: E402
-
-POOL, PICK = 59, 6
-EXTRA = [("grammar", "results/grammar.json"), ("prime_radix", "results/prime_radix.json"),
-         ("spectral", "results/spectral.json"), ("ml", "results/ml_ensemble.json"),
-         ("bayes", "results/bayesian.json"),
-         ("rl", "results/rl.json"), ("live", "results/live_scores.json"),
-         ("popularity", "results/popularity.json"), ("replay", "results/replay_wheel.json"),
-         ("radix_strat", "results/radix_strategies.json"), ("wheel_study", "results/wheel_study.json"),
-         ("monte_carlo", "results/monte_carlo.json"), ("sequence", "results/sequence_study.json"),
-         ("consensus", "results/consensus_wheels.json"), ("frozen", "results/frozen_wheel.json"),
-         ("nested_mc", "results/nested_mc.json"), ("assimilation", "results/assimilation.json")]
-
-
-def pick_sources(payload: dict) -> list:
-    """(investigation, [lines]) for every investigation that made next-draw picks.
-    Random baselines and the backtest's own ensembles are left out (they would double count)."""
-    out = []
-    wf = [line for s, lines in payload.get("predictions", {}).items()
-          if not s.startswith(("random", "ENSEMBLE")) for line in lines]
-    if wf:
-        out.append(("Strategy backtest", wf))
-    for keys, label in [(("prime_radix", "radix_strat"), "Prime radix"), (("spectral",), "Fourier and wavelets"),
-                        (("bayes",), "Bayesian"), (("rl",), "Reinforcement learning")]:
-        # the classic strategies played on prime-base digits vote within the prime-radix investigation
-        lines = [line for key in keys for s, ls in ((payload.get(key) or {}).get("backtest", {}).get("picks") or {}).items()
-                 if not s.startswith("random") for line in ls]
-        if lines:
-            out.append((label, lines))
-    ml = (payload.get("ml") or {}).get("eras", [{}])[0].get("picks")
-    if ml:
-        out.append(("Machine learning", [ml["top6"]] + ml["sampled"]))
-    return out
-
-
-WHEEL_LINES = 15
-
-
-def spread_lines(score, seed: int = 0, n_lines: int = WHEEL_LINES, tries: int = 5000) -> list:
-    """n_lines lines on all 59 numbers in which no two lines share a pair of numbers, so their 2+ and 3+
-    matches almost never come in the same round and some line wins in as many rounds as n_lines lines
-    can. The numbers with the most combined support are the ones played twice (15 lines need 90 places:
-    31 numbers twice, 28 once). Layouts with a pattern ticket or a line with two consecutive pairs are
-    skipped (the popularity model can't price those)."""
-    from popularity_study import pattern_line
-    score = np.asarray(score, dtype=float)
-    rng = np.random.default_rng(seed)
-    order = np.argsort(-(score + rng.random(POOL) * 1e-9))
-    uses = np.ones(POOL, dtype=int)
-    uses[order[:n_lines * PICK - POOL]] = 2
-    for _ in range(tries):
-        left, used, lines = uses.copy(), np.zeros((POOL, POOL), dtype=bool), []
-        for _ in range(n_lines):
-            line = []
-            while len(line) < PICK:
-                ok = np.where((left > 0) & ~used[line].any(0))[0] if line else np.where(left > 0)[0]
-                ok = ok[~np.isin(ok, line)]
-                if not len(ok):
-                    break
-                line.append(int(ok[np.argmax(left[ok] + rng.random(len(ok)))]))  # numbers with most uses left first
-            if len(line) < PICK or pattern_line(np.array(line) + 1):
-                break
-            left[line] -= 1
-            used[np.ix_(line, line)] = True
-            lines.append(sorted(j + 1 for j in line))
-        if len(lines) == n_lines:
-            return lines
-    raise RuntimeError("no pair-free layout found")
-
-
-def wheel_lines(score, seed: int = 0) -> tuple:
-    """(candidates, lines): the wheel plays all 59 numbers in pair-free lines (spread_lines)."""
-    return list(range(1, POOL + 1)), spread_lines(score, seed)
-
-
-def wheel(score, seed: int = 0) -> dict:
-    """The wheel option with its odds."""
-    from collections import Counter
-    cand, lines = wheel_lines(score, seed)
-    uses = Counter(v for l in lines for v in l)
-    return {"candidates": cand, "lines": lines, "layout": "no pair of numbers in two lines",
-            "twice": sorted(v for v, c in uses.items() if c == 2), "coverage": coverage(lines)}
-
-
-def coverage(lines: list, n: int = 1_000_000, seed: int = 0, chunk: int = 100_000) -> dict:
-    """Chance, per round, that at least one of the lines matches 2+ and 3+ numbers (simulated draws)."""
-    rng = np.random.default_rng(seed)
-    c2 = c3 = 0
-    for _ in range(n // chunk):
-        hits = np.zeros((chunk, POOL + 1), dtype=bool)
-        np.put_along_axis(hits, np.argsort(rng.random((chunk, POOL)), axis=1)[:, :PICK] + 1, True, axis=1)
-        best = np.max([hits[:, l].sum(1) for l in lines], axis=0)
-        c2 += int((best >= 2).sum())
-        c3 += int((best >= 3).sum())
-    return {"distinct": len({x for l in lines for x in l}), "p2": c2 / n, "p3": c3 / n}
-
-
-def combine(sources: list) -> dict:
-    """Combined support: an equal vote per investigation, spread evenly over its lines."""
-    score = np.zeros(POOL)
-    for _, lines in sources:
-        v = np.zeros(POOL)
-        for line in lines:
-            v[np.array(line) - 1] += 1
-        score += v / v.sum()
-    score /= len(sources)
-    return {"score": score.round(5).tolist(), "sources": [{"investigation": s, "lines": len(ls)} for s, ls in sources]}
+    python scripts/build_report.py
+"""
+import json
 
 
 def main():
-    src = sys.argv[1] if len(sys.argv) > 1 else "results/walk_forward.json"
-    payload = json.load(open(src))
-    for key, path in EXTRA:
-        if os.path.exists(path):
-            payload[key] = json.load(open(path))
-    sources = pick_sources(payload)
-    if sources:
-        seed = int(payload.get("next_draw_date", "2026-01-01").replace("-", ""))
-        C = payload["combined"] = combine(sources)
-        C["next_draw_date"] = payload.get("next_draw_date")
-        C["wheel"] = wheel(C["score"], seed)
-        if payload.get("popularity"):
-            prev = sorted({int(r[f"n{i}"]) for r in payload.get("latest") or [] for i in range(1, 7)})
-            pop = ps.Popularity(payload["popularity"]["beta"], payload["popularity"]["lam"])
-            C["wheel"]["popularity"] = [{"popularity": round(pop.popularity(l, prev), 3), "value": round(pop.value(l, prev), 3)}
-                                        for l in C["wheel"]["lines"]]
-        with open("results/combined_picks.json", "w") as fh:
-            json.dump(payload["combined"], fh, indent=1)
-    data = json.dumps(payload, separators=(",", ":")).replace("</", "<\\/")
+    data = json.dumps({"assimilation": json.load(open("results/assimilation.json"))}, separators=(",", ":")).replace("</", "<\\/")
     html = open("results/report_template.html").read().replace("/*DATA*/null", data)
     open("results/report.html", "w").write(html)
-    print("wrote results/report.html" + (f"; wheel for {payload['combined']['next_draw_date']}" if sources else ""))
+    print("wrote results/report.html")
 
 
 if __name__ == "__main__":
