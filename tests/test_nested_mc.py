@@ -6,7 +6,7 @@ ROOT = os.path.join(os.path.dirname(__file__), "..")
 BIN = os.path.join(ROOT, "sim", "bin", "nested_mc")
 
 
-@pytest.mark.skipif(not os.path.exists(BIN), reason="sim/bin/nested_mc not built (docker build ... sim)")
+@pytest.mark.skipif(not os.path.exists(BIN), reason="sim/bin/nested_mc not built (docker build --target native ... sim)")
 @pytest.mark.parametrize("backend", ["cpu", "threads"])
 def test_fair_model_matches_the_exact_odds(tmp_path, backend):
     out = tmp_path / "n.json"

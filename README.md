@@ -17,7 +17,9 @@ results are published as a report at https://svr-net.github.io/lotto/.
   - `score_live.py`: scores the committed wheels against each new draw;
   - `freeze_wheel.py`: freezes a wheel's lines (`results/frozen_wheel.json`) and exports them;
   - `build_report.py`: builds `results/report.html` from `results/report_template.html`.
-- `sim/nested_mc.cpp`: nested Monte Carlo in C++, reset to the real draws at every step.
+- `sim/`: the Monte Carlo simulator in C++. `kernel.hpp` is the shared kernel; `nested_mc.cpp` is the
+  nested Monte Carlo, reset to the real draws at every step; `web.cpp` is the WebAssembly build the
+  report runs on the viewer's device (CPU or WebGPU).
 - `lotto_nn/`: the small transformer and n-gram models the studies use.
 - `tests/`: `python -m pytest`.
 
@@ -25,7 +27,8 @@ results are published as a report at https://svr-net.github.io/lotto/.
 
 ```sh
 pip install -r requirements.txt
-docker build --network=host --output type=local,dest=sim/bin sim   # builds sim/bin/nested_mc
+docker build --network=host --target native --output type=local,dest=sim/bin sim       # sim/bin/nested_mc
+docker build --network=host --target web --output type=local,dest=results/exports sim  # lotto_sim.wasm
 python -I scripts/fetch_merseyworld.py && python scripts/score_live.py
 python scripts/walk_forward_backtest.py --out results               # then each study script
 ./sim/bin/nested_mc --first-draw 2026-11-07

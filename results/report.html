@@ -122,6 +122,10 @@ nav.tabs a:focus-visible { outline: 2px solid var(--s1); outline-offset: 2px; }
     <div class="picks5-lines" id="fz-lines"></div>
     <p class="note" id="fz-links"></p>
     <p class="note" id="fz-record"></p>
+    <div id="sim" style="display:grid;gap:8px">
+      <div class="picks5-head"><button id="sim-run" type="button" style="font:600 0.9rem var(--body);padding:8px 14px;border-radius:999px;border:1px solid var(--s2);background:var(--surface);color:var(--fg);cursor:pointer">Simulate the next year on this device</button><span class="note" id="sim-status"></span></div>
+      <div class="table-wrap" id="sim-wrap" hidden><table id="sim-table"></table></div>
+    </div>
   </div>
 <div class="picks5" id="picks5" data-tab="next" hidden>
     <div class="picks5-head"><strong>Wheel for <span id="nd5"></span></strong><span class="note" id="wheel-sub"></span></div>
@@ -413,6 +417,70 @@ const P3_LINE = 0.0108641, P2_LINE = 0.1083479;
   const t = LV.summary.frozen_lines || { line_rounds: 0, prize: 0, mean: 0 };
   const last = E[E.length - 1], lb = last.rounds.map((_, j) => Math.max(...last.frozen_wheel.lines.map((s) => s.matches[j])));
   $("#fz-record").textContent = `Since ${dl(F.first_draw)}: ${E.length} draw${E.length > 1 ? "s" : ""}, ${rounds.length} rounds; some line matched 3+ in ${rounds.filter((r) => r.best >= 3).length} rounds and 2+ in ${rounds.filter((r) => r.best >= 2).length}; ${t.prize} prize-winning line${t.prize === 1 ? "" : "s"} in ${t.line_rounds} line-rounds (mean ${t.mean != null ? t.mean.toFixed(2) : "–"} matches, 0.61 by chance). Last draw (${dl(last.date)}): ${last.frozen_wheel.in_numbers.join(" / ")} of the drawn numbers among the 15, best line ${lb.join(" / ")}.`;
+})();
+
+// ---------- the frozen wheel simulated on the viewer's device: sim/web.cpp as WebAssembly, on CPU or WebGPU
+(function () {
+  const F = D.frozen;
+  if (!F || typeof WebAssembly === "undefined") { const el = $("#sim"); if (el) el.hidden = true; return; }
+  const PATHS = 20000, gbp = (x) => (x < 0 ? "−" : "") + "£" + Math.abs(Math.round(x)).toLocaleString("en-GB");
+  let kernel, device;
+  async function load() {
+    if (kernel) return;
+    const stub = () => 0;
+    const { instance } = await WebAssembly.instantiateStreaming(fetch("data/lotto_sim.wasm"), { wasi_snapshot_preview1: { fd_close: stub, fd_seek: stub, fd_write: stub } });
+    kernel = instance.exports;
+    kernel._initialize();
+    try {  // WebGPU only on a real GPU: a software adapter is slower than the WebAssembly kernel
+      const adapter = navigator.gpu && await navigator.gpu.requestAdapter({ powerPreference: "high-performance" });
+      const soft = adapter && (adapter.isFallbackAdapter || (adapter.info && adapter.info.isFallbackAdapter));
+      if (adapter && (!soft || new URLSearchParams(location.search).get("sim") === "webgpu")) device = await adapter.requestDevice();
+    } catch (e) { device = null; }
+    if (new URLSearchParams(location.search).get("sim") === "cpu") device = null;
+  }
+  async function gpuPass(weighted, seed) {  // the compute pass C++ prepared: shader, inputs and output buffer
+    const mem = () => kernel.memory.buffer, out = kernel.gpu_prepare(F.lines.length, weighted, PATHS, seed);
+    const bytes = new Uint8Array(mem(), kernel.gpu_shader()), code = new TextDecoder().decode(bytes.subarray(0, bytes.indexOf(0)));
+    const U = GPUBufferUsage, size = PATHS * 3 * 2 * 4;
+    const buf = (ptr, len, usage) => { const b = device.createBuffer({ size: len, usage: usage | U.COPY_DST }); device.queue.writeBuffer(b, 0, new Uint8Array(mem(), ptr, len)); return b; };
+    const bufs = [buf(kernel.gpu_params_ptr(), 32, U.UNIFORM), buf(kernel.lines_ptr(), F.lines.length * 8, U.STORAGE), buf(kernel.weights_ptr(), 236, U.STORAGE),
+      buf(kernel.gpu_checkpoints_ptr(), 16, U.STORAGE), device.createBuffer({ size, usage: U.STORAGE | U.COPY_SRC })];
+    const read = device.createBuffer({ size, usage: U.MAP_READ | U.COPY_DST });
+    const pipe = device.createComputePipeline({ layout: "auto", compute: { module: device.createShaderModule({ code }), entryPoint: "main" } });
+    const enc = device.createCommandEncoder(), pass = enc.beginComputePass();
+    pass.setPipeline(pipe);
+    pass.setBindGroup(0, device.createBindGroup({ layout: pipe.getBindGroupLayout(0), entries: bufs.map((b, i) => ({ binding: i, resource: { buffer: b } })) }));
+    pass.dispatchWorkgroups(Math.ceil(PATHS / 64));
+    pass.end();
+    enc.copyBufferToBuffer(bufs[4], 0, read, 0, size);
+    device.queue.submit([enc.finish()]);
+    await read.mapAsync(GPUMapMode.READ);
+    new Uint8Array(mem(), out, size).set(new Uint8Array(read.getMappedRange()));
+    read.unmap();
+    [...bufs, read].forEach((b) => b.destroy());
+    kernel.gpu_finish(PATHS);
+  }
+  $("#sim-run").addEventListener("click", async () => {
+    const status = $("#sim-status");
+    status.textContent = "Simulating…";
+    try {
+      await load();
+      const masks = F.lines.flatMap((l) => { let lo = 0, hi = 0; for (const n of l) { if (n <= 32) lo |= 1 << (n - 1); else hi |= 1 << (n - 33); } return [lo >>> 0, hi >>> 0]; });
+      new Uint32Array(kernel.memory.buffer, kernel.lines_ptr(), masks.length).set(masks);
+      new Float32Array(kernel.memory.buffer, kernel.weights_ptr(), 59).set(D.fairness.counts.map((c) => c + 1));
+      const cost = F.lines.length * F.price, seed = (Math.random() * 4294967296) >>> 0, t0 = performance.now(), rows = [];
+      for (const [name, weighted] of [["Fair", 0], ["Hindsight as reality", 1]]) {
+        if (device) await gpuPass(weighted, seed); else kernel.run_cpu(F.lines.length, weighted, PATHS, seed);
+        kernel.summarise(PATHS, cost);
+        const o = new Float32Array(kernel.memory.buffer, kernel.summary_ptr(), 21);
+        [26, 52, 104].forEach((n, c) => rows.push(`<tr><td>${c ? "" : name}</td><td>${n}</td><td>${o[c * 7 + 1].toFixed(0)} <span class="muted">(${o[c * 7].toFixed(0)} to ${o[c * 7 + 2].toFixed(0)})</span></td><td>${gbp(o[c * 7 + 4])} <span class="muted">(${gbp(o[c * 7 + 3])} to ${gbp(o[c * 7 + 5])})</span></td><td>${(o[c * 7 + 6] * 100).toFixed(0)}%</td></tr>`));
+      }
+      const ms = performance.now() - t0, rounds = 2 * PATHS * 104;
+      $("#sim-table").innerHTML = `<thead><tr><th>Model</th><th>Rounds ahead</th><th>Prize rounds</th><th>Net</th><th>No prize</th></tr></thead><tbody>${rows.join("")}</tbody>`;
+      $("#sim-wrap").hidden = false;
+      status.textContent = `${rounds.toLocaleString("en-GB")} simulated rounds in ${ms.toFixed(0)} ms on this device's ${device ? "GPU (WebGPU)" : "CPU (WebAssembly)"}. Median with the 90% range in brackets; net counts fixed prizes only. Each run draws fresh futures.`;
+    } catch (e) { status.textContent = `Couldn't run the simulation here (${e.message}).`; }
+  });
 })();
 
 // ---------- consensus 15 (hindsight as reality) and its two wheels
