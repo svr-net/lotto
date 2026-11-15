@@ -16,7 +16,7 @@
 // The kernel is fused: one pass per simulated round draws six balls and scores every line with AND +
 // popcount on 64-bit masks. Backends are injected (--backend cpu | threads) behind one interface.
 //
-//   nested_mc --first-draw 2026-11-07 [--csv data/uk_lotto_59.csv] [--wheel results/exports/frozen_wheel.csv]
+//   nested_mc --first-draw 2026-11-07 [--csv data/uk_lotto_full.csv] [--wheel results/exports/frozen_wheel.csv]
 //             [--out results/nested_mc.json]
 #include <algorithm>
 #include <array>
@@ -165,7 +165,7 @@ static double choose(int n, int k) { double r = 1; for (int i = 0; i < k; i++) r
 struct ModelStats { std::vector<double> logk, pred, pit, p4, pprize; int inside = 0; };
 
 int main(int argc, char** argv) {
-    std::string csv = "data/uk_lotto_59.csv", wheel_csv = "results/exports/frozen_wheel.csv", out = "results/nested_mc.json";
+    std::string csv = "data/uk_lotto_full.csv", wheel_csv = "results/exports/frozen_wheel.csv", out = "results/nested_mc.json";
     std::string start = "2017-01-01", first_draw, backend_name = "threads";
     int horizon = 26, paths = 2000, forward_paths = 20000; double price = 2.0;
     for (int i = 1; i + 1 < argc; i += 2) {
@@ -179,9 +179,10 @@ int main(int argc, char** argv) {
     auto backend = make_backend(backend_name);
 
     auto rows = read_csv(csv);
-    int c_date = column(rows[0], "date"), c_n1 = column(rows[0], "n1");
+    int c_date = column(rows[0], "date"), c_n1 = column(rows[0], "n1"), c_draw = column(rows[0], "draw_no");
     std::vector<Round> rounds;
-    for (size_t i = 1; i < rows.size(); i++) if (rows[i].size() > size_t(c_n1 + 5)) rounds.push_back({rows[i][c_date], numbers_mask(rows[i], c_n1)});
+    for (size_t i = 1; i < rows.size(); i++)  // the 59-ball era starts at draw 2066
+        if (rows[i].size() > size_t(c_n1 + 5) && std::stoi(rows[i][c_draw]) >= 2066) rounds.push_back({rows[i][c_date], numbers_mask(rows[i], c_n1)});
     const int T = int(rounds.size());
     std::vector<std::array<float, POOL>> counts(T + 1);  // counts[t]: draws of each number before round t, plus 1
     counts[0].fill(1.0f);

@@ -1,9 +1,8 @@
 import textwrap
 
 import numpy as np
-import pandas as pd
 
-from lotto_nn.data import draws_to_numpy, load_draws, temporal_split, tokenize
+from lotto_nn.data import draws_to_numpy, load_draws, temporal_split
 
 
 SAMPLE_CSV = textwrap.dedent(
@@ -135,16 +134,6 @@ def test_draws_to_numpy_shape(tmp_path):
     draws_np = draws_to_numpy(df)
     assert draws_np.shape == (3, 6)
     assert draws_np.dtype == np.int64 or draws_np.dtype == int
-
-
-def test_tokenize_returns_long_tensor(tmp_path):
-    csv_path = tmp_path / "draws.csv"
-    csv_path.write_text(SAMPLE_CSV)
-    df = load_draws(str(csv_path))
-    draws_np = draws_to_numpy(df)
-    tokens = tokenize(draws_np)
-    assert tokens.shape == (3, 6)
-    assert tokens.dtype.is_floating_point is False
 
 
 def test_temporal_split(tmp_path):

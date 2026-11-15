@@ -11,7 +11,6 @@ Usage:
 """
 from __future__ import annotations
 
-import argparse
 
 import numpy as np
 import torch
@@ -44,61 +43,11 @@ def to_base(n: int, base: int, width: int) -> list:
     return digits[::-1]
 
 
-def from_base(digits, base: int) -> int:
-    value = 0
-    for d in digits:
-        value = value * base + int(d)
-    return value
-
-
 def encode_draws(draws_np: np.ndarray, base: int) -> torch.Tensor:
     """[N, 6] decimal draws -> [N, 6 * width] digit tokens in ``base``."""
     width = digit_width(base)
     rows = [[d for n in draw for d in to_base(int(n), base, width)] for draw in draws_np]
     return torch.tensor(rows, dtype=torch.long)
-
-
-def decode_draws(tokens: np.ndarray, base: int) -> np.ndarray:
-    """[N, 6 * width] digit tokens -> [N, 6] decimal draws."""
-    width = digit_width(base)
-    tokens = np.asarray(tokens)
-    out = np.zeros((tokens.shape[0], NUMS_PER_DRAW), dtype=int)
-    for i in range(tokens.shape[0]):
-        for j in range(NUMS_PER_DRAW):
-            out[i, j] = from_base(tokens[i, j * width : (j + 1) * width], base)
-    return out
-
-
-def sample_draw_base(model: LottoTransformer, base: int, temperature: float = 0.9) -> list:
-    """Sample one draw of 6 unique numbers in [1, 59], digit by digit.
-
-    At each digit, only digits that can still complete to an unused number in range
-    are allowed, so decoded draws are always valid.
-    """
-    model.eval()
-    device = next(model.parameters()).device
-    width = digit_width(base)
-    digits_of = {n: to_base(n, base, width) for n in range(MIN_NUM, MAX_NUM + 1)}
-    chosen: list[int] = []
-    seq: list[int] = []
-    with torch.no_grad():
-        for _ in range(NUMS_PER_DRAW):
-            candidates = [n for n in digits_of if n not in chosen]
-            for k in range(width):
-                pos = len(seq)
-                padded = ([0] + seq + [0] * model.seq_len)[: model.seq_len]
-                inp = torch.tensor([padded], dtype=torch.long, device=device)
-                logits = model(inp)[0, pos].clone()
-                allowed = {digits_of[n][k] for n in candidates}
-                mask = torch.ones_like(logits, dtype=torch.bool)
-                mask[list(allowed)] = False
-                logits = logits.masked_fill(mask, float("-inf"))
-                probs = F.softmax(logits / temperature, dim=0)
-                d = torch.multinomial(probs, 1).item()
-                seq.append(d)
-                candidates = [n for n in candidates if digits_of[n][k] == d]
-            chosen.append(candidates[0])
-    return chosen
 
 
 def generate_batch_base(model: LottoTransformer, base: int, num_samples: int, temperature: float = 0.9,
@@ -203,7 +152,6 @@ def run_prime_pipeline(
     temperature: float = 0.9,
     lr: float = 1e-3,
     verbose: bool = True,
-    out: str | None = None,
     split_date: str = "2022-12-31",
 ) -> dict:
     """Run the NN once per prime base. Returns ``{base: result_dict}``.
@@ -223,36 +171,5 @@ def run_prime_pipeline(
         results[base] = run_base(
             draws_np, base, epochs, batch_size, num_samples, temperature, lr, verbose, test_np
         )
-    if out:
-        with open(out, "w") as f:
-            for base, r in results.items():
-                f.write(
-                    f"base={base} width={r['digit_width']} final_loss={r['final_loss']:.4f} "
-                    f"chi_square={r['chi_square']} gen_sum={r['gen_sum']} "
-                    f"hist_sum={r['hist_sum']} "
-                    + (f"holdout_mean={r['holdout']['mean']:.4f} holdout_z={r['holdout']['z']:+.2f}"
-                       if r["holdout"] else "holdout=skipped")
-                    + "\n"
-                )
     return results
 
-
-def main():
-    parser = argparse.ArgumentParser(description="Run the lotto NN over the first 10 prime radix bases.")
-    parser.add_argument("--csv", required=True)
-    parser.add_argument("--epochs", type=int, default=50)
-    parser.add_argument("--batch-size", type=int, default=256)
-    parser.add_argument("--num-samples", type=int, default=1000)
-    parser.add_argument("--temperature", type=float, default=0.9)
-    parser.add_argument("--lr", type=float, default=1e-3)
-    parser.add_argument("--out", type=str, default=None, help="Path to write per-base summary.")
-    parser.add_argument("--split-date", type=str, default="2022-12-31")
-    args = parser.parse_args()
-    run_prime_pipeline(
-        args.csv, epochs=args.epochs, batch_size=args.batch_size, num_samples=args.num_samples,
-        temperature=args.temperature, lr=args.lr, out=args.out, split_date=args.split_date,
-    )
-
-
-if __name__ == "__main__":
-    main()

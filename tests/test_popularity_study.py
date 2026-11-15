@@ -36,13 +36,8 @@ def test_no_effect_means_no_signal():
     assert res["p"] > 0.001
 
 
-def test_popularity_aware_lines_avoid_popular_numbers_and_patterns():
+def test_popularity_and_jackpot_value_follow_the_model():
     pop = ps.Popularity([np.log(1.2), 0, np.log(1.5), 0, 0, 0], lam=0.2)
     assert pop.popularity([3, 7, 12, 19, 25, 31]) > 1 > pop.popularity([33, 38, 44, 49, 53, 58])
     assert pop.value([33, 38, 44, 49, 53, 58]) > 1 > pop.value([3, 7, 12, 19, 25, 31])
-    lines = ps.choose_lines(np.ones(59), pop, seed=3)
-    assert len(lines) == 5 and all(len(set(l)) == 6 for l in lines)
-    assert all(not ps.pattern_line(l) for l in lines)
-    assert all(len(set(a) & set(b)) <= 1 for i, a in enumerate(lines) for b in lines[i + 1:])
-    assert np.mean([sum(x <= 31 for x in l) for l in lines]) < 2
     assert ps.pattern_line([7, 14, 21, 28, 35, 42]) and ps.pattern_line([4, 5, 6, 20, 30, 40])

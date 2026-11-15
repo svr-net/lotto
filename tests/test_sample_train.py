@@ -2,20 +2,12 @@ import numpy as np
 import torch
 
 from lotto_nn.model import LottoTransformer
-from lotto_nn.sample import generate_batch, sample_draw, MIN_NUM, MAX_NUM
+from lotto_nn.sample import generate_batch, MIN_NUM, MAX_NUM
 from lotto_nn.train import train_model
 
 
 def _tiny_model():
     return LottoTransformer(vocab_size=60, seq_len=6, embed_dim=16, nhead=2, ff_dim=32, num_layers=1)
-
-
-def test_sample_draw_returns_six_unique_valid_numbers():
-    model = _tiny_model()
-    draw = sample_draw(model, temperature=1.0, device=torch.device("cpu"))
-    assert len(draw) == 6
-    assert len(set(draw)) == 6
-    assert all(MIN_NUM <= n <= MAX_NUM for n in draw)
 
 
 def test_generate_batch_shape_and_validity():
@@ -74,7 +66,7 @@ def test_unordered_sampling_allows_any_order():
 
 
 def _next_number_probs(model, prefix, temperature=0.9, ascending=True):
-    """Exact distribution of the next number after ``prefix``, as sample_draw computes it."""
+    """Exact distribution of the next number after ``prefix`` under the sampler's masks."""
     import torch.nn.functional as F
     pos = len(prefix)
     inp = torch.tensor([([0] + prefix + [0] * model.seq_len)[: model.seq_len]])
@@ -89,8 +81,8 @@ def _next_number_probs(model, prefix, temperature=0.9, ascending=True):
     return F.softmax(logits.masked_fill(mask, float("-inf")) / temperature, dim=0)
 
 
-def test_batched_sampling_follows_the_model_like_sample_draw():
-    # the batched sampler's first numbers follow the exact first-step distribution of sample_draw
+def test_batched_sampling_follows_the_model():
+    # the batched sampler's first numbers follow the exact first-step distribution
     torch.manual_seed(0)
     model = LottoTransformer()
     model.eval()

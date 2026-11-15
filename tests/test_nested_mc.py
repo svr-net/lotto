@@ -10,7 +10,7 @@ BIN = os.path.join(ROOT, "sim", "bin", "nested_mc")
 @pytest.mark.parametrize("backend", ["cpu", "threads"])
 def test_fair_model_matches_the_exact_odds(tmp_path, backend):
     out = tmp_path / "n.json"
-    subprocess.run([BIN, "--csv", os.path.join(ROOT, "data", "uk_lotto_59.csv"), "--wheel", os.path.join(ROOT, "results", "exports", "frozen_wheel.csv"),
+    subprocess.run([BIN, "--csv", os.path.join(ROOT, "data", "uk_lotto_full.csv"), "--wheel", os.path.join(ROOT, "results", "exports", "frozen_wheel.csv"),
                     "--first-draw", "2026-11-07", "--start", "2026-01-01", "--paths", "300", "--forward-paths", "20000",
                     "--backend", backend, "--out", str(out)], check=True, capture_output=True)
     r = json.load(open(out))

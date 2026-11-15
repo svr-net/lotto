@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import math
-from collections import Counter
 
 import numpy as np
 
@@ -62,27 +61,6 @@ def chi_square_test(hist_freq: np.ndarray, gen_freq: np.ndarray) -> dict:
     return {"chi2": chi2, "dof": dof, "p": chi2_sf(chi2, dof)}
 
 
-def chi_square_stat(hist_freq: np.ndarray, gen_freq: np.ndarray) -> float:
-    """Chi-square statistic of ``chi_square_test`` (sample sizes are normalized)."""
-    return chi_square_test(hist_freq, gen_freq)["chi2"]
-
-
-def pair_counts(data_np: np.ndarray) -> Counter:
-    """Count co-occurrence of number pairs across draws."""
-    c: Counter = Counter()
-    for row in data_np:
-        row_sorted = sorted(row)
-        for i in range(len(row_sorted)):
-            for j in range(i + 1, len(row_sorted)):
-                pair = (row_sorted[i], row_sorted[j])
-                c[pair] += 1
-    return c
-
-
-def top_k_pairs(counter: Counter, k: int = 20):
-    return counter.most_common(k)
-
-
 def sum_stats(data_np: np.ndarray) -> dict:
     sums = data_np.sum(axis=1)
     return {"mean": float(sums.mean()), "std": float(sums.std())}
@@ -101,24 +79,6 @@ def spacing(row: np.ndarray) -> np.ndarray:
 def spacing_stats(data_np: np.ndarray) -> dict:
     spacings = np.vstack([spacing(r) for r in data_np])
     return {"mean": float(spacings.mean()), "std": float(spacings.std())}
-
-
-def positional_frequency(data_np: np.ndarray, max_num: int = MAX_NUM) -> np.ndarray:
-    """Per-position (column) frequency of each number 1..max_num.
-
-    Returns array of shape [seq_len, max_num].
-    """
-    seq_len = data_np.shape[1]
-    pos_freq = np.zeros((seq_len, max_num + 1), dtype=int)
-    for row in data_np:
-        for pos in range(seq_len):
-            num = row[pos]
-            pos_freq[pos, num] += 1
-    return pos_freq[:, 1:]
-
-
-def hits(ticket, draw) -> int:
-    return len(set(ticket) & set(draw))
 
 
 def match_matrix(tickets_np: np.ndarray, draws_np: np.ndarray, max_num: int = MAX_NUM) -> np.ndarray:

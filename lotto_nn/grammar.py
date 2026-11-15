@@ -70,26 +70,6 @@ def grammar_from_state(state: dict) -> dict:
     }
 
 
-def grammar_summary(grammar: dict, top_k: int = 10) -> dict:
-    """Summarize a fitted grammar: most common starting numbers and the most
-    common transitions out of each of those starting numbers.
-    """
-    start_counts: Counter = grammar["start_counts"]
-    transition_counts: dict = grammar["transition_counts"]
-
-    top_starts = start_counts.most_common(top_k)
-    top_transitions = {}
-    for num, _ in top_starts:
-        counter = transition_counts.get(num, Counter())
-        top_transitions[num] = counter.most_common(top_k)
-
-    return {
-        "top_starts": top_starts,
-        "top_transitions": top_transitions,
-        "vocab_size": len(grammar["vocab"]),
-    }
-
-
 def _weighted_choice(rng: np.random.Generator, options: list, weights: list) -> int:
     total = float(sum(weights))
     if total <= 0:

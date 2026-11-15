@@ -14,7 +14,6 @@ fitted on the full history to produce tickets for the next draw.
 from __future__ import annotations
 
 import argparse, json, math, os, sys, time
-from collections import Counter
 from concurrent.futures import ProcessPoolExecutor
 from datetime import date, timedelta
 
