@@ -220,6 +220,17 @@ nav.tabs a:focus-visible { outline: 2px solid var(--s1); outline-offset: 2px; }
   <p class="note" id="nmc-note"></p>
 </section>
 
+<section data-tab="backtest" id="as-section" hidden>
+  <div class="eyebrow">Particle filter and neural network</div>
+  <h2>Learning the machine from every real draw</h2>
+  <p id="as-lede"></p>
+  <div class="table-wrap"><table id="as-real"></table></div>
+  <h3 class="h3">What it finds when there is something to find</h3>
+  <p id="as-val-lede"></p>
+  <div class="table-wrap"><table id="as-val"></table></div>
+  <p class="note" id="as-note"></p>
+</section>
+
 <section data-tab="backtest" id="seq-section" hidden>
   <div class="eyebrow">Sequence over time</div>
   <h2>The draws as one continuous sequence</h2>
@@ -573,6 +584,33 @@ const P3_LINE = 0.0108641, P2_LINE = 0.1083479;
   $("#nmc-fwd").innerHTML = `<thead><tr><th>Model</th><th>Rounds ahead</th><th>Prize rounds</th><th>Net</th><th>No prize at all</th></tr></thead><tbody>` +
     Object.entries(M).map(([name, m]) => Object.entries(m.checkpoints).map(([n, c], i) => `<tr><td>${i ? "" : name === "fair" ? "Fair" : "Hindsight as reality"}</td><td>${n}</td><td>${q(c.prize_rounds, (v) => v.toFixed(0))}</td><td>${q(c.net, gbp)}</td><td>${pc(c.p_no_prize, 0)}</td></tr>`).join("")).join("") + "</tbody>";
   $("#nmc-note").textContent = `Log score: the average log-probability each model gave the real number of drawn balls among the 15 in the round after each reset (higher is better; the fair model's is exact). Prize rounds: rounds in which some line matched 3+, forecast mean with the real mean in brackets. "90% range held": how often the real count fell inside the model's 90% forecast range (90% for an honest forecast). Calibration: whether the real counts fell evenly across each forecast's distribution (a chi-square on where they fell; a small p means the forecasts were systematically off). Any 4+: the forecast chance of at least one round with 4+ of the six among the 15, with the real rate in brackets; Brier scores those forecasts (lower is better). Window statistics use resets ${N.horizon} rounds apart so the real windows don't overlap. Forward table: median with the 90% range in brackets; net counts the fixed prizes only (see the cost section above for the jackpot's expected value).`;
+})();
+
+// ---------- particle filter and neural network, reset to every real draw (sim/assimilate.cpp)
+(function () {
+  const A = D.assimilation;
+  if (!A || !A.real || !A.real.models) return;
+  $("#as-section").hidden = false;
+  const R = A.real, M = R.models, pc = (x, d = 2) => (x * 100).toFixed(d) + "%", sg = (x, d = 2) => (x >= 0 ? "+" : "") + x.toFixed(d);
+  const yr = new Date(R.first_night + "T12:00:00Z").getUTCFullYear(), F = R.filter, W = R.mixture_weights;
+  const best = Object.entries(M).filter(([n]) => n !== "fair").sort((a, b) => b[1].log_lik_ratio - a[1].log_lik_ratio)[0];
+  $("#as-lede").textContent = `The machine is treated as a hidden state and learned from the draws, nothing set by hand to lean either way. A particle filter (${A.particles.toLocaleString("en-GB")} particles) tracks the 59 numbers' weights, learning how far they could stray from fair and how fast they could drift; after every real round it is reset to reality, reweighted by the exact probability of the order the balls came out in. A family of ${A.networks} small neural networks, learning rates and penalties weighted by how well each predicted, adjusts the filter's forecast per number from its uncertainty, gaps and recent counts. Fair, filter and networks start with equal weight. Each night, thousands of simulated draws from each forecast choose its 15 numbers for the 3-if-4 wheel. Over ${R.rounds.toLocaleString("en-GB")} rounds since ${yr}, the filter settled on a bias scale of ${(F.tau[1] * 100).toFixed(2)}% (90% range ${(F.tau[0] * 100).toFixed(2)}% to ${(F.tau[2] * 100).toFixed(1)}%), the draws' evidence ${F.log_evidence_vs_fair >= 0 ? "for" : "against"} it ${Math.abs(F.log_evidence_vs_fair).toFixed(2)} nats against fair, and the mixture ended with ${pc(W.fair, 0)} on fair. The best model, ${best[0]}, gave the real draws ${best[1].log_lik_ratio >= 0 ? "more" : "less"} probability than fair (${sg(best[1].log_lik_ratio)} nats in all, p ${best[1].p_better.toFixed(2)}). The 15 numbers it chose caught 4+ in ${pc(best[1].rate4)} of rounds, against ${pc(A.chance.rate4)} for any 15.`;
+  const row = (n, m) => `<tr class="${n === "fair" ? "base-row" : ""}"><td>${n === "fair" ? "Fair (any 15)" : n}</td><td>${n === "fair" ? "–" : sg(m.log_lik_ratio)}</td><td>${n === "fair" ? "–" : m.p_better.toFixed(2)}</td><td>${m.hits4} <span class="muted">(${(m.rounds * A.chance.rate4).toFixed(1)})</span></td><td>${pc(m.rate4)}</td><td>${pc(m.forecast4)}</td><td class="${m.p4 < 0.01 ? "good" : ""}">${m.p4.toFixed(2)}</td><td>${pc(m.rate3, 1)} <span class="muted">(${pc(A.chance.rate3, 1)})</span></td><td class="${m.p3 < 0.01 ? "good" : ""}">${m.p3.toFixed(2)}</td></tr>`;
+  const head = `<thead><tr><th>Forecast</th><th>Log score vs fair (nats)</th><th>p</th><th>Rounds with 4+ of 15</th><th>Rate</th><th>Its own forecast</th><th>p</th><th>3+ line</th><th>p</th></tr></thead>`;
+  $("#as-real").innerHTML = head + "<tbody>" + Object.entries(M).map(([n, m]) => row(n, m)).join("") + "</tbody>";
+  const V = A.validation || [];
+  if (V.length) {
+    const lock = V.find((v) => v.models.mixture.p4 < 0.01 && v.models.mixture.log_lik_ratio > 5);
+    $("#as-val-lede").textContent = `The same pipeline on simulated histories as long as the real one, from a machine with six numbers made likelier by the stated amount. ` +
+      (lock ? `From six numbers ${Math.round(lock.delta * 100)}% likelier, it locks on: the mixture gains ${lock.models.mixture.log_lik_ratio.toFixed(0)} nats over fair and its 15 catch 4+ in ${pc(lock.models.mixture.rate4)} of rounds (knowing the planted numbers, the best 15 reach ${pc(lock.oracle_rate4)}). ` : "") +
+      `Smaller biases stay hidden in about ${R.rounds.toLocaleString("en-GB")} rounds: even knowing them, the best 15 would barely beat chance. On the real draws the pipeline behaves like it does on the fair simulated machine.`;
+    $("#as-val").innerHTML = `<thead><tr><th>Simulated machine</th><th>Bias scale learned</th><th>Mixture vs fair (nats)</th><th>4+ of 15</th><th>Knowing the bias</th><th>3+ line</th><th>Weight on fair</th></tr></thead><tbody>` +
+      V.map((v) => { const m = v.models.mixture; return `<tr><td>${v.delta ? `six numbers +${Math.round(v.delta * 100)}%` : "fair"}</td><td>${(v.filter.tau[1] * 100).toFixed(2)}%</td><td class="${m.log_lik_ratio > 5 ? "good" : ""}">${sg(m.log_lik_ratio, 1)}</td><td class="${m.p4 < 0.01 ? "good" : ""}">${pc(m.rate4)}</td><td>${pc(v.oracle_rate4)}</td><td>${pc(m.rate3, 1)}</td><td>${pc(v.mixture_weights.fair, 0)}</td></tr>`; }).join("") +
+      `<tr class="base-row"><td>The real draws</td><td>${(F.tau[1] * 100).toFixed(2)}%</td><td>${sg(M.mixture.log_lik_ratio, 1)}</td><td>${pc(M.mixture.rate4)}</td><td>–</td><td>${pc(M.mixture.rate3, 1)}</td><td>${pc(W.fair, 0)}</td></tr></tbody>`;
+  }
+  const N = R.next;
+  $("#as-note").textContent = `Log score: the sum over the rounds of the log-probability each forecast gave the real set of six, minus fair's; p from flipping the signs of the per-round differences at random (one-sided). Rounds with 4+: expected by chance in brackets, p exact binomial against ${pc(A.chance.rate4)}; "its own forecast" is the model's stated chance of 4+ for its 15, measured on simulated draws it did not choose them from. 3+ line: a 3-match line on the 3-if-4 wheel, ${pc(A.chance.rate3, 1)} by chance. Bias scale: the filter's median for how far each number's log-weight strays from fair. Only the particle counts, the number of simulated draws and the network sizes are fixed; they set the computing budget, not the answer.` +
+    (N ? ` For ${new Date(N.night + "T12:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" })} the mixture's 15 are ${N.numbers.join(" ")} (its own chance of 4+: ${pc(N.forecast4)}), no better than any other 15 while the draws look fair.` : "");
 })();
 
 // ---------- the draws as one continuous sequence: memory, sequence-aware choice of 15, timing, waits

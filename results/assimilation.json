@@ -1,0 +1,74 @@
+{
+ "backend": "threads", "particles": 2048, "networks": 9, "samples": 4096, "start": "2017-01-01",
+ "chance": {"rate4": 0.031702, "rate3": 0.114298},
+ "real": {
+  "nights": 1030, "rounds": 1076, "first_night": "2017-01-04", "last_night": "2026-11-14",
+  "filter": {"tau": [0.00120, 0.00631, 0.04603], "memory_rounds": [27, 408, 13082], "log_evidence_vs_fair": -0.5307, "resamples": 0},
+  "networks": [{"lr": 0.0001, "penalty": 1, "weight": 0.086741}, {"lr": 0.0001, "penalty": 10, "weight": 0.352487}, {"lr": 0.0001, "penalty": 100, "weight": 0.211582}, {"lr": 0.0003, "penalty": 1, "weight": 0.001651}, {"lr": 0.0003, "penalty": 10, "weight": 0.053784}, {"lr": 0.0003, "penalty": 100, "weight": 0.170603}, {"lr": 0.001, "penalty": 1, "weight": 0.000000}, {"lr": 0.001, "penalty": 10, "weight": 0.004386}, {"lr": 0.001, "penalty": 100, "weight": 0.118765}], "nudge_rms": 0.00918,
+  "mixture_weights": {"fair": 0.531713, "particle filter": 0.317234, "filter + neural net": 0.151053},
+  "models": {
+   "fair": {"log_lik_ratio": 0.0000, "per_round": 0.000000, "p_better": 1.0000, "rounds": 1076, "hits4": 36, "rate4": 0.03346, "p4": 0.3947, "forecast4": 0.03170, "line3": 125, "rate3": 0.11617, "p3": 0.4375},
+   "particle filter": {"log_lik_ratio": -0.2028, "per_round": -0.000188, "p_better": 0.9030, "rounds": 1076, "hits4": 35, "rate4": 0.03253, "p4": 0.4623, "forecast4": 0.03182, "line3": 109, "rate3": 0.10130, "p3": 0.9193},
+   "filter + neural net": {"log_lik_ratio": -0.4758, "per_round": -0.000442, "p_better": 0.9063, "rounds": 1076, "hits4": 35, "rate4": 0.03253, "p4": 0.4623, "forecast4": 0.03191, "line3": 136, "rate3": 0.12639, "p3": 0.1162},
+   "mixture": {"log_lik_ratio": -0.1515, "per_round": -0.000141, "p_better": 0.9793, "rounds": 1076, "hits4": 40, "rate4": 0.03717, "p4": 0.1732, "forecast4": 0.03173, "line3": 129, "rate3": 0.11989, "p3": 0.2955}
+  },
+  "next": {"night": "2026-11-18", "numbers": [6, 12, 14, 17, 18, 25, 30, 32, 36, 42, 45, 47, 54, 55, 56], "forecast4": 0.03394, "lines": [[6, 12, 30, 45, 54, 56], [6, 14, 18, 42, 45, 47], [17, 36, 42, 45, 55, 56], [12, 14, 17, 18, 30, 36], [14, 25, 36, 47, 54, 56], [6, 18, 25, 30, 36, 55], [25, 30, 32, 36, 42, 54], [12, 14, 25, 32, 45, 55], [17, 25, 30, 32, 45, 47], [17, 18, 32, 45, 54, 56], [12, 18, 42, 47, 54, 55], [6, 12, 32, 36, 47, 56], [6, 12, 17, 25, 42, 56], [6, 14, 17, 32, 54, 55], [14, 30, 42, 47, 55, 56]]}
+ },
+ "validation": [
+  {"delta": 0, "planted": [9, 12, 32, 35, 40, 58], "oracle_rate4": 0.03117,
+   "nights": 1030, "rounds": 1076, "first_night": "2017-01-04", "last_night": "2026-11-14",
+   "filter": {"tau": [0.00134, 0.01448, 0.08090], "memory_rounds": [31, 783, 14465], "log_evidence_vs_fair": -0.1155, "resamples": 1},
+   "networks": [{"lr": 0.0001, "penalty": 1, "weight": 0.002161}, {"lr": 0.0001, "penalty": 10, "weight": 0.153111}, {"lr": 0.0001, "penalty": 100, "weight": 0.203168}, {"lr": 0.0003, "penalty": 1, "weight": 0.000021}, {"lr": 0.0003, "penalty": 10, "weight": 0.194913}, {"lr": 0.0003, "penalty": 100, "weight": 0.158633}, {"lr": 0.001, "penalty": 1, "weight": 0.000000}, {"lr": 0.001, "penalty": 10, "weight": 0.048433}, {"lr": 0.001, "penalty": 100, "weight": 0.239561}], "nudge_rms": 0.01856,
+   "mixture_weights": {"fair": 0.400337, "particle filter": 0.349085, "filter + neural net": 0.250578},
+   "models": {
+    "fair": {"log_lik_ratio": 0.0000, "per_round": 0.000000, "p_better": 1.0000, "rounds": 1076, "hits4": 30, "rate4": 0.02788, "p4": 0.7861, "forecast4": 0.03170, "line3": 116, "rate3": 0.10781, "p3": 0.7615},
+    "particle filter": {"log_lik_ratio": -0.2598, "per_round": -0.000241, "p_better": 0.6145, "rounds": 1076, "hits4": 29, "rate4": 0.02695, "p4": 0.8355, "forecast4": 0.03239, "line3": 124, "rate3": 0.11524, "p3": 0.4754},
+    "filter + neural net": {"log_lik_ratio": 0.0370, "per_round": 0.000034, "p_better": 0.4828, "rounds": 1076, "hits4": 50, "rate4": 0.04647, "p4": 0.0056, "forecast4": 0.03268, "line3": 128, "rate3": 0.11896, "p3": 0.3290},
+    "mixture": {"log_lik_ratio": -0.0919, "per_round": -0.000085, "p_better": 0.5569, "rounds": 1076, "hits4": 32, "rate4": 0.02974, "p4": 0.6673, "forecast4": 0.03206, "line3": 113, "rate3": 0.10502, "p3": 0.8425}
+   }},
+  {"delta": 0.1, "planted": [3, 12, 25, 47, 52, 57], "oracle_rate4": 0.03560,
+   "nights": 1030, "rounds": 1076, "first_night": "2017-01-04", "last_night": "2026-11-14",
+   "filter": {"tau": [0.00127, 0.01044, 0.08195], "memory_rounds": [29, 351, 12570], "log_evidence_vs_fair": -0.2783, "resamples": 0},
+   "networks": [{"lr": 0.0001, "penalty": 1, "weight": 0.048753}, {"lr": 0.0001, "penalty": 10, "weight": 0.096368}, {"lr": 0.0001, "penalty": 100, "weight": 0.289877}, {"lr": 0.0003, "penalty": 1, "weight": 0.000134}, {"lr": 0.0003, "penalty": 10, "weight": 0.129012}, {"lr": 0.0003, "penalty": 100, "weight": 0.187039}, {"lr": 0.001, "penalty": 1, "weight": 0.000000}, {"lr": 0.001, "penalty": 10, "weight": 0.013667}, {"lr": 0.001, "penalty": 100, "weight": 0.235151}], "nudge_rms": 0.01325,
+   "mixture_weights": {"fair": 0.465554, "particle filter": 0.343478, "filter + neural net": 0.190968},
+   "models": {
+    "fair": {"log_lik_ratio": 0.0000, "per_round": 0.000000, "p_better": 1.0000, "rounds": 1076, "hits4": 30, "rate4": 0.02788, "p4": 0.7861, "forecast4": 0.03170, "line3": 116, "rate3": 0.10781, "p3": 0.7615},
+    "particle filter": {"log_lik_ratio": 0.0342, "per_round": 0.000032, "p_better": 0.4500, "rounds": 1076, "hits4": 41, "rate4": 0.03810, "p4": 0.1342, "forecast4": 0.03189, "line3": 121, "rate3": 0.11245, "p3": 0.5896},
+    "filter + neural net": {"log_lik_ratio": -0.0529, "per_round": -0.000049, "p_better": 0.5324, "rounds": 1076, "hits4": 40, "rate4": 0.03717, "p4": 0.1732, "forecast4": 0.03223, "line3": 124, "rate3": 0.11524, "p3": 0.4754},
+    "mixture": {"log_lik_ratio": 0.0006, "per_round": 0.000001, "p_better": 0.5019, "rounds": 1076, "hits4": 30, "rate4": 0.02788, "p4": 0.7861, "forecast4": 0.03173, "line3": 118, "rate3": 0.10967, "p3": 0.6973}
+   }},
+  {"delta": 0.3, "planted": [6, 18, 19, 30, 40, 49], "oracle_rate4": 0.04278,
+   "nights": 1030, "rounds": 1076, "first_night": "2017-01-04", "last_night": "2026-11-14",
+   "filter": {"tau": [0.00187, 0.03703, 0.10516], "memory_rounds": [38, 2844, 18388], "log_evidence_vs_fair": 0.5103, "resamples": 1},
+   "networks": [{"lr": 0.0001, "penalty": 1, "weight": 0.000592}, {"lr": 0.0001, "penalty": 10, "weight": 0.223185}, {"lr": 0.0001, "penalty": 100, "weight": 0.166648}, {"lr": 0.0003, "penalty": 1, "weight": 0.000743}, {"lr": 0.0003, "penalty": 10, "weight": 0.092783}, {"lr": 0.0003, "penalty": 100, "weight": 0.111230}, {"lr": 0.001, "penalty": 1, "weight": 0.000000}, {"lr": 0.001, "penalty": 10, "weight": 0.195646}, {"lr": 0.001, "penalty": 100, "weight": 0.209172}], "nudge_rms": 0.02538,
+   "mixture_weights": {"fair": 0.245837, "particle filter": 0.407804, "filter + neural net": 0.346360},
+   "models": {
+    "fair": {"log_lik_ratio": 0.0000, "per_round": 0.000000, "p_better": 1.0000, "rounds": 1076, "hits4": 34, "rate4": 0.03160, "p4": 0.5316, "forecast4": 0.03170, "line3": 115, "rate3": 0.10688, "p3": 0.7907},
+    "particle filter": {"log_lik_ratio": 0.6019, "per_round": 0.000559, "p_better": 0.2836, "rounds": 1076, "hits4": 28, "rate4": 0.02602, "p4": 0.8772, "forecast4": 0.03259, "line3": 120, "rate3": 0.11152, "p3": 0.6266},
+    "filter + neural net": {"log_lik_ratio": 0.7257, "per_round": 0.000674, "p_better": 0.3410, "rounds": 1076, "hits4": 28, "rate4": 0.02602, "p4": 0.8772, "forecast4": 0.03370, "line3": 117, "rate3": 0.10874, "p3": 0.7303},
+    "mixture": {"log_lik_ratio": 0.4530, "per_round": 0.000421, "p_better": 0.3320, "rounds": 1076, "hits4": 27, "rate4": 0.02509, "p4": 0.9113, "forecast4": 0.03272, "line3": 119, "rate3": 0.11059, "p3": 0.6626}
+   }},
+  {"delta": 0.6, "planted": [7, 31, 35, 42, 43, 44], "oracle_rate4": 0.05412,
+   "nights": 1030, "rounds": 1076, "first_night": "2017-01-04", "last_night": "2026-11-14",
+   "filter": {"tau": [0.07113, 0.14063, 0.24656], "memory_rounds": [1799, 6771, 25093], "log_evidence_vs_fair": 51.9623, "resamples": 6},
+   "networks": [{"lr": 0.0001, "penalty": 1, "weight": 0.018173}, {"lr": 0.0001, "penalty": 10, "weight": 0.022816}, {"lr": 0.0001, "penalty": 100, "weight": 0.149477}, {"lr": 0.0003, "penalty": 1, "weight": 0.000070}, {"lr": 0.0003, "penalty": 10, "weight": 0.087847}, {"lr": 0.0003, "penalty": 100, "weight": 0.116500}, {"lr": 0.001, "penalty": 1, "weight": 0.000000}, {"lr": 0.001, "penalty": 10, "weight": 0.428848}, {"lr": 0.001, "penalty": 100, "weight": 0.176270}], "nudge_rms": 0.01427,
+   "mixture_weights": {"fair": 0.000000, "particle filter": 0.421543, "filter + neural net": 0.578457},
+   "models": {
+    "fair": {"log_lik_ratio": 0.0000, "per_round": 0.000000, "p_better": 1.0000, "rounds": 1076, "hits4": 36, "rate4": 0.03346, "p4": 0.3947, "forecast4": 0.03170, "line3": 132, "rate3": 0.12268, "p3": 0.2061},
+    "particle filter": {"log_lik_ratio": 50.4064, "per_round": 0.046846, "p_better": 0.0000, "rounds": 1076, "hits4": 55, "rate4": 0.05112, "p4": 0.0005, "forecast4": 0.05030, "line3": 166, "rate3": 0.15428, "p3": 0.0000},
+    "filter + neural net": {"log_lik_ratio": 51.1767, "per_round": 0.047562, "p_better": 0.0000, "rounds": 1076, "hits4": 54, "rate4": 0.05019, "p4": 0.0008, "forecast4": 0.05051, "line3": 176, "rate3": 0.16357, "p3": 0.0000},
+    "mixture": {"log_lik_ratio": 50.5870, "per_round": 0.047014, "p_better": 0.0000, "rounds": 1076, "hits4": 61, "rate4": 0.05669, "p4": 0.0000, "forecast4": 0.05030, "line3": 172, "rate3": 0.15985, "p3": 0.0000}
+   }},
+  {"delta": 1, "planted": [12, 16, 26, 36, 40, 49], "oracle_rate4": 0.07251,
+   "nights": 1030, "rounds": 1076, "first_night": "2017-01-04", "last_night": "2026-11-14",
+   "filter": {"tau": [0.07799, 0.15664, 0.28869], "memory_rounds": [2487, 8206, 37210], "log_evidence_vs_fair": 138.7080, "resamples": 6},
+   "networks": [{"lr": 0.0001, "penalty": 1, "weight": 0.000023}, {"lr": 0.0001, "penalty": 10, "weight": 0.000525}, {"lr": 0.0001, "penalty": 100, "weight": 0.005367}, {"lr": 0.0003, "penalty": 1, "weight": 0.000008}, {"lr": 0.0003, "penalty": 10, "weight": 0.066804}, {"lr": 0.0003, "penalty": 100, "weight": 0.008582}, {"lr": 0.001, "penalty": 1, "weight": 0.000000}, {"lr": 0.001, "penalty": 10, "weight": 0.910002}, {"lr": 0.001, "penalty": 100, "weight": 0.008690}], "nudge_rms": 0.03013,
+   "mixture_weights": {"fair": 0.000000, "particle filter": 0.022648, "filter + neural net": 0.977352},
+   "models": {
+    "fair": {"log_lik_ratio": 0.0000, "per_round": 0.000000, "p_better": 1.0000, "rounds": 1076, "hits4": 38, "rate4": 0.03532, "p4": 0.2718, "forecast4": 0.03170, "line3": 117, "rate3": 0.10874, "p3": 0.7303},
+    "particle filter": {"log_lik_ratio": 138.2540, "per_round": 0.128489, "p_better": 0.0000, "rounds": 1076, "hits4": 77, "rate4": 0.07156, "p4": 0.0000, "forecast4": 0.06703, "line3": 210, "rate3": 0.19517, "p3": 0.0000},
+    "filter + neural net": {"log_lik_ratio": 141.7864, "per_round": 0.131772, "p_better": 0.0000, "rounds": 1076, "hits4": 78, "rate4": 0.07249, "p4": 0.0000, "forecast4": 0.06857, "line3": 187, "rate3": 0.17379, "p3": 0.0000},
+    "mixture": {"log_lik_ratio": 140.9042, "per_round": 0.130952, "p_better": 0.0000, "rounds": 1076, "hits4": 62, "rate4": 0.05762, "p4": 0.0000, "forecast4": 0.06806, "line3": 200, "rate3": 0.18587, "p3": 0.0000}
+   }}
+ ]
+}

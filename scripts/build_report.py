@@ -19,7 +19,7 @@ EXTRA = [("grammar", "results/grammar.json"), ("prime_radix", "results/prime_rad
          ("radix_strat", "results/radix_strategies.json"), ("wheel_study", "results/wheel_study.json"),
          ("monte_carlo", "results/monte_carlo.json"), ("sequence", "results/sequence_study.json"),
          ("consensus", "results/consensus_wheels.json"), ("frozen", "results/frozen_wheel.json"),
-         ("nested_mc", "results/nested_mc.json")]
+         ("nested_mc", "results/nested_mc.json"), ("assimilation", "results/assimilation.json")]
 
 
 def pick_sources(payload: dict) -> list:

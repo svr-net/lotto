@@ -2,7 +2,7 @@
 # Builds the simulator on Alpine. The toolchain layer is cached, so only the compile steps rerun when a
 # source changes.
 #
-#   native driver:   docker build --network=host --target native --output type=local,dest=sim/bin sim
+#   native drivers:  docker build --network=host --target native --output type=local,dest=sim/bin sim
 #   browser build:   docker build --network=host --target web --output type=local,dest=results/exports sim
 #
 # Behind a TLS-inspecting proxy add: --secret id=ca,src=<CA bundle> (mounted only while packages install).
@@ -16,11 +16,11 @@ WORKDIR /src
 COPY kernel.hpp .
 
 FROM toolchain AS native-build
-COPY models.hpp threads.hpp nested_mc.cpp ./
-RUN g++ -std=c++20 -O3 -march=x86-64-v2 -Wall -Wextra -Werror -pthread -static -o nested_mc nested_mc.cpp
+COPY data.hpp models.hpp threads.hpp assimilate.hpp nn.hpp nested_mc.cpp assimilate.cpp ./
+RUN for b in nested_mc assimilate; do g++ -std=c++20 -O3 -march=x86-64-v2 -Wall -Wextra -Werror -pthread -static -o $b $b.cpp || exit 1; done
 
 FROM scratch AS native
-COPY --from=native-build /src/nested_mc /nested_mc
+COPY --from=native-build /src/nested_mc /src/assimilate /
 
 FROM toolchain AS web-build
 COPY web.cpp .
