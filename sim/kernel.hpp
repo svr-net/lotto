@@ -1,4 +1,4 @@
-// The fused Monte Carlo kernel, shared by the native driver (nested_mc.cpp) and the browser build (web.cpp).
+// The fused Monte Carlo kernel, shared by the native driver (assimilate.cpp) and the browser build (web.cpp).
 //
 // One pass per simulated path draws its rounds (six of 59 balls, uniformly or in proportion to weights that can
 // learn from the path's own draws), scores every line with AND + popcount on 64-bit masks and, at each checkpoint,
