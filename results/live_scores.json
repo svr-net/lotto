@@ -19867,97 +19867,2423 @@
      }
     ]
    }
+  },
+  {
+   "date": "2026-11-14",
+   "draw_no": 3224,
+   "ref": "origin/main",
+   "rounds": [
+    {
+     "draw_no": 3224,
+     "round": 1,
+     "numbers": [
+      3,
+      32,
+      43,
+      48,
+      51,
+      54
+     ],
+     "bonus": 26
+    },
+    {
+     "draw_no": 3224,
+     "round": 2,
+     "numbers": [
+      2,
+      15,
+      38,
+      41,
+      53,
+      59
+     ],
+     "bonus": 25
+    }
+   ],
+   "combined": [
+    {
+     "line": [
+      20,
+      23,
+      31,
+      32,
+      38,
+      54
+     ],
+     "matches": [
+      2,
+      1
+     ],
+     "bonus": [
+      false,
+      false
+     ]
+    },
+    {
+     "line": [
+      11,
+      15,
+      35,
+      41,
+      48,
+      56
+     ],
+     "matches": [
+      1,
+      2
+     ],
+     "bonus": [
+      false,
+      false
+     ]
+    },
+    {
+     "line": [
+      7,
+      10,
+      34,
+      37,
+      44,
+      47
+     ],
+     "matches": [
+      0,
+      0
+     ],
+     "bonus": [
+      false,
+      false
+     ]
+    },
+    {
+     "line": [
+      4,
+      12,
+      30,
+      42,
+      50,
+      53
+     ],
+     "matches": [
+      0,
+      1
+     ],
+     "bonus": [
+      false,
+      false
+     ]
+    },
+    {
+     "line": [
+      17,
+      18,
+      25,
+      27,
+      29,
+      49
+     ],
+     "matches": [
+      0,
+      0
+     ],
+     "bonus": [
+      false,
+      true
+     ]
+    }
+   ],
+   "popularity_lines": [
+    {
+     "line": [
+      42,
+      44,
+      49,
+      50,
+      55,
+      58
+     ],
+     "matches": [
+      0,
+      0
+     ],
+     "bonus": [
+      false,
+      false
+     ]
+    },
+    {
+     "line": [
+      32,
+      39,
+      40,
+      46,
+      51,
+      54
+     ],
+     "matches": [
+      3,
+      0
+     ],
+     "bonus": [
+      false,
+      false
+     ]
+    },
+    {
+     "line": [
+      34,
+      36,
+      37,
+      39,
+      47,
+      50
+     ],
+     "matches": [
+      0,
+      0
+     ],
+     "bonus": [
+      false,
+      false
+     ]
+    },
+    {
+     "line": [
+      32,
+      34,
+      41,
+      43,
+      44,
+      48
+     ],
+     "matches": [
+      3,
+      1
+     ],
+     "bonus": [
+      false,
+      false
+     ]
+    },
+    {
+     "line": [
+      34,
+      40,
+      45,
+      52,
+      53,
+      56
+     ],
+     "matches": [
+      0,
+      1
+     ],
+     "bonus": [
+      false,
+      false
+     ]
+    }
+   ],
+   "wheel_lines": [
+    {
+     "line": [
+      4,
+      20,
+      28,
+      31,
+      45,
+      48
+     ],
+     "matches": [
+      1,
+      0
+     ],
+     "bonus": [
+      false,
+      false
+     ]
+    },
+    {
+     "line": [
+      1,
+      11,
+      14,
+      27,
+      38,
+      51
+     ],
+     "matches": [
+      1,
+      1
+     ],
+     "bonus": [
+      false,
+      false
+     ]
+    },
+    {
+     "line": [
+      23,
+      24,
+      34,
+      55,
+      57,
+      59
+     ],
+     "matches": [
+      0,
+      1
+     ],
+     "bonus": [
+      false,
+      false
+     ]
+    },
+    {
+     "line": [
+      18,
+      22,
+      32,
+      42,
+      47,
+      58
+     ],
+     "matches": [
+      1,
+      0
+     ],
+     "bonus": [
+      false,
+      false
+     ]
+    },
+    {
+     "line": [
+      10,
+      21,
+      26,
+      37,
+      39,
+      54
+     ],
+     "matches": [
+      1,
+      0
+     ],
+     "bonus": [
+      true,
+      false
+     ]
+    },
+    {
+     "line": [
+      2,
+      8,
+      17,
+      31,
+      35,
+      37
+     ],
+     "matches": [
+      0,
+      1
+     ],
+     "bonus": [
+      false,
+      false
+     ]
+    },
+    {
+     "line": [
+      13,
+      19,
+      23,
+      29,
+      33,
+      51
+     ],
+     "matches": [
+      1,
+      0
+     ],
+     "bonus": [
+      false,
+      false
+     ]
+    },
+    {
+     "line": [
+      4,
+      12,
+      46,
+      47,
+      50,
+      59
+     ],
+     "matches": [
+      0,
+      1
+     ],
+     "bonus": [
+      false,
+      false
+     ]
+    },
+    {
+     "line": [
+      1,
+      6,
+      20,
+      52,
+      57,
+      58
+     ],
+     "matches": [
+      0,
+      0
+     ],
+     "bonus": [
+      false,
+      false
+     ]
+    },
+    {
+     "line": [
+      30,
+      34,
+      38,
+      42,
+      45,
+      54
+     ],
+     "matches": [
+      1,
+      1
+     ],
+     "bonus": [
+      false,
+      false
+     ]
+    },
+    {
+     "line": [
+      3,
+      7,
+      14,
+      22,
+      26,
+      36
+     ],
+     "matches": [
+      1,
+      0
+     ],
+     "bonus": [
+      true,
+      false
+     ]
+    },
+    {
+     "line": [
+      9,
+      11,
+      16,
+      17,
+      48,
+      56
+     ],
+     "matches": [
+      1,
+      0
+     ],
+     "bonus": [
+      false,
+      false
+     ]
+    },
+    {
+     "line": [
+      10,
+      32,
+      40,
+      43,
+      53,
+      55
+     ],
+     "matches": [
+      2,
+      1
+     ],
+     "bonus": [
+      false,
+      false
+     ]
+    },
+    {
+     "line": [
+      5,
+      15,
+      18,
+      21,
+      24,
+      25
+     ],
+     "matches": [
+      0,
+      1
+     ],
+     "bonus": [
+      false,
+      true
+     ]
+    },
+    {
+     "line": [
+      27,
+      28,
+      39,
+      41,
+      44,
+      49
+     ],
+     "matches": [
+      0,
+      1
+     ],
+     "bonus": [
+      false,
+      false
+     ]
+    }
+   ],
+   "strategies": {
+    "random (baseline)": [
+     {
+      "line": [
+       11,
+       21,
+       22,
+       28,
+       38,
+       47
+      ],
+      "matches": [
+       0,
+       1
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       11,
+       18,
+       39,
+       54,
+       55,
+       58
+      ],
+      "matches": [
+       1,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       20,
+       27,
+       31,
+       38,
+       45,
+       49
+      ],
+      "matches": [
+       0,
+       1
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       1,
+       14,
+       17,
+       26,
+       32,
+       40
+      ],
+      "matches": [
+       1,
+       0
+      ],
+      "bonus": [
+       true,
+       false
+      ]
+     },
+     {
+      "line": [
+       12,
+       18,
+       22,
+       26,
+       27,
+       36
+      ],
+      "matches": [
+       0,
+       0
+      ],
+      "bonus": [
+       true,
+       false
+      ]
+     }
+    ],
+    "hot-weighted (last 100)": [
+     {
+      "line": [
+       8,
+       20,
+       21,
+       22,
+       41,
+       49
+      ],
+      "matches": [
+       0,
+       1
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       30,
+       35,
+       42,
+       45,
+       54,
+       57
+      ],
+      "matches": [
+       1,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       14,
+       22,
+       40,
+       42,
+       43,
+       51
+      ],
+      "matches": [
+       2,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       7,
+       14,
+       22,
+       26,
+       38,
+       57
+      ],
+      "matches": [
+       0,
+       1
+      ],
+      "bonus": [
+       true,
+       false
+      ]
+     },
+     {
+      "line": [
+       7,
+       17,
+       21,
+       23,
+       37,
+       55
+      ],
+      "matches": [
+       0,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     }
+    ],
+    "cold-weighted (last 100)": [
+     {
+      "line": [
+       7,
+       9,
+       13,
+       36,
+       54,
+       59
+      ],
+      "matches": [
+       1,
+       1
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       19,
+       28,
+       32,
+       43,
+       55,
+       58
+      ],
+      "matches": [
+       2,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       1,
+       11,
+       25,
+       29,
+       37,
+       46
+      ],
+      "matches": [
+       0,
+       0
+      ],
+      "bonus": [
+       false,
+       true
+      ]
+     },
+     {
+      "line": [
+       3,
+       31,
+       43,
+       51,
+       56,
+       59
+      ],
+      "matches": [
+       3,
+       1
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       1,
+       7,
+       19,
+       23,
+       24,
+       34
+      ],
+      "matches": [
+       0,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     }
+    ],
+    "hot top-6 (last 50)": [
+     {
+      "line": [
+       4,
+       21,
+       38,
+       42,
+       48,
+       54
+      ],
+      "matches": [
+       2,
+       1
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     }
+    ],
+    "cold top-6 (last 50)": [
+     {
+      "line": [
+       16,
+       23,
+       34,
+       40,
+       50,
+       58
+      ],
+      "matches": [
+       0,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     }
+    ],
+    "most overdue top-6": [
+     {
+      "line": [
+       10,
+       27,
+       33,
+       34,
+       40,
+       44
+      ],
+      "matches": [
+       0,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     }
+    ],
+    "repeat last draw": [
+     {
+      "line": [
+       6,
+       26,
+       38,
+       53,
+       57,
+       59
+      ],
+      "matches": [
+       0,
+       3
+      ],
+      "bonus": [
+       true,
+       false
+      ]
+     }
+    ],
+    "n-gram grammar (repo)": [
+     {
+      "line": [
+       3,
+       6,
+       13,
+       17,
+       24,
+       44
+      ],
+      "matches": [
+       1,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       15,
+       20,
+       34,
+       38,
+       47,
+       48
+      ],
+      "matches": [
+       1,
+       2
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       3,
+       17,
+       29,
+       33,
+       42,
+       53
+      ],
+      "matches": [
+       1,
+       1
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       4,
+       19,
+       33,
+       50,
+       51,
+       59
+      ],
+      "matches": [
+       1,
+       1
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       1,
+       2,
+       5,
+       27,
+       31,
+       38
+      ],
+      "matches": [
+       0,
+       2
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     }
+    ],
+    "transformer NN (repo)": [
+     {
+      "line": [
+       1,
+       2,
+       19,
+       50,
+       52,
+       59
+      ],
+      "matches": [
+       0,
+       2
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       26,
+       27,
+       31,
+       39,
+       50,
+       56
+      ],
+      "matches": [
+       0,
+       0
+      ],
+      "bonus": [
+       true,
+       false
+      ]
+     },
+     {
+      "line": [
+       5,
+       11,
+       18,
+       33,
+       40,
+       43
+      ],
+      "matches": [
+       1,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       8,
+       24,
+       32,
+       40,
+       48,
+       50
+      ],
+      "matches": [
+       2,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       11,
+       16,
+       20,
+       24,
+       31,
+       44
+      ],
+      "matches": [
+       0,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     }
+    ],
+    "early balls (1st/2nd out)": [
+     {
+      "line": [
+       2,
+       7,
+       23,
+       24,
+       25,
+       35
+      ],
+      "matches": [
+       0,
+       1
+      ],
+      "bonus": [
+       false,
+       true
+      ]
+     },
+     {
+      "line": [
+       7,
+       17,
+       31,
+       33,
+       36,
+       46
+      ],
+      "matches": [
+       0,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       7,
+       28,
+       37,
+       47,
+       51,
+       55
+      ],
+      "matches": [
+       1,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       28,
+       37,
+       45,
+       46,
+       47,
+       50
+      ],
+      "matches": [
+       0,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       3,
+       24,
+       33,
+       43,
+       44,
+       56
+      ],
+      "matches": [
+       2,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     }
+    ],
+    "drawn-order Markov chain": [
+     {
+      "line": [
+       14,
+       16,
+       23,
+       44,
+       47,
+       50
+      ],
+      "matches": [
+       0,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       10,
+       25,
+       26,
+       41,
+       45,
+       49
+      ],
+      "matches": [
+       0,
+       1
+      ],
+      "bonus": [
+       true,
+       true
+      ]
+     },
+     {
+      "line": [
+       21,
+       47,
+       51,
+       54,
+       58,
+       59
+      ],
+      "matches": [
+       2,
+       1
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       1,
+       9,
+       17,
+       21,
+       47,
+       48
+      ],
+      "matches": [
+       1,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       4,
+       9,
+       14,
+       42,
+       46,
+       56
+      ],
+      "matches": [
+       0,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     }
+    ],
+    "drawn-order transformer": [
+     {
+      "line": [
+       13,
+       27,
+       34,
+       51,
+       55,
+       57
+      ],
+      "matches": [
+       1,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       2,
+       8,
+       25,
+       38,
+       51,
+       56
+      ],
+      "matches": [
+       1,
+       2
+      ],
+      "bonus": [
+       false,
+       true
+      ]
+     },
+     {
+      "line": [
+       6,
+       13,
+       14,
+       17,
+       27,
+       28
+      ],
+      "matches": [
+       0,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       13,
+       15,
+       20,
+       34,
+       43,
+       59
+      ],
+      "matches": [
+       1,
+       2
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       32,
+       35,
+       39,
+       42,
+       49,
+       53
+      ],
+      "matches": [
+       1,
+       1
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     }
+    ],
+    "machine-matched hot": [
+     {
+      "line": [
+       12,
+       23,
+       31,
+       37,
+       48,
+       51
+      ],
+      "matches": [
+       2,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       6,
+       22,
+       35,
+       37,
+       42,
+       54
+      ],
+      "matches": [
+       1,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       14,
+       16,
+       20,
+       28,
+       43,
+       54
+      ],
+      "matches": [
+       2,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       22,
+       27,
+       31,
+       40,
+       44,
+       45
+      ],
+      "matches": [
+       0,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       2,
+       3,
+       14,
+       22,
+       42,
+       57
+      ],
+      "matches": [
+       1,
+       1
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     }
+    ],
+    "recent bonus balls": [
+     {
+      "line": [
+       11,
+       16,
+       19,
+       21,
+       30,
+       40
+      ],
+      "matches": [
+       0,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     }
+    ],
+    "ENSEMBLE equal-weight top-6": [
+     {
+      "line": [
+       16,
+       21,
+       34,
+       38,
+       40,
+       42
+      ],
+      "matches": [
+       0,
+       1
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     }
+    ],
+    "ENSEMBLE equal-weight sampled": [
+     {
+      "line": [
+       5,
+       23,
+       34,
+       47,
+       50,
+       53
+      ],
+      "matches": [
+       0,
+       1
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       11,
+       16,
+       24,
+       38,
+       40,
+       46
+      ],
+      "matches": [
+       0,
+       1
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       11,
+       23,
+       33,
+       42,
+       44,
+       53
+      ],
+      "matches": [
+       0,
+       1
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       5,
+       16,
+       28,
+       33,
+       42,
+       56
+      ],
+      "matches": [
+       0,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       8,
+       17,
+       33,
+       40,
+       52,
+       56
+      ],
+      "matches": [
+       0,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     }
+    ],
+    "ENSEMBLE perf-weighted top-6": [
+     {
+      "line": [
+       34,
+       38,
+       40,
+       42,
+       48,
+       54
+      ],
+      "matches": [
+       2,
+       1
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     }
+    ],
+    "ENSEMBLE perf-weighted sampled": [
+     {
+      "line": [
+       6,
+       10,
+       24,
+       25,
+       43,
+       48
+      ],
+      "matches": [
+       2,
+       0
+      ],
+      "bonus": [
+       false,
+       true
+      ]
+     },
+     {
+      "line": [
+       7,
+       8,
+       21,
+       25,
+       27,
+       30
+      ],
+      "matches": [
+       0,
+       0
+      ],
+      "bonus": [
+       false,
+       true
+      ]
+     },
+     {
+      "line": [
+       2,
+       16,
+       41,
+       42,
+       45,
+       58
+      ],
+      "matches": [
+       0,
+       2
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       6,
+       21,
+       36,
+       42,
+       57,
+       59
+      ],
+      "matches": [
+       0,
+       1
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       5,
+       8,
+       19,
+       20,
+       21,
+       53
+      ],
+      "matches": [
+       0,
+       1
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     }
+    ],
+    "ENSEMBLE stacked top-6": [
+     {
+      "line": [
+       4,
+       13,
+       14,
+       22,
+       42,
+       51
+      ],
+      "matches": [
+       1,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     }
+    ],
+    "ENSEMBLE stacked sampled": [
+     {
+      "line": [
+       4,
+       5,
+       7,
+       15,
+       27,
+       51
+      ],
+      "matches": [
+       1,
+       1
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       14,
+       29,
+       38,
+       40,
+       45,
+       57
+      ],
+      "matches": [
+       0,
+       1
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       4,
+       5,
+       10,
+       38,
+       42,
+       54
+      ],
+      "matches": [
+       1,
+       1
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       28,
+       34,
+       36,
+       39,
+       42,
+       44
+      ],
+      "matches": [
+       0,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       9,
+       22,
+       31,
+       44,
+       45,
+       47
+      ],
+      "matches": [
+       0,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     }
+    ]
+   },
+   "wheel59": {
+    "source": "committed",
+    "lines": [
+     {
+      "line": [
+       4,
+       20,
+       28,
+       31,
+       45,
+       48
+      ],
+      "matches": [
+       1,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       1,
+       11,
+       14,
+       27,
+       38,
+       51
+      ],
+      "matches": [
+       1,
+       1
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       23,
+       24,
+       34,
+       55,
+       57,
+       59
+      ],
+      "matches": [
+       0,
+       1
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       18,
+       22,
+       32,
+       42,
+       47,
+       58
+      ],
+      "matches": [
+       1,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       10,
+       21,
+       26,
+       37,
+       39,
+       54
+      ],
+      "matches": [
+       1,
+       0
+      ],
+      "bonus": [
+       true,
+       false
+      ]
+     },
+     {
+      "line": [
+       2,
+       8,
+       17,
+       31,
+       35,
+       37
+      ],
+      "matches": [
+       0,
+       1
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       13,
+       19,
+       23,
+       29,
+       33,
+       51
+      ],
+      "matches": [
+       1,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       4,
+       12,
+       46,
+       47,
+       50,
+       59
+      ],
+      "matches": [
+       0,
+       1
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       1,
+       6,
+       20,
+       52,
+       57,
+       58
+      ],
+      "matches": [
+       0,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       30,
+       34,
+       38,
+       42,
+       45,
+       54
+      ],
+      "matches": [
+       1,
+       1
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       3,
+       7,
+       14,
+       22,
+       26,
+       36
+      ],
+      "matches": [
+       1,
+       0
+      ],
+      "bonus": [
+       true,
+       false
+      ]
+     },
+     {
+      "line": [
+       9,
+       11,
+       16,
+       17,
+       48,
+       56
+      ],
+      "matches": [
+       1,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       10,
+       32,
+       40,
+       43,
+       53,
+       55
+      ],
+      "matches": [
+       2,
+       1
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       5,
+       15,
+       18,
+       21,
+       24,
+       25
+      ],
+      "matches": [
+       0,
+       1
+      ],
+      "bonus": [
+       false,
+       true
+      ]
+     },
+     {
+      "line": [
+       27,
+       28,
+       39,
+       41,
+       44,
+       49
+      ],
+      "matches": [
+       0,
+       1
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     }
+    ]
+   },
+   "frozen_wheel": {
+    "wheel": "3 if 4",
+    "numbers": [
+     11,
+     12,
+     31,
+     34,
+     36,
+     37,
+     38,
+     39,
+     40,
+     42,
+     45,
+     48,
+     52,
+     54,
+     59
+    ],
+    "in_numbers": [
+     2,
+     2
+    ],
+    "lines": [
+     {
+      "line": [
+       12,
+       34,
+       36,
+       37,
+       39,
+       42
+      ],
+      "matches": [
+       0,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       31,
+       34,
+       37,
+       38,
+       48,
+       54
+      ],
+      "matches": [
+       2,
+       1
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       11,
+       37,
+       38,
+       42,
+       45,
+       59
+      ],
+      "matches": [
+       0,
+       2
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       11,
+       36,
+       39,
+       45,
+       48,
+       54
+      ],
+      "matches": [
+       2,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       11,
+       12,
+       31,
+       42,
+       52,
+       54
+      ],
+      "matches": [
+       1,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       11,
+       34,
+       36,
+       48,
+       52,
+       59
+      ],
+      "matches": [
+       1,
+       1
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       11,
+       12,
+       36,
+       38,
+       40,
+       52
+      ],
+      "matches": [
+       0,
+       1
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       37,
+       39,
+       40,
+       52,
+       54,
+       59
+      ],
+      "matches": [
+       1,
+       1
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       31,
+       36,
+       37,
+       40,
+       45,
+       52
+      ],
+      "matches": [
+       0,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       12,
+       37,
+       40,
+       42,
+       45,
+       48
+      ],
+      "matches": [
+       1,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       12,
+       31,
+       38,
+       39,
+       48,
+       59
+      ],
+      "matches": [
+       1,
+       2
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       11,
+       31,
+       34,
+       39,
+       40,
+       42
+      ],
+      "matches": [
+       0,
+       0
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       34,
+       38,
+       39,
+       42,
+       45,
+       52
+      ],
+      "matches": [
+       0,
+       1
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       12,
+       34,
+       40,
+       45,
+       54,
+       59
+      ],
+      "matches": [
+       1,
+       1
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     },
+     {
+      "line": [
+       31,
+       36,
+       38,
+       42,
+       54,
+       59
+      ],
+      "matches": [
+       1,
+       2
+      ],
+      "bonus": [
+       false,
+       false
+      ]
+     }
+    ]
+   }
   }
  ],
  "summary": {
   "combined": {
-   "line_rounds": 100,
+   "line_rounds": 110,
    "counts": [
-    50,
-    39,
-    9,
+    55,
+    42,
+    11,
     2,
     0,
     0,
     0
    ],
-   "bonus": 10,
-   "mean": 0.63,
+   "bonus": 11,
+   "mean": 0.6363636363636364,
    "prize": 2
   },
   "strategies": {
-   "line_rounds": 1324,
+   "line_rounds": 1460,
    "counts": [
-    701,
-    478,
-    132,
-    12,
+    775,
+    522,
+    148,
+    14,
     1,
     0,
     0
    ],
-   "bonus": 133,
-   "mean": 0.5906344410876133,
-   "prize": 13
+   "bonus": 145,
+   "mean": 0.5917808219178082,
+   "prize": 15
   },
   "popularity_lines": {
-   "line_rounds": 80,
+   "line_rounds": 90,
    "counts": [
+    45,
+    35,
+    8,
+    2,
+    0,
+    0,
+    0
+   ],
+   "bonus": 7,
+   "mean": 0.6333333333333333,
+   "prize": 2
+  },
+  "wheel_lines": {
+   "line_rounds": 240,
+   "counts": [
+    111,
+    101,
+    28,
+    0,
+    0,
+    0,
+    0
+   ],
+   "bonus": 28,
+   "mean": 0.6541666666666667,
+   "prize": 0
+  },
+  "wheel59_lines": {
+   "line_rounds": 360,
+   "counts": [
+    185,
+    134,
     39,
-    33,
+    2,
+    0,
+    0,
+    0
+   ],
+   "bonus": 37,
+   "mean": 0.6055555555555555,
+   "prize": 2
+  },
+  "frozen_lines": {
+   "line_rounds": 90,
+   "counts": [
+    51,
+    31,
     8,
     0,
     0,
     0,
     0
    ],
-   "bonus": 7,
-   "mean": 0.6125,
-   "prize": 0
-  },
-  "wheel_lines": {
-   "line_rounds": 210,
-   "counts": [
-    98,
-    85,
-    27,
-    0,
-    0,
-    0,
-    0
-   ],
-   "bonus": 25,
-   "mean": 0.6619047619047619,
-   "prize": 0
-  },
-  "wheel59_lines": {
-   "line_rounds": 330,
-   "counts": [
-    172,
-    118,
-    38,
-    2,
-    0,
-    0,
-    0
-   ],
-   "bonus": 34,
-   "mean": 0.6060606060606061,
-   "prize": 2
-  },
-  "frozen_lines": {
-   "line_rounds": 60,
-   "counts": [
-    39,
-    18,
-    3,
-    0,
-    0,
-    0,
-    0
-   ],
    "bonus": 12,
-   "mean": 0.4,
+   "mean": 0.5222222222222223,
    "prize": 0
   },
   "chance": {
