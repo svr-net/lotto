@@ -11,7 +11,7 @@
 #include "assimilate.hpp"
 
 struct Mlp {
-    static constexpr int F = 7, H = 16;
+    static constexpr int F = 17, H = 16;  // 7 inputs from the filter and the draws, 10 from the radix digits (one per base)
     // layout: W1[H][F] b1[H] W2[H][H] b2[H] W3[H] b3
     static constexpr int N1 = H * F, N2 = N1 + H, N3 = N2 + H * H, N4 = N3 + H, N5 = N4 + H, NP = N5 + 1;
     std::vector<double> p, m, v; long t = 0;

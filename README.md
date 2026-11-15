@@ -1,51 +1,43 @@
 # lotto
 
-Research on UK Lotto (6 from 59) draws: can any model beat chance? Every study so far says no. The
-results are published as a report at https://svr-net.github.io/lotto/.
+One 15-number wheel for the UK Lotto (6 from 59), chosen by radix digits and a neural network over a particle
+filter, learned from every real draw and scored walk-forward against chance. The report is published at
+https://svr-net.github.io/lotto/.
 
 ## What's here
 
-- `data/uk_lotto_full.csv`: every draw since 1994 (`scripts/fetch_merseyworld.py` updates it).
-- `scripts/`: one script per study, each writing `results/<study>.json`:
-  - `walk_forward_backtest.py`: 14 strategies and 6 ensembles, walk-forward on real draws;
-  - `grammar_discovery.py`, `prime_radix_study.py`, `radix_strategies_study.py`, `spectral_study.py`,
-    `ml_ensemble_study.py`, `bayesian_study.py`, `rl_study.py`, `popularity_study.py`: the studies;
-  - `sequence_study.py`: the draws as one sequence (memory, timing, waits);
-  - `wheel_study.py`, `monte_carlo_study.py`: the 59-number wheel on real and simulated draws;
-  - `consensus_wheels.py`: the consensus 15 numbers in a "3 if 4" and a "4 if 4" wheel;
-  - `replay_wheel.py`: the wheel rebuilt and scored for each of the last three months' draws;
-  - `score_live.py`: scores the committed wheels against each new draw;
-  - `strategy_weights.py`: every backtest strategy's number weights at every real draw night, refitted on the
-    draws before it, for the nested Monte Carlo (`results/cache/strategy_weights.csv`, not committed);
-  - `freeze_wheel.py`: freezes a wheel's lines (`results/frozen_wheel.json`) and exports them;
-  - `build_report.py`: builds `results/report.html` from `results/report_template.html`.
-- `sim/`: the Monte Carlo simulator in C++, built on Alpine by `sim/Dockerfile`. `kernel.hpp` is the fused kernel
-  (draw, score every line, add each path straight into histograms) in C++ and, the same stream and the same
-  arithmetic, in WGSL; `threads.hpp` the lock-free multi-core backend (spin-wait and compare-exchange, no locks);
-  `models.hpp` the model maths (3-if-4 wheel, exact set probabilities, forecast scores). `nested_mc.cpp` is the
-  driver of the nested Monte Carlo, reset to the real draws at every step, over every strategy (each one's picks
-  as a model of the machine, blended with fair walk-forward) and two walk-forward choosers, best-so-far and a
-  Bayesian mixture, the log-score optimum. `web.cpp` is a thin WebAssembly wrapper the report calls on the
-  viewer's device, on the CPU or on WebGPU; both give the same histograms.
-  `assimilate.cpp` learns the machine from every real draw, all in C++: a Rao-Blackwellised particle filter
-  (`assimilate.hpp`) whose bias scale and drift are learned, a family of small neural networks (`nn.hpp`)
-  weighted by their real predictions, and a mixture with fair at equal prior weight; each night's forecasts are
-  simulated to choose the wheel's 15, and the same pipeline runs on machines with a planted bias to show what it
-  can find. Nothing is tuned by hand.
-- `lotto_nn/`: the small transformer and n-gram models the studies use.
-- `tests/`: `python -m pytest`.
+- `data/uk_lotto_full.csv`: every draw since 1994, with the order the balls came out (`scripts/fetch_merseyworld.py`
+  updates it).
+- `sim/`: everything is computed in C++, built on Alpine by `sim/Dockerfile`.
+  - `assimilate.cpp`: the driver. Before every real draw night of the 59-ball era it makes four forecasts from the
+    draws before it, and every round that night resets them:
+    - a Rao-Blackwellised particle filter (`assimilate.hpp`): the machine as a hidden state, its bias scale and drift
+      learned, updated on the exact probability of each draw's order;
+    - a family of small neural networks (`nn.hpp`, MLP + Adam) nudging the filter's forecast per number from its
+      uncertainty, gaps, recent and first-ball counts and the radix digits, weighted by their real predictions;
+    - 80 radix strategies (`radix.hpp`): every number's digits in the first ten prime bases, hot, cold, overdue and
+      early-ball rules, weighted by their real predictions;
+    - fair.
+    The mixture of the four, at equal prior weight and reweighted by every real draw, chooses the 15 numbers most
+    likely to hold 4+ of the six; they are laid out as a "3 if 4" wheel (15 lines, a 3-match line whenever 4 of the
+    six are among the 15). The same pipeline runs on simulated machines with a planted bias, to show what it finds
+    when there is something to find. Nothing is tuned by hand.
+  - `kernel.hpp`, `threads.hpp`, `models.hpp`, `data.hpp`: the fused Monte Carlo kernel (C++ and WGSL), the lock-free
+    multi-core backend, the wheel and exact probabilities, the data reader.
+  - `web.cpp`: a thin WebAssembly wrapper the report calls to simulate the wheel on the viewer's device, on the CPU or
+    on WebGPU; both give the same histograms.
+- `results/assimilation.json`: the results; `results/exports/`: `wheel_app.txt` and `wheel.csv` (the wheel's lines)
+  and `lotto_sim.wasm`.
+- `scripts/build_report.py` puts the results into `results/report_template.html` -> `results/report.html`.
+- `tests/`: `python -m pytest` (runs the C++ binaries).
 
 ## Running
 
 ```sh
-pip install -r requirements.txt
-docker build --network=host --target native --output type=local,dest=sim/bin sim       # sim/bin/nested_mc (static, Alpine)
+docker build --network=host --target native --output type=local,dest=sim/bin sim       # sim/bin/assimilate (static)
 docker build --network=host --target web --output type=local,dest=results/exports sim  # lotto_sim.wasm
-python -I scripts/fetch_merseyworld.py && python scripts/score_live.py
-python scripts/walk_forward_backtest.py --out results               # then each study script
-python scripts/strategy_weights.py                                  # ~2 min on 4 cores
-./sim/bin/nested_mc --first-draw 2026-11-07
-./sim/bin/assimilate                                               # results/assimilation.json, ~2 min
+python -I scripts/fetch_merseyworld.py
+./sim/bin/assimilate                    # results/assimilation.json and the wheel's exports, ~2 min
 python scripts/build_report.py
 ```
 
