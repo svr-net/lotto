@@ -19,11 +19,14 @@ results are published as a report at https://svr-net.github.io/lotto/.
     draws before it, for the nested Monte Carlo (`results/cache/strategy_weights.csv`, not committed);
   - `freeze_wheel.py`: freezes a wheel's lines (`results/frozen_wheel.json`) and exports them;
   - `build_report.py`: builds `results/report.html` from `results/report_template.html`.
-- `sim/`: the Monte Carlo simulator in C++. `kernel.hpp` is the shared kernel; `nested_mc.cpp` is the
-  nested Monte Carlo, reset to the real draws at every step, over every strategy (each one's picks as a model
-  of the machine, blended with fair walk-forward) and two walk-forward choosers, best-so-far and a Bayesian
-  mixture, the log-score optimum; `web.cpp` is the WebAssembly build the
-  report runs on the viewer's device (CPU or WebGPU).
+- `sim/`: the Monte Carlo simulator in C++, built on Alpine by `sim/Dockerfile`. `kernel.hpp` is the fused kernel
+  (draw, score every line, add each path straight into histograms) in C++ and, the same stream and the same
+  arithmetic, in WGSL; `threads.hpp` the lock-free multi-core backend (spin-wait and compare-exchange, no locks);
+  `models.hpp` the model maths (3-if-4 wheel, exact set probabilities, forecast scores). `nested_mc.cpp` is the
+  driver of the nested Monte Carlo, reset to the real draws at every step, over every strategy (each one's picks
+  as a model of the machine, blended with fair walk-forward) and two walk-forward choosers, best-so-far and a
+  Bayesian mixture, the log-score optimum. `web.cpp` is a thin WebAssembly wrapper the report calls on the
+  viewer's device, on the CPU or on WebGPU; both give the same histograms.
 - `lotto_nn/`: the small transformer and n-gram models the studies use.
 - `tests/`: `python -m pytest`.
 
@@ -31,7 +34,7 @@ results are published as a report at https://svr-net.github.io/lotto/.
 
 ```sh
 pip install -r requirements.txt
-docker build --network=host --target native --output type=local,dest=sim/bin sim       # sim/bin/nested_mc
+docker build --network=host --target native --output type=local,dest=sim/bin sim       # sim/bin/nested_mc (static, Alpine)
 docker build --network=host --target web --output type=local,dest=results/exports sim  # lotto_sim.wasm
 python -I scripts/fetch_merseyworld.py && python scripts/score_live.py
 python scripts/walk_forward_backtest.py --out results               # then each study script

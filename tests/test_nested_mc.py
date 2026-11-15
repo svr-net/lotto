@@ -22,6 +22,20 @@ def test_fair_model_matches_the_exact_odds(tmp_path, backend):
 
 
 @pytest.mark.skipif(not os.path.exists(BIN), reason="sim/bin/nested_mc not built (docker build --target native ... sim)")
+def test_lock_free_threads_match_the_single_core_kernel(tmp_path):
+    """Paths are seeded by index and added into histograms, so the pool's scheduling can't change any number."""
+    outs = {}
+    for backend in ("cpu", "threads"):
+        out = tmp_path / f"{backend}.json"
+        subprocess.run([BIN, "--csv", os.path.join(ROOT, "data", "uk_lotto_full.csv"), "--wheel", os.path.join(ROOT, "results", "exports", "frozen_wheel.csv"),
+                        "--first-draw", "2026-11-07", "--start", "2025-06-01", "--paths", "500", "--forward-paths", "5000",
+                        "--backend", backend, "--strategies", "none", "--out", str(out)], check=True, capture_output=True)
+        outs[backend] = json.load(open(out))
+        outs[backend].pop("backend")
+    assert outs["cpu"] == outs["threads"]
+
+
+@pytest.mark.skipif(not os.path.exists(BIN), reason="sim/bin/nested_mc not built (docker build --target native ... sim)")
 def test_strategies_reset_to_the_real_draws(tmp_path):
     """A strategy with no information scores exactly like fair; one backing the real draws in hindsight beats it."""
     import numpy as np, pandas as pd

@@ -16,7 +16,7 @@ WORKDIR /src
 COPY kernel.hpp .
 
 FROM toolchain AS native-build
-COPY nested_mc.cpp .
+COPY models.hpp threads.hpp nested_mc.cpp ./
 RUN g++ -std=c++20 -O3 -march=x86-64-v2 -Wall -Wextra -Werror -pthread -static -o nested_mc nested_mc.cpp
 
 FROM scratch AS native

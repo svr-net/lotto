@@ -423,60 +423,59 @@ const P3_LINE = 0.0108641, P2_LINE = 0.1083479;
   $("#fz-record").textContent = `Since ${dl(F.first_draw)}: ${E.length} draw${E.length > 1 ? "s" : ""}, ${rounds.length} rounds; some line matched 3+ in ${rounds.filter((r) => r.best >= 3).length} rounds and 2+ in ${rounds.filter((r) => r.best >= 2).length}; ${t.prize} prize-winning line${t.prize === 1 ? "" : "s"} in ${t.line_rounds} line-rounds (mean ${t.mean != null ? t.mean.toFixed(2) : "–"} matches, 0.61 by chance). Last draw (${dl(last.date)}): ${last.frozen_wheel.in_numbers.join(" / ")} of the drawn numbers among the 15, best line ${lb.join(" / ")}.`;
 })();
 
-// ---------- the frozen wheel simulated on the viewer's device: sim/web.cpp as WebAssembly, on CPU or WebGPU
+// ---------- the frozen wheel simulated on the viewer's device: a thin wrapper over sim/web.cpp (WebAssembly).
+// Every calculation is in the kernel; this only moves bytes: inputs in, a compute pass the kernel describes, 7 floats
+// per checkpoint out.
 (function () {
   const F = D.frozen;
   if (!F || typeof WebAssembly === "undefined") { const el = $("#sim"); if (el) el.hidden = true; return; }
-  const PATHS = 20000, gbp = (x) => (x < 0 ? "−" : "") + "£" + Math.abs(Math.round(x)).toLocaleString("en-GB");
-  let kernel, device;
+  const PATHS = 20000, q = new URLSearchParams(location.search).get("sim"), gbp = (x) => (x < 0 ? "−" : "") + "£" + Math.abs(Math.round(x)).toLocaleString("en-GB");
+  let k, device;
+  const bytes = (p, n) => new Uint8Array(k.memory.buffer, p, n);
   async function load() {
-    if (kernel) return;
+    if (k) return;
     const stub = () => 0;
-    const { instance } = await WebAssembly.instantiateStreaming(fetch("data/lotto_sim.wasm"), { wasi_snapshot_preview1: { fd_close: stub, fd_seek: stub, fd_write: stub } });
-    kernel = instance.exports;
-    kernel._initialize();
-    try {  // WebGPU only on a real GPU: a software adapter is slower than the WebAssembly kernel
-      const adapter = navigator.gpu && await navigator.gpu.requestAdapter({ powerPreference: "high-performance" });
-      const soft = adapter && (adapter.isFallbackAdapter || (adapter.info && adapter.info.isFallbackAdapter));
-      if (adapter && (!soft || new URLSearchParams(location.search).get("sim") === "webgpu")) device = await adapter.requestDevice();
+    k = (await WebAssembly.instantiateStreaming(fetch("data/lotto_sim.wasm"), { wasi_snapshot_preview1: { fd_close: stub, fd_seek: stub, fd_write: stub } })).instance.exports;
+    k._initialize();
+    try {  // WebGPU only on a real GPU (a software adapter is slower than WebAssembly) unless ?sim=webgpu
+      const a = q !== "cpu" && navigator.gpu && await navigator.gpu.requestAdapter({ powerPreference: "high-performance" });
+      if (a && (!(a.isFallbackAdapter || (a.info && a.info.isFallbackAdapter)) || q === "webgpu")) device = await a.requestDevice();
     } catch (e) { device = null; }
-    if (new URLSearchParams(location.search).get("sim") === "cpu") device = null;
   }
-  async function gpuPass(weighted, seed) {  // the compute pass C++ prepared: shader, inputs and output buffer
-    const mem = () => kernel.memory.buffer, out = kernel.gpu_prepare(F.lines.length, weighted, PATHS, seed);
-    const bytes = new Uint8Array(mem(), kernel.gpu_shader()), code = new TextDecoder().decode(bytes.subarray(0, bytes.indexOf(0)));
-    const U = GPUBufferUsage, size = PATHS * 3 * 2 * 4;
-    const buf = (ptr, len, usage) => { const b = device.createBuffer({ size: len, usage: usage | U.COPY_DST }); device.queue.writeBuffer(b, 0, new Uint8Array(mem(), ptr, len)); return b; };
-    const bufs = [buf(kernel.gpu_params_ptr(), 32, U.UNIFORM), buf(kernel.lines_ptr(), F.lines.length * 8, U.STORAGE), buf(kernel.weights_ptr(), 236, U.STORAGE),
-      buf(kernel.gpu_checkpoints_ptr(), 16, U.STORAGE), device.createBuffer({ size, usage: U.STORAGE | U.COPY_SRC })];
-    const read = device.createBuffer({ size, usage: U.MAP_READ | U.COPY_DST });
-    const pipe = device.createComputePipeline({ layout: "auto", compute: { module: device.createShaderModule({ code }), entryPoint: "main" } });
+  async function gpu(desc) {  // one compute pass, exactly as the descriptor lays it out; binding 3 comes back
+    const d = new Uint32Array(k.memory.buffer, desc, 16).slice(), U = GPUBufferUsage;
+    const b = [0, 1, 2, 3].map((i) => { const [p, n, kind] = d.subarray(4 + 3 * i, 7 + 3 * i);
+      const g = device.createBuffer({ size: n, usage: [U.UNIFORM, U.STORAGE, U.STORAGE | U.COPY_SRC][kind] | U.COPY_DST }); device.queue.writeBuffer(g, 0, bytes(p, n)); return g; });
+    const read = device.createBuffer({ size: d[14], usage: U.MAP_READ | U.COPY_DST });
+    const pipe = device.createComputePipeline({ layout: "auto", compute: { module: device.createShaderModule({ code: new TextDecoder().decode(bytes(d[0], d[1]).slice()) }), entryPoint: "main" } });
     const enc = device.createCommandEncoder(), pass = enc.beginComputePass();
     pass.setPipeline(pipe);
-    pass.setBindGroup(0, device.createBindGroup({ layout: pipe.getBindGroupLayout(0), entries: bufs.map((b, i) => ({ binding: i, resource: { buffer: b } })) }));
-    pass.dispatchWorkgroups(Math.ceil(PATHS / 64));
+    pass.setBindGroup(0, device.createBindGroup({ layout: pipe.getBindGroupLayout(0), entries: b.map((g, i) => ({ binding: i, resource: { buffer: g } })) }));
+    pass.dispatchWorkgroups(d[2]);
     pass.end();
-    enc.copyBufferToBuffer(bufs[4], 0, read, 0, size);
+    enc.copyBufferToBuffer(b[3], 0, read, 0, d[14]);
     device.queue.submit([enc.finish()]);
     await read.mapAsync(GPUMapMode.READ);
-    new Uint8Array(mem(), out, size).set(new Uint8Array(read.getMappedRange()));
+    bytes(d[13], d[14]).set(new Uint8Array(read.getMappedRange()));
     read.unmap();
-    [...bufs, read].forEach((b) => b.destroy());
-    kernel.gpu_finish(PATHS);
+    [...b, read].forEach((g) => g.destroy());
   }
+  async function simulate(weighted, seed, cost) {  // the kernel's summary: 7 floats per checkpoint
+    const n = F.lines.length;
+    const out = device ? (await gpu(k.gpu_prepare(n, weighted, PATHS, seed)), k.gpu_finish(cost)) : k.run_cpu(n, weighted, PATHS, seed, cost);
+    return new Float32Array(k.memory.buffer, out, 21).slice();
+  }
+  window.lottoSim = { load: async () => (await load(), { k, device }), gpu, simulate };  // for the tests
   $("#sim-run").addEventListener("click", async () => {
     const status = $("#sim-status");
     status.textContent = "Simulating…";
     try {
       await load();
-      const masks = F.lines.flatMap((l) => { let lo = 0, hi = 0; for (const n of l) { if (n <= 32) lo |= 1 << (n - 1); else hi |= 1 << (n - 33); } return [lo >>> 0, hi >>> 0]; });
-      new Uint32Array(kernel.memory.buffer, kernel.lines_ptr(), masks.length).set(masks);
-      new Float32Array(kernel.memory.buffer, kernel.weights_ptr(), 59).set(D.fairness.counts.map((c) => c + 1));
+      new Uint32Array(k.memory.buffer, k.lines_ptr(), F.lines.length * 2).set(F.lines.flatMap((l) => [0, 32].map((o) => l.reduce((m, x) => x > o && x <= o + 32 ? (m | (1 << (x - o - 1))) >>> 0 : m, 0))));
+      new Float32Array(k.memory.buffer, k.weights_ptr(), 59).set(D.fairness.counts.map((c) => c + 1));
       const cost = F.lines.length * F.price, seed = (Math.random() * 4294967296) >>> 0, t0 = performance.now(), rows = [];
       for (const [name, weighted] of [["Fair", 0], ["Hindsight as reality", 1]]) {
-        if (device) await gpuPass(weighted, seed); else kernel.run_cpu(F.lines.length, weighted, PATHS, seed);
-        kernel.summarise(PATHS, cost);
-        const o = new Float32Array(kernel.memory.buffer, kernel.summary_ptr(), 21);
+        const o = await simulate(weighted, seed, cost);
         [26, 52, 104].forEach((n, c) => rows.push(`<tr><td>${c ? "" : name}</td><td>${n}</td><td>${o[c * 7 + 1].toFixed(0)} <span class="muted">(${o[c * 7].toFixed(0)} to ${o[c * 7 + 2].toFixed(0)})</span></td><td>${gbp(o[c * 7 + 4])} <span class="muted">(${gbp(o[c * 7 + 3])} to ${gbp(o[c * 7 + 5])})</span></td><td>${(o[c * 7 + 6] * 100).toFixed(0)}%</td></tr>`));
       }
       const ms = performance.now() - t0, rounds = 2 * PATHS * 104;

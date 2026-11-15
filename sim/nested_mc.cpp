@@ -13,39 +13,22 @@
 // Forward: the frozen wheel simulated 104 rounds on from the latest real draw, with its real record since
 // it was frozen ranked within forecasts reset to that day.
 //
-// The kernel (kernel.hpp) is shared with the browser build; backends are injected (--backend cpu | threads).
+// This file is the driver: it reads the data, walks the resets and writes the JSON. Every calculation runs in
+// the shared kernels: the fused simulation and its histograms (kernel.hpp, shared with the browser build), the
+// model scores (models.hpp), on an injected backend (--backend cpu | threads; threads.hpp is a lock-free pool).
 //
 //   nested_mc --first-draw 2026-11-07 [--csv data/uk_lotto_full.csv] [--wheel results/exports/frozen_wheel.csv]
 //             [--out results/nested_mc.json]
-#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
 #include <map>
 #include <memory>
 #include <sstream>
-#include <string>
-#include <thread>
 
-#include "kernel.hpp"
+#include "models.hpp"
+#include "threads.hpp"
 
-constexpr int SET = 15;
-// 15 lines on 15 points in which any 4 points share 3 with some line ("3 if 4"); as in scripts/consensus_wheels.py
-constexpr int W34[15][6] = {{0, 1, 6, 10, 12, 14}, {0, 2, 4, 9, 10, 11}, {3, 8, 9, 10, 13, 14}, {1, 2, 3, 4, 6, 8},
-    {2, 5, 8, 11, 12, 14}, {0, 4, 5, 6, 8, 13}, {5, 6, 7, 8, 9, 12}, {1, 2, 5, 7, 10, 13}, {3, 5, 6, 7, 10, 11},
-    {3, 4, 7, 10, 12, 14}, {1, 4, 9, 11, 12, 13}, {0, 1, 7, 8, 11, 14}, {0, 1, 3, 5, 9, 14}, {0, 2, 3, 7, 12, 13},
-    {2, 6, 9, 11, 13, 14}};
-
-struct ThreadsBackend : Backend {
-    unsigned n = std::max(1u, std::thread::hardware_concurrency());
-    const char* name() const override { return "threads"; }
-    void run(const Job& j, Result& r) override {
-        std::vector<std::thread> pool;
-        for (unsigned t = 0; t < n; t++)
-            pool.emplace_back(run_paths, std::cref(j), std::ref(r), int(uint64_t(j.paths) * t / n), int(uint64_t(j.paths) * (t + 1) / n));
-        for (auto& t : pool) t.join();
-    }
-};
 static std::unique_ptr<Backend> make_backend(const std::string& name) {
     if (name == "cpu") return std::make_unique<CpuBackend>();
     if (name == "threads") return std::make_unique<ThreadsBackend>();
@@ -74,18 +57,6 @@ static Mask numbers_mask(const std::vector<std::string>& row, int first) {
     for (int i = 0; i < PICK; i++) m |= Mask(1) << (std::stoi(row[first + i]) - 1);
     return m;
 }
-static Wheel wheel_on(std::array<int, SET> nums) {  // the 3-if-4 design on these 15 numbers (1-based)
-    std::sort(nums.begin(), nums.end());
-    Wheel w;
-    for (auto& row : W34) { Mask m = 0; for (int i : row) m |= Mask(1) << (nums[i] - 1); w.lines.push_back(m); }
-    for (int n : nums) w.set |= Mask(1) << (n - 1);
-    return w;
-}
-
-// ---------------------------------------------------------------- statistics
-static double mean(const std::vector<double>& v) { double s = 0; for (double x : v) s += x; return v.empty() ? 0 : s / v.size(); }
-static double choose(int n, int k) { double r = 1; for (int i = 0; i < k; i++) r = r * (n - i) / (i + 1); return r; }
-
 struct ModelStats { std::vector<double> logk, pred, pit, p4, pprize; int inside = 0; };
 
 // ---------------------------------------------------------------- every strategy, reset to the real draws
@@ -101,43 +72,15 @@ struct ModelStats { std::vector<double> logk, pred, pit, p4, pprize; int inside 
 // probability the model gave that set of six) and, through the inner simulations, on the model's 15 numbers
 // in the 3-if-4 wheel; at nights a horizon apart the real rounds after the reset are laid over the model's
 // and the fair model's simulated futures.
-constexpr double LAMBDA[] = {0.01, 0.02, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 0.9, 1.0};
-constexpr int G = int(std::size(LAMBDA));
-using Probs = std::array<double, POOL>;
-
-static double set_logprob(const Probs& q, Mask draw) {  // exact: summed over the 720 orders the six could come out in
-    int idx[PICK], c = 0;
-    for (int i = 0; i < POOL; i++) if (draw >> i & 1) idx[c++] = i;
-    double f[1 << PICK] = {1}, used[1 << PICK] = {0};
-    for (int m = 1; m < (1 << PICK); m++) {
-        used[m] = used[m & (m - 1)] + q[idx[std::countr_zero(unsigned(m))]];
-        for (int x = 0; x < PICK; x++) if (m >> x & 1) { int prev = m ^ (1 << x); f[m] += f[prev] * q[idx[x]] / std::max(1e-12, 1 - used[prev]); }
-    }
-    return std::log(f[(1 << PICK) - 1]);
-}
-static Probs smooth(const Probs& v, double lambda) { Probs q; for (int i = 0; i < POOL; i++) q[i] = (1 - lambda) * v[i] + lambda / POOL; return q; }
-static Mask top_mask(const Probs& q, int k, Rng& rng) {  // the k numbers with the highest weight, ties broken at random
-    std::array<std::pair<double, int>, POOL> o;
-    for (int i = 0; i < POOL; i++) o[i] = {q[i] + 1e-12 * rng.unit(), i};
-    std::sort(o.begin(), o.end(), [](auto& a, auto& b) { return a.first > b.first; });
-    Mask m = 0; for (int i = 0; i < k; i++) m |= Mask(1) << o[i].second;
-    return m;
-}
-static Wheel wheel_of(Mask set) { std::array<int, SET> n; int c = 0; for (int i = 0; i < POOL; i++) if (set >> i & 1) n[c++] = i + 1; return wheel_on(n); }
 static std::string numbers_json(Mask m) { std::string s = "["; for (int i = 0; i < POOL; i++) if (m >> i & 1) s += (s.size() > 1 ? ", " : "") + std::to_string(i + 1); return s + "]"; }
 static std::string json_str(const std::string& s) { std::string o = "\""; for (char c : s) { if (c == '"' || c == '\\') o += '\\'; o += c; } return o + "\""; }
-static double zstat(const std::vector<double>& v) {
-    double m = mean(v), s = 0; for (double x : v) s += (x - m) * (x - m);
-    return v.size() > 1 && s > 0 ? m / std::sqrt(s / (v.size() - 1) / v.size()) : 0;
-}
-
 struct Model {  // one strategy's forecasts at every scored night
     std::string name; std::vector<Probs> q, rank; std::vector<double> lp, lambda;  // rank: what orders its picks
     Probs next{}, next_rank{}; double next_lambda = 1; std::string note;
 };
 
 static void strategy_study(FILE* f, Backend& backend, const std::vector<Round>& rounds, const std::string& path,
-                           const std::string& start, int horizon, int paths, const double fair_k[]) {
+                           const std::string& start, int horizon, int paths, const double fair15[]) {
     std::ifstream probe(path);
     if (!probe) { std::printf("no strategy weights at %s (run scripts/strategy_weights.py); strategies skipped\n", path.c_str()); return; }
     auto rows = read_csv(path);
@@ -167,14 +110,8 @@ static void strategy_study(FILE* f, Backend& backend, const std::vector<Round>& 
     const double fair_lp = -std::log(choose(POOL, PICK));
 
     // exact log score of every real draw under every strategy and λ
-    std::vector<std::vector<std::vector<double>>> lp(S, std::vector<std::vector<double>>(G, std::vector<double>(N)));
-    {
-        std::vector<std::thread> pool;
-        for (int s = 0; s < S; s++) pool.emplace_back([&, s] {
-            for (int g = 0; g < G; g++) for (int n = 0; n < N; n++) lp[s][g][n] = g == G - 1 ? fair_lp : set_logprob(smooth(v[s][n], LAMBDA[g]), rounds[night_t[n]].draw);
-        });
-        for (auto& t : pool) t.join();
-    }
+    std::vector<Mask> real_draws; for (int n = 0; n < N; n++) real_draws.push_back(rounds[night_t[n]].draw);
+    const auto lp = log_scores(backend, v, real_draws);  // exact log score of every real draw under every strategy and λ
     // λ fitted walk-forward: the best total on the earlier nights (ties go to the larger λ, nearer fair)
     std::vector<Model> models;
     auto best_g = [&](const std::vector<double>& cum) { int b = G - 1; for (int g = G - 2; g >= 0; g--) if (cum[g] > cum[b]) b = g; return b; };
@@ -256,21 +193,15 @@ static void strategy_study(FILE* f, Backend& backend, const std::vector<Round>& 
             for (int i = 0; i < POOL; i++) j.weights[i] = float(M.q[n][i]);
             j.learn = false;
             Result r = backend.simulate(j);
-            double pk[PICK + 1] = {}; for (int x : r.k1) pk[x] += 1;
-            k1diff.push_back(std::log((pk[k] + 0.5) / (paths + 0.5 * (PICK + 1))) - std::log(fair_k[k]));
+            k1diff.push_back(std::log((r.k1().count(k) + 0.5) / (paths + 0.5 * (PICK + 1))) - std::log(fair15[k]));
             if (!is_window[n]) continue;
             int prize = 0;
             for (int h = 0; h < horizon; h++) { int best = 0; for (Mask l : w.lines) best = std::max(best, std::popcount(rounds[t + h].draw & l)); prize += best >= 3; }
             real_prize.push_back(prize);
             Result fr = backend.simulate({{}, false, paths, horizon, &w, {horizon}, 0xFA1F0000ull + s * 100003 + n});
-            std::vector<double> pr(r.prize.begin(), r.prize.end()), fp(fr.prize.begin(), fr.prize.end());
-            double below = 0, equal = 0; for (double x : pr) { below += x < prize; equal += x == prize; }
-            pred.push_back(mean(pr)); fpred.push_back(mean(fp)); pit.push_back((below + rng.unit() * equal) / paths);
-            inside += prize >= quantile(pr, 0.05) && prize <= quantile(pr, 0.95);
-            finside += prize >= quantile(fp, 0.05) && prize <= quantile(fp, 0.95);
+            Forecast m = Forecast::of(r.prize(0), prize, rng.unit()), fm = Forecast::of(fr.prize(0), prize, 0);
+            pred.push_back(m.mean); fpred.push_back(fm.mean); pit.push_back(m.pit); inside += m.inside90; finside += fm.inside90;
         }
-        int hist[5] = {}; for (double u : pit) hist[std::min(4, int(u * 5))]++;
-        double chi = 0, e = pit.size() / 5.0; for (int b : hist) chi += e > 0 ? (b - e) * (b - e) / e : 0;
         double z15 = (mean(k15) - m15) / std::sqrt(v15 / N), z6 = (mean(k6) - m6) / std::sqrt(v6 / N);
         double used = 0; for (double l : M.lambda) used += l < 1;
         Rng nr{0xBEEFull + s};
@@ -280,7 +211,7 @@ static void strategy_study(FILE* f, Backend& backend, const std::vector<Round>& 
                         " \"real_prize_mean\": %.4f, \"pred_prize_mean\": %.4f, \"fair_pred_prize_mean\": %.4f, \"coverage90\": %.4f, \"fair_coverage90\": %.4f, \"pit_p\": %.4f",
                      json_str(M.name).c_str(), mean(diff), zstat(diff), mean(diff) / std::log(2.0), mean(k1diff), zstat(k1diff), mean(k15), z15, mean(k6), z6,
                      M.next_lambda, used / N, mean(real_prize), mean(pred), mean(fpred), pit.empty() ? 0 : double(inside) / pit.size(),
-                     pit.empty() ? 0 : double(finside) / pit.size(), std::exp(-chi / 2) * (1 + chi / 2));
+                     pit.empty() ? 0 : double(finside) / pit.size(), pit_p(pit));
         if (has_next) std::fprintf(f, ", \"next15\": %s, \"next6\": %s", numbers_json(next15).c_str(), numbers_json(next6).c_str());
         if (!M.note.empty()) std::fprintf(f, ", \"note\": %s", json_str(M.note).c_str());
         std::fprintf(f, "}%s\n", s + 1 < models.size() ? "," : "");
@@ -335,8 +266,8 @@ int main(int argc, char** argv) {
     // ---- outer loop: reset at each real draw night, inner simulations, real rounds laid over them
     std::vector<int> resets;
     for (int t = 0; t + horizon <= T; t++) if (rounds[t].date >= start && (t == 0 || rounds[t - 1].date != rounds[t].date)) resets.push_back(t);
-    double fair_k[PICK + 1];
-    for (int k = 0; k <= PICK; k++) fair_k[k] = choose(SET, k) * choose(POOL - SET, PICK - k) / choose(POOL, PICK);
+    double fair_k15[PICK + 1];
+    for (int k = 0; k <= PICK; k++) fair_k15[k] = fair_k(SET, k);
     const char* models[2] = {"fair", "hindsight as reality"};
     ModelStats st[2]; std::vector<double> diff, real_prize, real_any4;
     Rng tie{12345}; int last_window = -horizon, windows = 0;
@@ -345,8 +276,8 @@ int main(int argc, char** argv) {
         int t = resets[n];
         std::array<int, POOL> order; for (int i = 0; i < POOL; i++) order[i] = i;
         std::stable_sort(order.begin(), order.end(), [&](int a, int b) { return counts[t][a] > counts[t][b]; });
-        std::array<int, SET> pick; for (int i = 0; i < SET; i++) pick[i] = order[i] + 1;
-        Wheel w = wheel_on(pick);
+        Mask pick = 0; for (int i = 0; i < SET; i++) pick |= Mask(1) << order[i];
+        Wheel w = wheel_of(pick);
         int k_real = std::popcount(rounds[t].draw & w.set), prize_real = 0, hits4_real = 0;
         for (int h = 0; h < horizon; h++) {
             int best = 0; for (Mask l : w.lines) best = std::max(best, std::popcount(rounds[t + h].draw & l));
@@ -357,24 +288,16 @@ int main(int argc, char** argv) {
         double logs[2];
         for (int m = 0; m < 2; m++) {
             Result r = backend->simulate({counts[t], m == 1, paths, horizon, &w, {horizon}, 0x5EED0000ull + n * 2 + m});
-            double pk[PICK + 1] = {};
-            for (int k : r.k1) pk[k] += 1;
-            logs[m] = m == 0 ? std::log(fair_k[k_real]) : std::log((pk[k_real] + 0.5) / (paths + 0.5 * (PICK + 1)));
+            logs[m] = m == 0 ? std::log(fair_k15[k_real]) : std::log((r.k1().count(k_real) + 0.5) / (paths + 0.5 * (PICK + 1)));
             st[m].logk.push_back(logs[m]);
             if (!window) continue;
-            std::vector<double> pr(r.prize.begin(), r.prize.end());
-            double below = 0, equal = 0, any4 = 0, anyp = 0;
-            for (int p = 0; p < paths; p++) { below += pr[p] < prize_real; equal += pr[p] == prize_real; any4 += r.hits4[p] > 0; anyp += pr[p] > 0; }
-            st[m].pred.push_back(mean(pr));
-            st[m].inside += prize_real >= quantile(pr, 0.05) && prize_real <= quantile(pr, 0.95);
-            st[m].pit.push_back((below + tie.unit() * equal) / paths);
-            st[m].p4.push_back(any4 / paths); st[m].pprize.push_back(anyp / paths);
+            Forecast fc = Forecast::of(r.prize(0), prize_real, tie.unit());
+            st[m].pred.push_back(fc.mean); st[m].inside += fc.inside90; st[m].pit.push_back(fc.pit);
+            st[m].p4.push_back(1 - r.hits4(0).count(0) / paths); st[m].pprize.push_back(1 - r.prize(0).count(0) / paths);
         }
         diff.push_back(logs[1] - logs[0]);
     }
-    double dm = mean(diff), dv = 0;
-    for (double d : diff) dv += (d - dm) * (d - dm);
-    double dz = dm / std::sqrt(dv / (diff.size() - 1) / diff.size());
+    double dm = mean(diff), dz = zstat(diff);
 
     FILE* f = std::fopen(out.c_str(), "w");
     if (!f) { std::fprintf(stderr, "cannot write %s\n", out.c_str()); return 2; }
@@ -383,49 +306,47 @@ int main(int argc, char** argv) {
     for (size_t i = 0; i < frozen_numbers.size(); i++) std::fprintf(f, "%s%d", i ? ", " : "", frozen_numbers[i]);
     std::fprintf(f, "],\n \"actual\": {\"prize_rounds_mean\": %.4f, \"any4_rate\": %.4f},\n \"models\": {\n", mean(real_prize), mean(real_any4));
     for (int m = 0; m < 2; m++) {
-        int hist[5] = {}; for (double u : st[m].pit) hist[std::min(4, int(u * 5))]++;
-        double chi = 0, e = windows / 5.0, brier = 0;
-        for (int b : hist) chi += (b - e) * (b - e) / e;
+        double brier = 0, calib = pit_p(st[m].pit);
         for (size_t i = 0; i < st[m].p4.size(); i++) brier += (st[m].p4[i] - real_any4[i]) * (st[m].p4[i] - real_any4[i]);
-        double pit_p = std::exp(-chi / 2) * (1 + chi / 2);  // chi-square survival, 4 degrees of freedom
         std::fprintf(f, "  \"%s\": {\"log_score_k1\": %.5f, \"pred_prize_mean\": %.4f, \"coverage90\": %.4f, \"pit_p\": %.4f, \"pred_any4\": %.4f, \"brier_any4\": %.4f}%s\n",
-                     models[m], mean(st[m].logk), mean(st[m].pred), double(st[m].inside) / windows, pit_p, mean(st[m].p4), brier / windows, m ? "" : ",");
+                     models[m], mean(st[m].logk), mean(st[m].pred), double(st[m].inside) / windows, calib, mean(st[m].p4), brier / windows, m ? "" : ",");
         std::printf("  %-22s log score %.4f; prize rounds per %d: forecast %.2f vs real %.2f; 90%% range held %.0f%%; calibration p %.2f; any 4+ %.3f vs %.3f\n",
-                    models[m], mean(st[m].logk), horizon, mean(st[m].pred), mean(real_prize), 100.0 * st[m].inside / windows, pit_p, mean(st[m].p4), mean(real_any4));
+                    models[m], mean(st[m].logk), horizon, mean(st[m].pred), mean(real_prize), 100.0 * st[m].inside / windows, calib, mean(st[m].p4), mean(real_any4));
     }
     std::fprintf(f, " },\n \"log_score_diff\": {\"mean\": %.5f, \"z\": %.3f},\n", dm, dz);
     std::printf("  hindsight minus fair, log score per reset: %+.4f (z %+.2f)\n", dm, dz);
-    if (strategies_csv != "none") strategy_study(f, *backend, rounds, strategies_csv, start, horizon, paths, fair_k);
+    if (strategies_csv != "none") strategy_study(f, *backend, rounds, strategies_csv, start, horizon, paths, fair_k15);
 
     // ---- forward: the frozen wheel from the latest real draw, and its real record ranked from its first draw
     const double cost = frozen.lines.size() * price;
     int t0 = T; if (!first_draw.empty()) for (int t = T - 1; t >= 0 && rounds[t].date >= first_draw; t--) t0 = t;
-    int real_rounds = T - t0, real_prize_rounds = 0; double real_net = -cost * real_rounds;
+    int real_rounds = T - t0, real_prize_rounds = 0, real_money = 0;
     for (int t = t0; t < T; t++) {
         int best = 0;
-        for (Mask l : frozen.lines) { int m = std::popcount(rounds[t].draw & l); real_net += PAY[m]; best = std::max(best, m); }
+        for (Mask l : frozen.lines) { int m = std::popcount(rounds[t].draw & l); real_money += PAY[m]; best = std::max(best, m); }
         real_prize_rounds += best >= 3;
     }
+    const double real_net = real_money - cost * real_rounds;
     std::fprintf(f, " \"cost_per_round\": %.2f,\n \"forward\": {\"from\": \"%s\", \"real_since_frozen\": {\"first_draw\": \"%s\", \"rounds\": %d, \"prize_rounds\": %d, \"net\": %.2f},\n  \"models\": {\n",
                  cost, rounds[T - 1].date.c_str(), first_draw.c_str(), real_rounds, real_prize_rounds, real_net);
     const std::vector<int> cks = {26, 52, 104};
     for (int m = 0; m < 2; m++) {
         Result r = backend->simulate({counts[T], m == 1, forward_paths, 104, &frozen, cks, 0xF0F0ull + m});
         std::fprintf(f, "   \"%s\": {\"checkpoints\": {", models[m]);
+        float o[MAX_CHECKPOINTS * 7];
+        summarise(r, cks, cost, o);  // the same summary the browser build shows
         for (size_t c = 0; c < cks.size(); c++) {
-            std::vector<double> pr(forward_paths), net(forward_paths); double none = 0;
-            for (int p = 0; p < forward_paths; p++) { pr[p] = r.prize[p * cks.size() + c]; net[p] = r.money[p * cks.size() + c] - cost * cks[c]; none += pr[p] == 0; }
+            const float* q = o + c * 7;
             std::fprintf(f, "%s\"%d\": {\"prize_rounds\": [%.0f, %.0f, %.0f], \"net\": [%.0f, %.0f, %.0f], \"p_no_prize\": %.4f}", c ? ", " : "", cks[c],
-                         quantile(pr, 0.05), quantile(pr, 0.5), quantile(pr, 0.95), quantile(net, 0.05), quantile(net, 0.5), quantile(net, 0.95), none / forward_paths);
-            if (cks[c] == 104) std::printf("  forward, %-22s 1 year: prize rounds %.0f (%.0f to %.0f), net %.0f (%.0f to %.0f)\n", models[m],
-                                           quantile(pr, 0.5), quantile(pr, 0.05), quantile(pr, 0.95), quantile(net, 0.5), quantile(net, 0.05), quantile(net, 0.95));
+                         q[0], q[1], q[2], q[3], q[4], q[5], q[6]);
+            if (cks[c] == 104) std::printf("  forward, %-22s 1 year: prize rounds %.0f (%.0f to %.0f), net %.0f (%.0f to %.0f)\n", models[m], q[1], q[0], q[2], q[4], q[3], q[5]);
         }
         std::fprintf(f, "}");
         if (real_rounds) {
             Result b = backend->simulate({counts[t0], m == 1, forward_paths, real_rounds, &frozen, {real_rounds}, 0xBA5Eull + m});
-            double below = 0, equal = 0, none = 0;
-            for (int p = 0; p < forward_paths; p++) { double net = b.money[p] - cost * real_rounds; below += net < real_net; equal += net == real_net; none += b.prize[p] == 0; }
-            std::fprintf(f, ", \"real_rank\": {\"net_pct\": %.1f, \"p_no_prize_so_far\": %.4f}", 100 * (below + equal / 2) / forward_paths, none / forward_paths);
+            Hist money = b.money(0);  // net ranks as money does: the cost is the same for every path
+            std::fprintf(f, ", \"real_rank\": {\"net_pct\": %.1f, \"p_no_prize_so_far\": %.4f}", 100 * (money.below(real_money) + money.count(real_money) / 2) / forward_paths,
+                         b.prize(0).count(0) / forward_paths);
         }
         std::fprintf(f, "}%s\n", m ? "" : ",");
     }
