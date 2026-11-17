@@ -16,7 +16,7 @@ WORKDIR /src
 COPY kernel.hpp .
 
 FROM toolchain AS native-build
-COPY data.hpp models.hpp threads.hpp assimilate.hpp nn.hpp radix.hpp assimilate.cpp ./
+COPY data.hpp models.hpp threads.hpp assimilate.hpp nn.hpp radix.hpp reverse.hpp assimilate.cpp ./
 RUN g++ -std=c++20 -O3 -march=x86-64-v2 -Wall -Wextra -Werror -pthread -static -o assimilate assimilate.cpp
 
 FROM scratch AS native
