@@ -9,7 +9,7 @@ https://svr-net.github.io/lotto/.
 - `data/uk_lotto_full.csv`: every draw since 1994, with the order the balls came out (`scripts/fetch_merseyworld.py`
   updates it).
 - `sim/`: everything is computed in C++, built on Alpine by `sim/Dockerfile`.
-  - `assimilate.cpp`: the driver. Before every real draw night of the 59-ball era it makes four forecasts from the
+  - `assimilate.cpp`: the driver. Before every real draw night of the 59-ball era it makes five forecasts from the
     draws before it, and every round that night resets them:
     - a Rao-Blackwellised particle filter (`assimilate.hpp`): the machine as a hidden state, its bias scale and drift
       learned, updated on the exact probability of each draw's order;
@@ -22,7 +22,7 @@ https://svr-net.github.io/lotto/.
       pairing; repeats, neighbours and final digits of the last round), each a Bayesian model updated on every draw,
       with a forecast of which machine and ball set run next learned from the schedule;
     - fair.
-    The mixture of the four, at equal prior weight and reweighted by every real draw, chooses the 15 numbers most
+    The mixture of the five, at equal prior weight and reweighted by every real draw, chooses the 15 numbers most
     likely to hold 4+ of the six; they are laid out as a "3 if 4" wheel (15 lines, a 3-match line whenever 4 of the
     six are among the 15). The same pipeline runs on simulated machines with a planted bias, to show what it finds
     when there is something to find (on every machine, or on one machine only). Every hypothesis, ball position
