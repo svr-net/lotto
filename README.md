@@ -32,7 +32,8 @@ https://svr-net.github.io/lotto/.
     multi-core backend, the wheel and exact probabilities, the data reader.
   - `web.cpp`: a thin WebAssembly wrapper the report calls to simulate the wheel on the viewer's device, on the CPU or
     on WebGPU; both give the same histograms.
-- `results/assimilation.json`: the results; `results/exports/`: `wheel_app.txt` and `wheel.csv` (the wheel's lines)
+- `results/assimilation.json`: the results, including the wheel's round-by-round record over the last six months
+  (the report's "Last 6 months" tab); `results/exports/`: `wheel_app.txt` and `wheel.csv` (the wheel's lines)
   and `lotto_sim.wasm`.
 - `scripts/build_report.py` puts the results into `results/report_template.html` -> `results/report.html`.
 - `tests/`: `python -m pytest` (runs the C++ binaries).
