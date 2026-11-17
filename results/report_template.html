@@ -104,6 +104,7 @@ nav.tabs a:focus-visible { outline: 2px solid var(--s1); outline-offset: 2px; }
 
 <nav class="tabs" id="tabs" aria-label="Sections">
   <a href="#next">Next draw</a>
+  <a href="#recent">Last 6 months</a>
   <a href="#backtest">Backtest</a>
   <a href="#about">About</a>
 </nav>
@@ -119,6 +120,15 @@ nav.tabs a:focus-visible { outline: 2px solid var(--s1); outline-offset: 2px; }
     <div class="table-wrap" id="sim-wrap" hidden><table id="sim-table"></table></div>
   </div>
 </div>
+
+<section data-tab="recent" id="recent-section">
+  <div class="eyebrow">Backtest, round by round</div>
+  <h2>The wheel against every draw of the last six months</h2>
+  <p id="recent-lede"></p>
+  <div class="facts" id="recent-facts"></div>
+  <div class="table-wrap"><table id="recent-table"></table></div>
+  <p class="note" id="recent-note"></p>
+</section>
 
 <section data-tab="backtest" id="rev-section">
   <div class="eyebrow">Reverse-engineering the draws</div>
@@ -233,6 +243,27 @@ const ball = (n, cls = "") => `<span class="ball ${cls}">${n}</span>`;
       status.textContent = `${rounds.toLocaleString("en-GB")} simulated rounds in ${ms.toFixed(0)} ms on this device's ${device ? "GPU (WebGPU)" : "CPU (WebAssembly)"}. Median with the 90% range in brackets; net counts the fixed prizes only (2 matches a free Lucky Dip at £2, 3 matches £30, 4 £140, 5 £1,750). Each run draws fresh futures.`;
     } catch (e) { status.textContent = `Couldn't run the simulation here (${e.message}).`; }
   });
+})();
+
+// ---------- the last six months, round by round: the 15 chosen before each night, scored against its draws
+(function () {
+  const P = R.recent;
+  if (!P || !P.rounds.length) { $("#recent-section").hidden = true; return; }
+  const rows = P.rounds, n = rows.length, cost = N.lines.length * P.price;
+  // exact chance for a 3-if-4 wheel on any 15: 4+ of the six among them, a 3+ line, and the fixed prizes a round pays on average
+  const C = (a, b) => { let r = 1; for (let i = 0; i < b; i++) r = r * (a - i) / (i + 1); return r; };
+  const PAY = [0, 0, 2, 30, 140, 1750, 0], perLine = PAY.reduce((s, v, k) => s + v * C(6, k) * C(53, 6 - k) / C(59, 6), 0);
+  const hits4 = rows.filter((r) => r.in15 >= 4).length, line3 = rows.filter((r) => r.best >= 3).length, prizes = rows.reduce((s, r) => s + r.prizes, 0);
+  const nights = new Set(rows.map((r) => r.date)).size, dd = (s) => day(s, { day: "numeric", month: "short", year: "numeric" });
+  $("#recent-lede").textContent = `Every round from ${dd(rows[0].date)} to ${dd(rows[n - 1].date)} (${n} rounds on ${nights} draw nights), scored against the 15 numbers the model chose for it from the draws before that night only, laid out as the same 15-line "3 if 4" wheel. 4 or more of the six landed among the 15 in ${hits4} round${hits4 === 1 ? "" : "s"} (${(n * A.chance.rate4).toFixed(1)} expected by chance), and some line matched 3+ in ${line3} (${(n * A.chance.rate3).toFixed(1)} expected). Played at ${gbp(cost)} a round the wheel would have cost ${gbp(n * cost)} and won ${gbp(prizes)} in fixed prizes (${gbp(n * N.lines.length * perLine)} expected for any 15).`;
+  $("#recent-facts").innerHTML = [["Rounds", n], ["4+ of 15", `${hits4} / ${(n * A.chance.rate4).toFixed(1)}`], ["3+ line", `${line3} / ${(n * A.chance.rate3).toFixed(1)}`],
+    ["Cost", gbp(n * cost)], ["Prizes", gbp(prizes)], ["Net", gbp(prizes - n * cost)]].map(([k, v]) => `<span>${k} <b>${v}</b></span>`).join("");
+  $("#recent-table").innerHTML = `<thead><tr><th>Draw</th><th>Numbers drawn</th><th>Among the 15</th><th>Best line</th><th>Lines with 3+</th><th>Prizes</th><th>Net</th></tr></thead><tbody>` +
+    rows.slice().reverse().map((r) => { const s = new Set(r.numbers);
+      return `<tr><td>${day(r.date, { day: "numeric", month: "short" })}${rows.some((x) => x.date === r.date && x.round === 2) ? ` · R${r.round}` : ""} <span class="muted">${r.machine} / ${r.ball_set}</span></td>` +
+        `<td><div class="balls" style="justify-content:flex-end;flex-wrap:nowrap">${r.draw.map((b) => `<span class="ball${s.has(b) ? " hit" : ""}" style="width:1.8rem;height:1.8rem;font-size:0.8rem">${b}</span>`).join("")}</div></td>` +
+        `<td class="${r.in15 >= 4 ? "good" : ""}">${r.in15}</td><td class="${r.best >= 3 ? "good" : ""}">${r.best}</td><td>${r.lines3 || ""}</td><td>${r.prizes ? gbp(r.prizes) : ""}</td><td>${gbp(r.prizes - cost)}</td></tr>`; }).join("") + "</tbody>";
+  $("#recent-note").textContent = `Highlighted numbers were among that round's 15. The 15 change from night to night: each was chosen walk-forward by today's method from the draws before its night, so this is what the method would have played, not a record of tickets bought. Best line: the most numbers any one line matched. Prizes are the fixed ones per line (2 matches a free Lucky Dip counted at ${gbp(P.price)}, 3 matches £30, 4 £140, 5 £1,750); net subtracts the ${gbp(cost)} the 15 lines cost a round. Machine and ball set as announced on the night.`;
 })();
 
 // ---------- reverse-engineering: the physical hypotheses, calibrated on fair histories with the real schedule

@@ -56,7 +56,11 @@ static const char* MODEL_NAMES[MODELS] = {"fair", "particle filter", "filter + n
 constexpr int BASE_F = 7;
 
 struct Tally { std::vector<double> diff; int rounds = 0, hits4 = 0, line3 = 0, nights = 0; double forecast4 = 0; };
+struct Played {  // one real round as the wheel played it: chosen before the night, scored after
+    std::string date; std::string machine, ball_set; Mask draw, set; int lines3 = 0, best = 0, money = 0, slot = 0;
+};
 struct Outcome {
+    std::vector<Played> played;  // the mixture's wheel on every scored round
     Tally t[MODELS];
     double tau_q[3] = {}, memory_q[3] = {}, log_ev_vs_fair = 0; int resamples = 0;
     double alpha[PARTS] = {}, nets[NETS] = {}, radix[EXPERTS] = {}, mac[NMAC] = {}, nudge_rms = 0;
@@ -212,6 +216,11 @@ static Outcome run(const std::vector<Round>& R, const Config& C, Backend& be, bo
                     T.rounds++; T.hits4 += std::popcount(R[t].draw & set) >= 4;
                     int best = 0; for (Mask l : w.lines) best = std::max(best, std::popcount(R[t].draw & l));
                     T.line3 += best >= 3;
+                    if (m == MODELS - 1) {
+                        Played pl{R[t].date, R[t].machine, R[t].ball_set, R[t].draw, set, 0, best, 0, t - t0};
+                        for (Mask l : w.lines) { int k = std::popcount(R[t].draw & l); pl.lines3 += k >= 3; pl.money += PAY[k]; }
+                        out.played.push_back(pl);
+                    }
                 }
             }
             rms_sum += rms; rms_n++;
@@ -394,6 +403,20 @@ int main(int argc, char** argv) {
                  be->name(), C.particles, NETS, EXPERTS, C.samples, C.start.c_str(), R.size(), R.back().date.c_str(), p4, p3);
     if (real_on) {
         write_outcome(f, real, p4, p3, "  ");
+        // the wheel's real record over the last six months, round by round
+        const std::string& lastd = R.back().date; int y = std::stoi(lastd.substr(0, 4)), mo = std::stoi(lastd.substr(5, 2)) - 6;
+        if (mo < 1) { mo += 12; y--; }
+        char ym[64]; std::snprintf(ym, sizeof ym, "%04d-%02d", y, mo); const std::string from = ym + lastd.substr(7);
+        std::fprintf(f, ",\n  \"recent\": {\"from\": \"%s\", \"price\": 2, \"rounds\": [", from.c_str());
+        bool first = true;
+        for (auto& pl : real.played) {
+            if (pl.date < from) continue;  // the same day six months before the last draw
+            std::fprintf(f, "%s\n   {\"date\": \"%s\", \"round\": %d, \"machine\": \"%s\", \"ball_set\": \"%s\", \"draw\": %s, \"numbers\": %s, \"in15\": %d, \"best\": %d, \"lines3\": %d, \"prizes\": %d}",
+                         first ? "" : ",", pl.date.c_str(), pl.slot + 1, pl.machine.c_str(), pl.ball_set.c_str(), mask_json(pl.draw).c_str(), mask_json(pl.set).c_str(),
+                         std::popcount(pl.draw & pl.set), pl.best, pl.lines3, pl.money);
+            first = false;
+        }
+        std::fprintf(f, "]}");
         std::fprintf(f, ",\n  \"next\": {\"night\": \"%s\", \"numbers\": %s, \"forecast4\": %.5f, \"lines\": [", real.next_night.c_str(), mask_json(real.next15).c_str(), real.next_forecast4);
         Wheel nw = wheel_of(real.next15);
         for (size_t l = 0; l < nw.lines.size(); l++) std::fprintf(f, "%s%s", l ? ", " : "", mask_json(nw.lines[l]).c_str());
