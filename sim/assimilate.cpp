@@ -1,4 +1,5 @@
-// The one 15-number wheel: radix digits and a neural network over a particle filter, reset to every real draw.
+// The one 15-number wheel: radix digits, a reverse-engineered machine and a neural network over a particle filter,
+// reset to every real draw.
 //
 // Every real draw night of the 59-ball era, forecasts are made from the real draws before it only; after it, every
 // round that night resets them. Nothing is set by hand to lean the result: each part is learned walk-forward.
@@ -10,22 +11,30 @@
 //                     inputs standardised by running statistics; a family over learning rate and penalty, weighted by
 //                     how well each predicted the real draws;
 //   radix digits      80 digit strategies in the first ten prime bases (radix.hpp), weighted the same way;
-//   mixture           fair, filter, network and radix at equal prior weight, then weighted by their real predictions.
+//   reverse-engineered machine   the physical hypotheses of reverse.hpp that forecast sets (a bias per machine, per
+//                     ball set, per pairing; repeats, neighbours, final digits of the last round), each learned on every
+//                     real draw, the machine and set of the coming night forecast from the schedule, weighted the same way;
+//   mixture           fair, filter, network, radix and machine at equal prior weight, then weighted by their real predictions.
 // Inner loop: each forecast is simulated (thousands of draws of six) to choose its 15 numbers, those most often
 // holding 4+ of the six (hill-climbing by swaps), and, on fresh draws, to state its own chance of 4+. The mixture's
 // 15 are the wheel: 15 lines of the "3 if 4" design, at least one line matching 3 whenever 4 of the six are among them.
 // Scored from --start: the exact log-probability each forecast gave the real set against fair's (sign-flip test),
 // the real rounds with 4+ among its 15 and with a 3+ line, against exact chance.
+// Reverse-engineering: every physical hypothesis's evidence on the real draws, ranked among --nulls fair histories with
+// the real machines and ball sets (reverse.hpp).
 // Validation: the same pipeline on simulated histories from a machine with six numbers made likelier by each
-// --validate delta (0 = fair), to show what it finds when there is something to find.
+// --validate delta (0 = fair; "m" first: only on the most used machine), to show what it finds when there is
+// something to find.
 //
 //   assimilate [--csv data/uk_lotto_full.csv] [--out results/assimilation.json] [--exports results/exports]
-//              [--start 2017-01-01] [--particles 2048] [--samples 4096] [--validate 0,0.1,0.3,0.6,1] [--backend threads|cpu]
+//              [--start 2017-01-01] [--particles 2048] [--samples 4096] [--nulls 100] [--validate 0,0.3,0.6,1,m0.6,m1]
+//              [--backend threads|cpu]
 #include <cstdio>
 #include <memory>
 
 #include "nn.hpp"
 #include "radix.hpp"
+#include "reverse.hpp"
 #include "threads.hpp"
 
 struct Config {  // compute budget only: none of these leans the forecasts
@@ -33,17 +42,25 @@ struct Config {  // compute budget only: none of these leans the forecasts
     int particles = 2048, samples = 4096, batches = 4, batch = 8;
     uint64_t seed = 2026;
 };
-constexpr double NN_LR[] = {1e-4, 3e-4, 1e-3}, NN_PENALTY[] = {1, 10, 100};  // the family of networks, weighted by the draws
-constexpr int NETS = int(std::size(NN_LR) * std::size(NN_PENALTY));
-constexpr int PARTS = 4, MODELS = PARTS + 1;  // fair, filter, network, radix; then the mixture of them
-static const char* MODEL_NAMES[MODELS] = {"fair", "particle filter", "filter + neural net", "radix digits", "mixture"};
+constexpr int NN_H[] = {8, 16};                                               // the family of networks, weighted by the draws:
+constexpr double NN_LR[] = {1e-4, 3e-4, 1e-3}, NN_PENALTY[] = {1, 10, 100};  // width x learning rate x penalty
+constexpr int NN_GRID = int(std::size(NN_LR) * std::size(NN_PENALTY)), NETS = int(std::size(NN_H)) * NN_GRID;
+inline int net_h(int k) { return NN_H[k / NN_GRID]; }
+inline double net_lr(int k) { return NN_LR[k % NN_GRID / std::size(NN_PENALTY)]; }
+inline double net_pen(int k) { return NN_PENALTY[k % std::size(NN_PENALTY)]; }
+// the machine-aware part: the reverse-engineered hypotheses that forecast sets (ball position forecasts orders only)
+constexpr int MAC[] = {MACHINE, BALL_SET, PAIR, REPEATS, NEIGHBOURS, DIGIT};
+constexpr int NMAC = int(std::size(MAC));
+constexpr int PARTS = 5, MODELS = PARTS + 1;  // fair, filter, network, radix, machine-aware; then the mixture of them
+static const char* MODEL_NAMES[MODELS] = {"fair", "particle filter", "filter + neural net", "radix digits", "reverse-engineered machine", "mixture"};
 constexpr int BASE_F = 7;
 
 struct Tally { std::vector<double> diff; int rounds = 0, hits4 = 0, line3 = 0, nights = 0; double forecast4 = 0; };
 struct Outcome {
     Tally t[MODELS];
     double tau_q[3] = {}, memory_q[3] = {}, log_ev_vs_fair = 0; int resamples = 0;
-    double alpha[PARTS] = {}, nets[NETS] = {}, radix[EXPERTS] = {}, nudge_rms = 0;
+    double alpha[PARTS] = {}, nets[NETS] = {}, radix[EXPERTS] = {}, mac[NMAC] = {}, nudge_rms = 0;
+    double ctx_logp[3] = {}, ctx_hits[3] = {}; int ctx_n = 0;  // forecasting the machine, the ball set and the pair: log score, hits
     int rounds = 0, nights = 0; std::string first_night, last_night;
     Mask next15 = 0; double next_forecast4 = 0; std::string next_night; std::array<double, POOL> next_q{};
 };
@@ -61,7 +78,8 @@ static std::string next_draw_date(const std::string& d) {  // the next Wednesday
 }
 
 // raw features of every number from the draws before round t0 (Mlp::F per number); scaled later by running statistics
-static void features(const std::vector<Round>& R, int t0, const std::array<double, POOL>& marg, const double* sd, const double* radix_feat, double* X) {
+static void features(const std::vector<Round>& R, int t0, const std::array<double, POOL>& marg, const double* sd, const double* radix_feat,
+                     const std::array<double, POOL>& mac, double* X) {
     auto counts = [&](int W, bool first_ball) {
         std::array<double, POOL> c{};
         for (int t = std::max(0, t0 - W); t < t0; t++) { if (first_ball) c[R[t].order[0]] += 1; else for (int i = 0; i < POOL; i++) c[i] += R[t].draw >> i & 1; }
@@ -74,6 +92,7 @@ static void features(const std::vector<Round>& R, int t0, const std::array<doubl
         x[0] = std::log(POOL * marg[i]); x[1] = sd[i]; x[2] = std::log1p(double(gap));
         x[3] = c20[i]; x[4] = c100[i]; x[5] = t0 > 0 && (R[t0 - 1].draw >> i & 1); x[6] = f200[i];
         for (int b = 0; b < NBASES; b++) x[BASE_F + b] = radix_feat[i * NBASES + b];
+        x[BASE_F + NBASES] = std::log(POOL * mac[i]);
     }
 }
 struct Standardiser {  // running mean and variance of each feature over every number of the earlier nights (Welford)
@@ -101,8 +120,11 @@ static Outcome run(const std::vector<Round>& R, const Config& C, Backend& be, bo
     Filter filter(C.particles, stream(C.seed, 100), be);
     RadixHistory H(R);
     std::vector<Mlp> nets;
-    for (int k = 0; k < NETS; k++) { nets.emplace_back(stream(C.seed, 77, k)); nets[k].lr = NN_LR[k / std::size(NN_PENALTY)]; nets[k].penalty = NN_PENALTY[k % std::size(NN_PENALTY)]; }
-    double lw_net[NETS] = {}, lw_rad[EXPERTS] = {}, lw[PARTS] = {};  // equal priors throughout
+    for (int k = 0; k < NETS; k++) { nets.emplace_back(stream(C.seed, 77, k), net_h(k)); nets[k].lr = net_lr(k); nets[k].penalty = net_pen(k); }
+    double lw_net[NETS] = {}, lw_rad[EXPERTS] = {}, lw_mac[NMAC] = {}, lw[PARTS] = {};  // equal priors throughout
+    std::vector<HypState> hyps; for (int h : MAC) hyps.emplace_back(h);
+    std::vector<ContextModel> ctx; for (int h = 0; h <= PAIR; h++) ctx.emplace_back(h);
+    std::vector<std::vector<std::string>> prev(PAIR + 1);  // last night's groups, per kind
     Standardiser stdz;
     std::vector<double> RX, RB; std::vector<Order> RO;  // replay: standardised features, filter log-forecast and order of every round
     const double fair_lp = -std::log(choose(POOL, PICK));
@@ -123,8 +145,21 @@ static Outcome run(const std::vector<Round>& R, const Config& C, Backend& be, bo
         radix_experts(H, R, t0, rq, rfeat);
         Mixture rad; double wrad[EXPERTS]; normalise(lw_rad, wrad, EXPERTS);
         rad.w.assign(wrad, wrad + EXPERTS); rad.q = rq;
+        // the reverse-engineered machine: which machine and set run next, and what each hypothesis expects of them
+        const Mask last = t0 > 0 ? R[t0 - 1].draw : 0;
+        const int slots = std::max<int>(1, int(prev[MACHINE].size()));  // the coming night is expected to hold as many rounds as the last
+        std::vector<Mixture> mh(NMAC); double wmac[NMAC]; normalise(lw_mac, wmac, NMAC);
+        Mixture mac;
+        for (int j = 0; j < NMAC; j++) {
+            const int h = MAC[j]; std::map<std::string, double> cx;
+            if (is_group(h)) for (int sl = 0; sl < slots; sl++) for (auto& [k, pk] : ctx[h].predict(prev[h], sl)) cx[k] += pk / slots;
+            hyps[j].forecast(cx, last, mh[j]);
+            if (mh[j].size() == 0) mh[j] = fair;
+            mac.add(mh[j], wmac[j]);
+        }
+        auto macm = mac.marginal();
         std::vector<double> raw(POOL * Mlp::F), X; double base[POOL];
-        features(R, t0, marg, sd, rfeat, raw.data());
+        features(R, t0, marg, sd, rfeat, macm, raw.data());
         X = raw; stdz.apply(X.data()); stdz.update(raw.data());
         for (int i = 0; i < POOL; i++) base[i] = std::log(marg[i]);
         double wnet[NETS]; normalise(lw_net, wnet, NETS);
@@ -136,8 +171,8 @@ static Outcome run(const std::vector<Round>& R, const Config& C, Backend& be, bo
             nnm.w.push_back(wnet[k]); nnm.q.insert(nnm.q.end(), qnet[k].begin(), qnet[k].end());
         }
         double alpha[PARTS]; normalise(lw, alpha, PARTS);
-        Mixture mix; mix.add(fair, alpha[0]); mix.add(filt, alpha[1]); mix.add(nnm, alpha[2]); mix.add(rad, alpha[3]);
-        const Mixture* fc[MODELS] = {&fair, &filt, &nnm, &rad, &mix};
+        Mixture mix; mix.add(fair, alpha[0]); mix.add(filt, alpha[1]); mix.add(nnm, alpha[2]); mix.add(rad, alpha[3]); mix.add(mac, alpha[4]);
+        const Mixture* fc[MODELS] = {&fair, &filt, &nnm, &rad, &mac, &mix};
         const uint64_t ns = stream(C.seed, 1000 + n);
 
         if (next) {  // the next draw: the mixture's 15 are the wheel
@@ -149,17 +184,19 @@ static Outcome run(const std::vector<Round>& R, const Config& C, Backend& be, bo
             break;
         }
         // ---- score the night's real rounds
-        std::vector<std::array<double, PARTS>> lps; std::vector<std::array<double, NETS>> lpn; std::vector<std::array<double, EXPERTS>> lpr;
+        std::vector<std::array<double, PARTS>> lps; std::vector<std::array<double, NETS>> lpn; std::vector<std::array<double, EXPERTS>> lpr; std::vector<std::array<double, NMAC>> lpm;
         for (int t = t0; t < t1; t++) {
             std::array<double, NETS> ln; double pn = 0;
             for (int k = 0; k < NETS; k++) { Probs q; std::copy(qnet[k].begin(), qnet[k].end(), q.begin()); ln[k] = set_logprob(q, R[t].draw); pn += wnet[k] * std::exp(ln[k] - fair_lp); }
             std::array<double, EXPERTS> lr; double pr = 0;
             be.parallel(EXPERTS, [&](int a, int b) { for (int e = a; e < b; e++) { Probs q; std::copy(&rq[size_t(e) * POOL], &rq[size_t(e) * POOL] + POOL, q.begin()); lr[e] = set_logprob(q, R[t].draw); } });
             for (int e = 0; e < EXPERTS; e++) pr += wrad[e] * std::exp(lr[e] - fair_lp);
-            std::array<double, PARTS> lp = {fair_lp, mixture_set_logprob(filt, R[t].draw, be), fair_lp + std::log(pn), fair_lp + std::log(pr)};
+            std::array<double, NMAC> lm; double pm = 0;
+            for (int j = 0; j < NMAC; j++) { lm[j] = mixture_set_logprob(mh[j], R[t].draw, be); pm += wmac[j] * std::exp(lm[j] - fair_lp); }
+            std::array<double, PARTS> lp = {fair_lp, mixture_set_logprob(filt, R[t].draw, be), fair_lp + std::log(pn), fair_lp + std::log(pr), fair_lp + std::log(pm)};
             double mixp = 0; for (int m = 0; m < PARTS; m++) mixp += alpha[m] * std::exp(lp[m] - fair_lp);
             if (scored) for (int m = 0; m < MODELS; m++) out.t[m].diff.push_back((m < PARTS ? lp[m] : fair_lp + std::log(mixp)) - fair_lp);
-            lps.push_back(lp); lpn.push_back(ln); lpr.push_back(lr);
+            lps.push_back(lp); lpn.push_back(ln); lpr.push_back(lr); lpm.push_back(lm);
         }
         if (scored) {
             if (out.first_night.empty()) out.first_night = R[t0].date;
@@ -178,16 +215,25 @@ static Outcome run(const std::vector<Round>& R, const Config& C, Backend& be, bo
                 }
             }
             rms_sum += rms; rms_n++;
+            for (int t = t0; t < t1; t++) for (int h = 0; h <= PAIR; h++) {  // how well the schedule was forecast
+                auto p = ctx[h].predict(prev[h], t - t0); const std::string k = group_key(h, R[t]);
+                std::string best; double bp = -1; for (auto& [key, v] : p) if (v > bp) { bp = v; best = key; }
+                out.ctx_logp[h] += std::log(p.count(k) ? std::max(1e-12, p[k]) : 1e-12); out.ctx_hits[h] += best == k;
+                if (h == 0) out.ctx_n++;
+            }
         }
         // ---- learn from the night's real rounds: weights, networks, filter
         for (auto& lp : lps) for (int m = 0; m < PARTS; m++) lw[m] += lp[m];
         for (auto& ln : lpn) for (int k = 0; k < NETS; k++) lw_net[k] += ln[k];
         for (auto& lr : lpr) for (int e = 0; e < EXPERTS; e++) lw_rad[e] += lr[e];
+        for (auto& lm : lpm) for (int j = 0; j < NMAC; j++) lw_mac[j] += lm[j];
+        for (int t = t0; t < t1; t++) for (auto& hs : hyps) hs.update(R[t], last);
+        for (int h = 0; h <= PAIR; h++) { for (int t = t0; t < t1; t++) ctx[h].update(group_key(h, R[t]), prev[h], t - t0); prev[h].clear(); for (int t = t0; t < t1; t++) prev[h].push_back(group_key(h, R[t])); }
         for (int t = t0; t < t1; t++) { RX.insert(RX.end(), X.begin(), X.end()); RB.insert(RB.end(), base, base + POOL); RO.push_back(R[t].order); }
         const int stored = int(RO.size()), fresh = t1 - t0;
         be.parallel(NETS, [&](int a, int b) {  // each network trains on the night's rounds and a replay of all earlier ones
-            std::vector<double> g(Mlp::NP, 0.0);
             for (int k = a; k < b; k++) {
+                std::vector<double> g(nets[k].NP, 0.0);
                 Rng rr{stream(ns, 30, k)};
                 for (int bt = 0; bt < C.batches; bt++) {
                     for (int j = 0; j < C.batch; j++) {
@@ -206,7 +252,7 @@ static Outcome run(const std::vector<Round>& R, const Config& C, Backend& be, bo
     const double qs[3] = {0.05, 0.5, 0.95};
     for (int i = 0; i < 3; i++) { out.tau_q[i] = weighted_quantile(tw, qs[i]); out.memory_q[i] = weighted_quantile(mw, qs[i]); }
     out.resamples = filter.resamples;
-    normalise(lw, out.alpha, PARTS); normalise(lw_net, out.nets, NETS); normalise(lw_rad, out.radix, EXPERTS);
+    normalise(lw, out.alpha, PARTS); normalise(lw_net, out.nets, NETS); normalise(lw_rad, out.radix, EXPERTS); normalise(lw_mac, out.mac, NMAC);
     out.nudge_rms = rms_n ? std::sqrt(rms_sum / rms_n) : 0;
     return out;
 }
@@ -218,11 +264,15 @@ static void write_outcome(FILE* f, const Outcome& o, double p4, double p3, const
     std::fprintf(f, "%s\"filter\": {\"tau\": [%.5f, %.5f, %.5f], \"memory_rounds\": [%.0f, %.0f, %.0f], \"log_evidence_vs_fair\": %.4f, \"resamples\": %d},\n",
                  ind, o.tau_q[0], o.tau_q[1], o.tau_q[2], o.memory_q[0], o.memory_q[1], o.memory_q[2], o.log_ev_vs_fair, o.resamples);
     std::fprintf(f, "%s\"networks\": [", ind);
-    for (int k = 0; k < NETS; k++) std::fprintf(f, "%s{\"lr\": %g, \"penalty\": %g, \"weight\": %.6f}", k ? ", " : "", NN_LR[k / std::size(NN_PENALTY)], NN_PENALTY[k % std::size(NN_PENALTY)], o.nets[k]);
+    for (int k = 0; k < NETS; k++) std::fprintf(f, "%s{\"width\": %d, \"lr\": %g, \"penalty\": %g, \"weight\": %.6f}", k ? ", " : "", net_h(k), net_lr(k), net_pen(k), o.nets[k]);
     std::fprintf(f, "], \"nudge_rms\": %.5f,\n%s\"radix\": {\"bases\": {", o.nudge_rms, ind);
     for (int b = 0; b < NBASES; b++) { double s = 0; for (int r = 0; r < RULES; r++) s += o.radix[b * RULES + r]; std::fprintf(f, "%s\"%d\": %.6f", b ? ", " : "", PRIMES[b], s); }
     std::fprintf(f, "}, \"rules\": {");
     for (int r = 0; r < RULES; r++) { double s = 0; for (int b = 0; b < NBASES; b++) s += o.radix[b * RULES + r]; std::fprintf(f, "%s\"%s\": %.6f", r ? ", " : "", RULE_NAMES[r], s); }
+    std::fprintf(f, "}},\n%s\"machine_aware\": {\"hypotheses\": {", ind);
+    for (int j = 0; j < NMAC; j++) std::fprintf(f, "%s\"%s\": %.6f", j ? ", " : "", HYP_NAMES[MAC[j]], o.mac[j]);
+    std::fprintf(f, "}, \"schedule\": {");
+    for (int h = 0; h <= PAIR; h++) std::fprintf(f, "%s\"%s\": {\"log_score\": %.4f, \"hit_rate\": %.4f}", h ? ", " : "", HYP_NAMES[h], o.ctx_n ? o.ctx_logp[h] / o.ctx_n : 0, o.ctx_n ? o.ctx_hits[h] / o.ctx_n : 0);
     std::fprintf(f, "}},\n%s\"mixture_weights\": {", ind);
     for (int m = 0; m < PARTS; m++) std::fprintf(f, "%s\"%s\": %.6f", m ? ", " : "", MODEL_NAMES[m], o.alpha[m]);
     std::fprintf(f, "},\n%s\"models\": {\n", ind);
@@ -236,8 +286,9 @@ static void write_outcome(FILE* f, const Outcome& o, double p4, double p3, const
     std::fprintf(f, "%s}", ind);
 }
 static void print_outcome(const char* label, const Outcome& o, double p4, double p3) {
-    std::printf("%s: %d rounds from %s; filter tau %.4f (%.4f-%.4f), memory %.0f rounds, evidence vs fair %+.2f; weights fair %.3f filter %.3f net %.3f radix %.3f\n", label, o.rounds,
-                o.first_night.c_str(), o.tau_q[1], o.tau_q[0], o.tau_q[2], o.memory_q[1], o.log_ev_vs_fair, o.alpha[0], o.alpha[1], o.alpha[2], o.alpha[3]);
+    std::printf("%s: %d rounds from %s; filter tau %.4f (%.4f-%.4f), memory %.0f rounds, evidence vs fair %+.2f; weights fair %.3f filter %.3f net %.3f radix %.3f machine %.3f\n", label, o.rounds,
+                o.first_night.c_str(), o.tau_q[1], o.tau_q[0], o.tau_q[2], o.memory_q[1], o.log_ev_vs_fair, o.alpha[0], o.alpha[1], o.alpha[2], o.alpha[3], o.alpha[4]);
+    if (o.ctx_n) std::printf("  schedule forecast hit rate: machine %.1f%%, ball set %.1f%%, pair %.1f%%\n", 100 * o.ctx_hits[0] / o.ctx_n, 100 * o.ctx_hits[1] / o.ctx_n, 100 * o.ctx_hits[2] / o.ctx_n);
     std::printf("  %-20s %10s %8s %8s %9s %8s %9s %8s\n", "model", "logLR", "p", "4+ rate", "(chance)", "p", "3+ line", "p");
     for (int m = 0; m < MODELS; m++) {
         const Tally& T = o.t[m]; double sum = 0; for (double d : T.diff) sum += d;
@@ -262,13 +313,14 @@ static void write_exports(const std::string& dir, const Outcome& o) {  // the wh
 }
 
 int main(int argc, char** argv) {
-    std::string csv = "data/uk_lotto_full.csv", out = "results/assimilation.json", exports = "results/exports", backend_name = "threads", validate = "0,0.1,0.3,0.6,1";
+    std::string csv = "data/uk_lotto_full.csv", out = "results/assimilation.json", exports = "results/exports", backend_name = "threads", validate = "0,0.3,0.6,1,m0.6,m1";
+    int nulls = 100;
     Config C; bool real_on = true;
     for (int i = 1; i + 1 < argc; i += 2) {
         std::string a = argv[i], v = argv[i + 1];
         if (a == "--csv") csv = v; else if (a == "--out") out = v; else if (a == "--exports") exports = v; else if (a == "--start") C.start = v; else if (a == "--backend") backend_name = v;
         else if (a == "--particles") C.particles = std::stoi(v); else if (a == "--samples") C.samples = std::stoi(v);
-        else if (a == "--validate") validate = v; else if (a == "--seed") C.seed = std::stoull(v); else if (a == "--real") real_on = v != "0";
+        else if (a == "--nulls") nulls = std::stoi(v); else if (a == "--validate") validate = v; else if (a == "--seed") C.seed = std::stoull(v); else if (a == "--real") real_on = v != "0";
         else { std::fprintf(stderr, "unknown option %s\n", a.c_str()); return 2; }
     }
     std::unique_ptr<Backend> be;
@@ -288,34 +340,51 @@ int main(int argc, char** argv) {
         std::fflush(stdout);
         if (exports != "none") write_exports(exports, real);
     }
-    std::vector<double> deltas;
-    for (size_t a = 0; a < validate.size();) { size_t b = validate.find(',', a); if (b == std::string::npos) b = validate.size(); if (b > a) deltas.push_back(std::stod(validate.substr(a, b - a))); a = b + 1; }
-    struct Val { double delta; Mask planted; double oracle4; Outcome o; };
+    ReverseResult rev;
+    if (real_on && nulls > 0) {  // the physical hypotheses on the real draws, ranked among fair histories with the same schedule
+        rev = reverse_test(R, nulls, stream(C.seed, 9000), *be);
+        std::printf("reverse-engineering, evidence against fair (nats) vs %d fair histories with the real machines and ball sets:\n", nulls);
+        for (int h = 0; h < NHYP; h++) std::printf("  %-14s %+8.2f  (fair: mean %+.2f, 95%% %+.2f)  p %.3f  scale %.3f\n", HYP_NAMES[h], rev.evidence[h], rev.null_mean[h], rev.null_p95[h], rev.p[h], rev.tau[h]);
+        std::fflush(stdout);
+    }
+    // validation cases: "0.6" makes six numbers 60% likelier on every machine, "m0.6" only on the most used machine
+    std::vector<std::pair<double, bool>> deltas;
+    for (size_t a = 0; a < validate.size();) {
+        size_t b = validate.find(',', a); if (b == std::string::npos) b = validate.size();
+        if (b > a) { bool m = validate[a] == 'm'; deltas.push_back({std::stod(validate.substr(a + m, b - a - m)), m}); }
+        a = b + 1;
+    }
+    std::map<std::string, int> uses; for (auto& r : R) uses[r.machine]++;
+    std::string target; int most = 0; for (auto& [k, c] : uses) if (c > most) { most = c; target = k; }
+    struct Val { double delta; bool machine; Mask planted; double oracle4; Outcome o; };
     std::vector<Val> vals;
     for (size_t v = 0; v < deltas.size(); v++) {
-        const double d = deltas[v];
+        const auto [d, on_machine] = deltas[v];
         Rng pr{stream(C.seed, 5000 + v)}; Mask planted = 0;
         while (std::popcount(planted) < PICK) planted |= Mask(1) << pr.below(POOL);
         double q[POOL]; for (int i = 0; i < POOL; i++) q[i] = (planted >> i & 1) ? 1 + d : 1.0;
         std::vector<Round> S = R;
+        double fairq[POOL]; std::fill(fairq, fairq + POOL, 1.0);
         for (size_t t = 0; t < S.size(); t++) {  // each round drawn from the planted machine, ball by ball
-            Rng r{stream(C.seed, 7000 + v, t)}; Mask got = 0; double tot = 0; for (double x : q) tot += x;
+            const double* w = (!on_machine || S[t].machine == target) ? q : fairq;
+            Rng r{stream(C.seed, 7000 + v, t)}; Mask got = 0; double tot = 0; for (int i = 0; i < POOL; i++) tot += w[i];
             for (int k = 0; k < PICK; k++) {
                 double u = u53(r) * tot; int i = 0;
-                for (; i < POOL - 1; i++) { if (got >> i & 1) continue; u -= q[i]; if (u < 0) break; }
+                for (; i < POOL - 1; i++) { if (got >> i & 1) continue; u -= w[i]; if (u < 0) break; }
                 while (got >> i & 1) i--;
-                S[t].order[k] = uint8_t(i); got |= Mask(1) << i; tot -= q[i];
+                S[t].order[k] = uint8_t(i); got |= Mask(1) << i; tot -= w[i];
             }
             S[t].draw = got;
         }
         Mask best = planted; for (int i = 0; std::popcount(best) < SET; i++) best |= Mask(1) << i;
         double oracle = double(count4(sample_sets(Mixture::single(q), 400000, stream(C.seed, 8000 + v), *be), best)) / 400000;
+        if (on_machine) { double share = double(most) / R.size(); oracle = share * oracle + (1 - share) * p4; }  // planted only on its machine's rounds
         Outcome o = run(S, C, *be, false);
-        char label[64]; std::snprintf(label, sizeof label, "simulated machine, six numbers +%.0f%%", 100 * d);
+        char label[96]; std::snprintf(label, sizeof label, "simulated machine, six numbers +%.0f%%%s", 100 * d, on_machine ? (" on " + target + " only").c_str() : "");
         print_outcome(label, o, p4, p3);
         std::printf("  planted %s; knowing them, the best 15 hold 4+ in %.2f%% of rounds\n", mask_json(planted).c_str(), 100 * oracle);
         std::fflush(stdout);
-        vals.push_back({d, planted, oracle, std::move(o)});
+        vals.push_back({d, on_machine, planted, oracle, std::move(o)});
     }
 
     FILE* f = std::fopen(out.c_str(), "w");
@@ -332,9 +401,13 @@ int main(int argc, char** argv) {
         for (int i = 0; i < POOL; i++) std::fprintf(f, "%s%.7f", i ? ", " : "", real.next_q[i]);
         std::fprintf(f, "]}\n");
     }
-    std::fprintf(f, " },\n \"validation\": [\n");
+    std::fprintf(f, " },\n \"reverse\": {\"nulls\": %d, \"hypotheses\": {", rev.nulls);
+    for (int h = 0; h < NHYP && rev.nulls; h++) std::fprintf(f, "%s\"%s\": {\"evidence\": %.4f, \"null_mean\": %.4f, \"null_p95\": %.4f, \"p\": %.4f, \"scale\": %.4f}", h ? ", " : "",
+                                               HYP_NAMES[h], rev.evidence[h], rev.null_mean[h], rev.null_p95[h], rev.p[h], rev.tau[h]);
+    std::fprintf(f, "}},\n \"validation\": [\n");
     for (size_t v = 0; v < vals.size(); v++) {
-        std::fprintf(f, "  {\"delta\": %g, \"planted\": %s, \"oracle_rate4\": %.5f,\n", vals[v].delta, mask_json(vals[v].planted).c_str(), vals[v].oracle4);
+        std::fprintf(f, "  {\"delta\": %g, \"machine\": %s, \"planted\": %s, \"oracle_rate4\": %.5f,\n", vals[v].delta, vals[v].machine ? ("\"" + target + "\"").c_str() : "null",
+                     mask_json(vals[v].planted).c_str(), vals[v].oracle4);
         write_outcome(f, vals[v].o, p4, p3, "   ");
         std::fprintf(f, "}%s\n", v + 1 < vals.size() ? "," : "");
     }

@@ -2,8 +2,8 @@
 // (F features -> H -> H -> 1, tanh), whose output nudges each number's log-weight away from the filter's forecast.
 // It is trained online, walk-forward, by Adam on the exact log-probability of each real draw's order, with a
 // penalty on the size of its nudges. Its last layer starts at zero, so until the real draws teach it something it
-// changes nothing. The learning rate and the penalty are not chosen by hand: the driver runs a family of networks
-// across both and weights them by how well each predicted the real draws so far.
+// changes nothing. The width, the learning rate and the penalty are not chosen by hand: the driver runs a family of
+// networks across all three and weights them by how well each predicted the real draws so far.
 #pragma once
 #include <cmath>
 #include <vector>
@@ -11,17 +11,18 @@
 #include "assimilate.hpp"
 
 struct Mlp {
-    static constexpr int F = 17, H = 16;  // 7 inputs from the filter and the draws, 10 from the radix digits (one per base)
-    // layout: W1[H][F] b1[H] W2[H][H] b2[H] W3[H] b3
-    static constexpr int N1 = H * F, N2 = N1 + H, N3 = N2 + H * H, N4 = N3 + H, N5 = N4 + H, NP = N5 + 1;
+    // inputs: 7 from the filter and the draws, 10 from the radix digits (one per base), 1 from the machine-aware model
+    static constexpr int F = 18, HMAX = 32;
+    int H, N1, N2, N3, N4, N5, NP;  // layout: W1[H][F] b1[H] W2[H][H] b2[H] W3[H] b3
     std::vector<double> p, m, v; long t = 0;
     double lr = 1e-3, decay = 0, penalty = 1.0;  // penalty: on the mean squared nudge
-    explicit Mlp(uint64_t seed) : p(NP, 0.0), m(NP, 0.0), v(NP, 0.0) {
+    Mlp(uint64_t seed, int width) : H(width), N1(width * F), N2(N1 + width), N3(N2 + width * width), N4(N3 + width), N5(N4 + width), NP(N5 + 1),
+                                    p(NP, 0.0), m(NP, 0.0), v(NP, 0.0) {
         Rng r{seed};
         for (int i = 0; i < N1; i++) p[i] = gauss(r) / std::sqrt(double(F));
         for (int i = N2; i < N3; i++) p[i] = gauss(r) / std::sqrt(double(H));
     }
-    struct Cache { double x[F], h1[H], h2[H]; };
+    struct Cache { double x[F], h1[HMAX], h2[HMAX]; };
     double forward(const double* x, Cache& c) const {
         for (int i = 0; i < F; i++) c.x[i] = x[i];
         for (int j = 0; j < H; j++) { double s = p[N1 + j]; for (int i = 0; i < F; i++) s += p[j * F + i] * x[i]; c.h1[j] = std::tanh(s); }
@@ -30,7 +31,7 @@ struct Mlp {
         return o;
     }
     void backward(const Cache& c, double dout, std::vector<double>& g) const {
-        double d2[H], d1[H];
+        double d2[HMAX], d1[HMAX];
         g[N5] += dout;
         for (int j = 0; j < H; j++) { g[N4 + j] += dout * c.h2[j]; d2[j] = dout * p[N4 + j] * (1 - c.h2[j] * c.h2[j]); }
         for (int j = 0; j < H; j++) { g[N3 + j] += d2[j]; for (int i = 0; i < H; i++) g[N2 + j * H + i] += d2[j] * c.h1[i]; }
