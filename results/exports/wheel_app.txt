@@ -1,19 +1,19 @@
-UK Lotto: "3 if 4" wheel for 2026-11-18 on 2 17 23 25 27 30 34 35 36 45 48 51 55 57 59
+UK Lotto: "3 if 4" wheel for 2026-11-25 on 2 6 14 15 27 29 30 33 35 41 42 51 54 55 57
 15 lines, £30 a draw (£2 a line).
 Guarantee: whenever 4 of the six drawn numbers are among these 15, at least one line matches 3.
 
-Line  1:   2  17  34  48  55  59
-Line  2:   2  23  27  45  48  51
-Line  3:  25  36  45  48  57  59
-Line  4:  17  23  25  27  34  36
-Line  5:  23  30  36  51  55  59
-Line  6:   2  27  30  34  36  57
-Line  7:  30  34  35  36  45  55
-Line  8:  17  23  30  35  48  57
-Line  9:  25  30  34  35  48  51
-Line 10:  25  27  35  48  55  59
-Line 11:  17  27  45  51  55  57
-Line 12:   2  17  35  36  51  59
-Line 13:   2  17  25  30  45  59
-Line 14:   2  23  25  35  55  57
-Line 15:  23  34  45  51  57  59
+Line  1:   2   6  30  42  54  57
+Line  2:   2  14  27  41  42  51
+Line  3:  15  35  41  42  55  57
+Line  4:   6  14  15  27  30  35
+Line  5:  14  29  35  51  54  57
+Line  6:   2  27  29  30  35  55
+Line  7:  29  30  33  35  41  54
+Line  8:   6  14  29  33  42  55
+Line  9:  15  29  30  33  42  51
+Line 10:  15  27  33  42  54  57
+Line 11:   6  27  41  51  54  55
+Line 12:   2   6  33  35  51  57
+Line 13:   2   6  15  29  41  57
+Line 14:   2  14  15  33  54  55
+Line 15:  14  30  41  51  55  57
